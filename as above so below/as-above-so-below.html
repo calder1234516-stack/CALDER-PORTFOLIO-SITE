@@ -1,0 +1,1013 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AS ABOVE SO BELOW -- Calder Anderson</title>
+<style>
+  body {
+    background-color: #ffffff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23ffffff'/%3E%3Crect x='0' y='0' width='20' height='20' fill='%23f0f0ff'/%3E%3Crect x='20' y='20' width='20' height='20' fill='%23f0f0ff'/%3E%3C/svg%3E");
+    color: #000000;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 14px;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+
+  a            { color: #0000ff; }
+  a:visited    { color: #800080; }
+  a:hover      { color: #ff0000; }
+
+  /* ── PAGE TABLE ── */
+  #page {
+    width: 780px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-left: 2px solid #0000ff;
+    border-right: 2px solid #0000ff;
+    text-align: left;
+  }
+
+  /* ── TOP BANNER ── */
+  #top-banner {
+    background: #0000ff;
+    color: #ffffff;
+    text-align: center;
+    padding: 2px 0;
+    font-family: "Arial", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+  }
+
+  /* ── SITE TITLE BLOCK ── */
+  #title-block {
+    background: #ffffff;
+    border-bottom: 3px solid #0000ff;
+    padding: 10px 14px 8px;
+    text-align: center;
+  }
+
+  #title-block .eyebrow {
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: #0000ff;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  #site-title {
+    font-family: "Times New Roman", serif;
+    font-size: 42px;
+    font-weight: bold;
+    color: #0000ff;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    margin: 0;
+  }
+
+  #site-subtitle {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #555555;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ── BLINK ── */
+  .blink { animation: bl 1s step-start infinite; }
+  @keyframes bl { 50% { visibility: hidden; } }
+
+  /* ── MARQUEE BAR ── */
+  .mq-bar {
+    background: #000000;
+    color: #0000ff;
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    padding: 3px 0;
+    overflow: hidden;
+    white-space: nowrap;
+    letter-spacing: 0.08em;
+  }
+
+  .mq-inner {
+    display: inline-block;
+    animation: mq 20s linear infinite;
+  }
+  .mq-inner.rev { animation-direction: reverse; color: #ffffff; }
+  @keyframes mq {
+    from { transform: translateX(800px); }
+    to   { transform: translateX(-100%); }
+  }
+
+  /* ── NAV BAR ── */
+  #navbar {
+    background: #dddddd;
+    border-top: 2px solid #ffffff;
+    border-bottom: 2px solid #000000;
+    padding: 4px 8px;
+    text-align: center;
+  }
+
+  .nav-btn {
+    display: inline-block;
+    background: #cccccc;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #555555;
+    border-bottom: 2px solid #555555;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    color: #000000;
+    text-decoration: none;
+    padding: 3px 10px;
+    margin: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  .nav-btn:hover {
+    background: #bbbbff;
+    color: #0000ff;
+    border-top: 2px solid #555555;
+    border-left: 2px solid #555555;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+  }
+
+  /* ── CONTENT LAYOUT ── */
+  #content-area {
+    padding: 10px 14px;
+  }
+
+  /* ── SECTION HEADERS ── */
+  .sec-head {
+    background: #0000ff;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    margin: 16px 0 0 0;
+    border-left: 4px solid #000080;
+  }
+
+  .sec-rule {
+    border: none;
+    border-top: 1px solid #0000ff;
+    margin: 0 0 8px 0;
+  }
+
+  /* ── VIDEO ── */
+  .video-outer {
+    border: 3px inset #aaaaaa;
+    background: #000000;
+    margin-bottom: 0;
+  }
+
+  .video-outer iframe {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16/9;
+    border: none;
+  }
+
+  .video-label {
+    background: #dddddd;
+    border: 1px solid #aaaaaa;
+    border-top: none;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    color: #555555;
+    padding: 3px 8px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  /* ── TWO-COL TABLE ── */
+  table.two-col {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #aaaaaa;
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+
+  table.two-col td {
+    vertical-align: top;
+    padding: 10px 12px;
+    border: 1px solid #cccccc;
+    line-height: 1.75;
+  }
+
+  table.two-col td p { margin-bottom: 9px; }
+  table.two-col td p:last-child { margin-bottom: 0; }
+
+  .kw { color: #0000ff; font-weight: bold; }
+
+  blockquote {
+    border-left: 3px solid #0000ff;
+    padding: 5px 10px;
+    margin: 8px 0;
+    font-style: italic;
+    color: #333333;
+    font-size: 13px;
+    background: #f8f8ff;
+  }
+
+  /* ── TAGS ── */
+  .tags { margin-top: 8px; font-size: 11px; font-family: Arial, sans-serif; }
+  .tag {
+    display: inline-block;
+    border: 1px solid #0000ff;
+    color: #0000ff;
+    padding: 1px 5px;
+    margin: 2px 2px 2px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 10px;
+  }
+
+  /* ── FAKE AD BANNERS ── */
+  .ad-banner {
+    display: block;
+    width: 468px;
+    height: 60px;
+    margin: 10px auto;
+    background: #000080;
+    border: 1px solid #ffff00;
+    color: #ffff00;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 60px;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    font-style: italic;
+  }
+
+  .ad-banner.red {
+    background: #cc0000;
+    border-color: #ffffff;
+    color: #ffffff;
+  }
+
+  .ad-banner span.nw {
+    font-style: normal;
+    font-size: 10px;
+    display: inline;
+    vertical-align: middle;
+    letter-spacing: 0.2em;
+    padding-left: 8px;
+    color: #ffdd00;
+  }
+
+  /* ── ZINE VIEWER ── */
+  .zine-titlebar {
+    background: #0000ff;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    letter-spacing: 0.1em;
+  }
+
+  .zine-controls {
+    background: #dddddd;
+    border: 1px solid #aaaaaa;
+    border-top: none;
+    padding: 5px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .zb {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    background: #cccccc;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #555555;
+    border-bottom: 2px solid #555555;
+    color: #000000;
+    padding: 2px 12px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+  }
+  .zb:hover { background: #aaaaff; color: #0000cc; }
+  .zb:disabled { color: #999999; background: #cccccc; cursor: default; }
+
+  #spread-counter {
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    color: #0000ff;
+    letter-spacing: 0.1em;
+  }
+
+  .spread-stage {
+    border: 2px inset #aaaaaa;
+    background: #888888;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    min-height: 420px;
+    position: relative;
+  }
+
+  .spread-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+    width: 100%;
+    max-width: 620px;
+  }
+
+  .page-slot {
+    aspect-ratio: 3/4;
+    background: #ffffff;
+    border: 1px solid #333333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page-slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .ph-sym { font-size: 44px; color: #cccccc; line-height: 1; margin-bottom: 6px; }
+  .ph-lbl { font-family: Arial, sans-serif; font-size: 9px; color: #aaaaaa; text-align: center; text-transform: uppercase; letter-spacing: 0.15em; line-height: 2; }
+
+  .pg-num { position: absolute; bottom: 4px; font-family: Arial, sans-serif; font-size: 9px; color: #aaaaaa; }
+  .page-slot:first-child .pg-num { right: 5px; }
+  .page-slot:last-child  .pg-num { left: 5px; }
+
+  .spine {
+    position: absolute; top: 16px; bottom: 16px; left: 50%;
+    width: 1px; background: #555555;
+    transform: translateX(-50%); pointer-events: none;
+  }
+
+  .dot-bar {
+    background: #eeeeee;
+    border: 1px solid #aaaaaa;
+    border-top: 1px solid #cccccc;
+    padding: 5px 8px;
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 14px;
+  }
+
+  .dot {
+    width: 9px; height: 9px;
+    border: 1px solid #0000ff;
+    background: #ffffff;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .dot.on { background: #0000ff; }
+
+  /* ── COUNTER + FOOTER ── */
+  #footer {
+    background: #0000ff;
+    color: #ffffff;
+    text-align: center;
+    padding: 6px;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    border-top: 2px solid #000080;
+  }
+
+  .visit-ctr {
+    display: inline-block;
+    background: #000000;
+    color: #00ff00;
+    font-family: "Courier New", monospace;
+    font-size: 13px;
+    padding: 2px 10px;
+    border: 1px solid #00ff00;
+    letter-spacing: 0.2em;
+    margin-bottom: 5px;
+  }
+
+  .footer-links a { color: #ffff00; margin: 0 6px; font-size: 10px; }
+
+  /* new! gif */
+  .new-gif {
+    display: inline-block;
+    background: #ff0000;
+    color: #ffff00;
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    font-weight: bold;
+    padding: 1px 4px;
+    vertical-align: middle;
+    margin-left: 3px;
+    animation: bl 0.8s step-start infinite;
+  }
+
+  /* horizontal divider with text */
+  .div-text {
+    text-align: center;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    color: #0000ff;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin: 8px 0 4px;
+  }
+
+  .stars {
+    text-align: center;
+    color: #0000ff;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    margin: 4px 0;
+  }
+
+  /* ── FLIP BOOK ── */
+  #book-wrap {
+    background: radial-gradient(ellipse at center, #3a3a3a 0%, #111111 100%);
+    padding: 28px 0;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    border: 2px inset #888888;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+  }
+
+  #book {
+    position: relative;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.9);
+  }
+
+  .page img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  #zine-loading {
+    background: #000000;
+    border: 2px inset #555555;
+    padding: 18px;
+    text-align: center;
+  }
+
+  /* ── GIF ADS ── */
+  .gif-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 0;
+    flex-wrap: wrap;
+  }
+
+  .gif-badge {
+    display: inline-block;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #555555;
+    border-bottom: 2px solid #555555;
+    line-height: 0;
+    flex-shrink: 0;
+  }
+
+  .gif-badge img {
+    display: block;
+    width: 88px;
+    height: 31px;
+    image-rendering: pixelated;
+  }
+
+  .gif-badge.tall img {
+    width: 88px;
+    height: 60px;
+  }
+
+  .gif-banner-med {
+    display: block;
+    margin: 8px auto;
+    border: 2px solid #0000ff;
+    line-height: 0;
+    width: fit-content;
+  }
+
+  .gif-banner-med img {
+    display: block;
+    width: 234px;
+    height: 60px;
+    image-rendering: pixelated;
+  }
+
+  .gif-banner-full {
+    display: block;
+    margin: 8px auto;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #555555;
+    border-bottom: 2px solid #555555;
+    line-height: 0;
+    width: fit-content;
+  }
+
+  .gif-banner-full img {
+    display: block;
+    width: 280px;
+    height: auto;
+    image-rendering: pixelated;
+  }
+
+  .gif-inline-right {
+    float: right;
+    margin: 0 0 6px 10px;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #555555;
+    border-bottom: 2px solid #555555;
+    line-height: 0;
+  }
+
+  .gif-inline-right img {
+    display: block;
+    width: 120px;
+    height: 60px;
+    image-rendering: pixelated;
+  }
+
+  .gif-webring {
+    background: #eeeeee;
+    border: 1px solid #aaaaaa;
+    border-top: 1px solid #ffffff;
+    padding: 5px 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 0;
+  }
+
+  .gif-webring-label {
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    color: #555555;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  .gif-strip {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    padding: 5px 0;
+    background: #dddddd;
+    border-top: 1px solid #ffffff;
+    border-bottom: 1px solid #aaaaaa;
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 767px) {
+
+    /* kill body checkerboard and let page fill screen edge to edge */
+    html, body        { width: 100% !important; overflow-x: hidden !important; background-image: none !important; background-color: #ffffff !important; }
+    #page             { width: 100% !important; max-width: 100% !important; margin: 0 !important; border-left: none !important; border-right: none !important; }
+
+    /* title */
+    #site-title       { font-size: 24px; }
+    #site-subtitle    { font-size: 9px; letter-spacing: 0.15em; }
+
+    /* content padding */
+    #content-area     { padding: 8px 8px; }
+
+    /* nav buttons: wrap and shrink */
+    .nav-btn          { font-size: 9px; padding: 3px 6px; margin: 1px; }
+
+    /* case study table: stack columns */
+    table.two-col,
+    table.two-col tbody,
+    table.two-col tr    { display: block; width: 100%; }
+    table.two-col td    { display: block; width: 100% !important; padding: 8px 10px; }
+
+    /* ad banners: shrink to fit */
+    .ad-banner          { width: 100%; max-width: 100%; font-size: 11px; box-sizing: border-box; }
+    .gif-banner-full img { width: 100%; height: auto; }
+    .gif-banner-full    { width: 100%; max-width: 100%; }
+    .gif-banner-med     { width: auto; max-width: 100%; }
+
+    /* gif inline float: cancel float on small screens */
+    .gif-inline-right   { float: none; display: block; margin: 0 auto 10px; }
+
+    /* zine book wrap */
+    #book-wrap          { padding: 4px 0; width: 100vw; overflow-x: hidden; box-sizing: border-box; }
+    #book               { margin: 0 auto; }
+
+    /* zine controls: stack if needed */
+    .zine-controls      { flex-wrap: wrap; gap: 6px; justify-content: center; }
+    .zine-controls span { text-align: center; width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<script>
+// Apply mobile overrides via JS so they beat any CSS specificity issues
+(function() {
+  if (window.innerWidth < 768) {
+    document.documentElement.style.overflow = 'hidden';
+    var b = document.body;
+    b.style.backgroundImage = 'none';
+    b.style.backgroundColor = '#ffffff';
+    b.style.overflowX = 'hidden';
+    b.style.width = '100%';
+    // Wait for #page to exist then style it
+    function fixPage() {
+      var page = document.getElementById('page');
+      if (page) {
+        page.style.width = '100%';
+        page.style.maxWidth = '100%';
+        page.style.margin = '0';
+        page.style.borderLeft = 'none';
+        page.style.borderRight = 'none';
+        page.style.boxSizing = 'border-box';
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fixPage);
+    } else {
+      fixPage();
+    }
+  }
+})();
+</script>
+
+<div id="page">
+
+  <!-- TOP STRIP -->
+  <div id="top-banner">
+    ★ WELCOME TO AS ABOVE SO BELOW ★ A JOINT RESEARCH OBJECT ★ CALDER ANDERSON ★ 2023 ★
+  </div>
+
+  <!-- TITLE BLOCK -->
+  <div id="title-block">
+    <div class="eyebrow">Calder Anderson</div>
+    <h1 id="site-title">AS ABOVE, SO BELOW</h1>
+    <div id="site-subtitle">
+      A Zine &amp; Video &mdash; Joint Research Object &nbsp;|&nbsp; Calder Anderson &nbsp;|&nbsp; 2023 &nbsp;<span class="blink">&#9608;</span>
+    </div>
+  </div>
+
+  <!-- MARQUEE 1 -->
+  <div class="mq-bar">
+    <span class="mq-inner">
+      &nbsp;&nbsp; ★ quod est superius est sicut quod est inferius ★ that which is above is like that which is below ★ quod est superius est sicut quod est inferius ★ that which is above is like that which is below ★ quod est superius est sicut quod est inferius ★
+    </span>
+  </div>
+
+  <!-- NAV -->
+  <div id="navbar">
+    <a href="../calder-FULLY-annotated.html" class="nav-btn" style="color:#ff6600;">&#9664; BACK</a>
+    <a href="#video"      class="nav-btn">&#9654; VIDEO</a>
+    <a href="#case-study" class="nav-btn">&#9654; CASE STUDY</a>
+    <a href="#zine"       class="nav-btn">&#9654; ZINE VIEWER</a>
+  </div>
+
+  <!-- GIF ROW 1: three badges just under nav -->
+  <div class="gif-row">
+    <a href="#" class="gif-badge"><img src="gifs/L27YOKRLLUMOIJ6MKEU35AATD6K7KFZE.gif" alt=""></a>
+    <a href="#" class="gif-badge"><img src="gifs/QNARX6PFJDFEBBP2JTDK6CI7TZKU6X62.gif" alt=""></a>
+    <a href="#" class="gif-badge"><img src="gifs/6CFSIQ44GIJHR5E5EU5YJJCMSFPHTPSX.gif" alt=""></a>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content-area">
+
+    <div class="stars">★ &nbsp; ★ &nbsp; ★ &nbsp; ★ &nbsp; ★ &nbsp; ★ &nbsp; ★ &nbsp; ★ &nbsp; ★ &nbsp; ★</div>
+
+    <!-- VIDEO SECTION -->
+    <div id="video">
+      <div class="sec-head">I. THE MOVING IMAGE <span class="new-gif">NEW!</span></div>
+      <hr class="sec-rule">
+      <!-- REPLACE src WITH YOUR YOUTUBE EMBED URL: https://www.youtube.com/embed/YOUR_VIDEO_ID -->
+      <div class="video-outer">
+        <iframe
+          src="https://www.youtube.com/embed/mHrirotQov0?autoplay=1&mute=1"
+          title="As Above So Below"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </div>
+      <div class="video-label">
+        <span>&#9654; AS ABOVE SO BELOW &mdash; CALDER ANDERSON</span>
+        <span>HD &middot; STEREO &middot; 2023</span>
+      </div>
+    </div>
+
+    <!-- GIF: medium banner between video and diamonds -->
+    <a href="#" class="gif-banner-med"><img src="gifs/7CM5XLOTOPJ4KPPXLLJN5EEN556DHXDA.gif" alt=""></a>
+
+    <div class="stars">&#9670; &nbsp; &#9670; &nbsp; &#9670; &nbsp; &#9670; &nbsp; &#9670;</div>
+
+    <!-- CASE STUDY -->
+    <div id="case-study">
+      <div class="sec-head">II. CASE STUDY &amp; PROJECT DESCRIPTION</div>
+      <hr class="sec-rule">
+
+      <table class="two-col">
+        <tr>
+          <td width="50%">
+            <p><span class="kw">Project:</span><br>
+              A dual-output research project &mdash; a video collage and an accompanying zine &mdash; examining the structural parallels between early internet technology and ancient magical traditions. The thesis: both systems operate through symbols, rituals, and hidden knowledge to produce real-world effects.
+            </p>
+            <p>
+              The organizing framework draws on Arthur C. Clarke&#39;s axiom that sufficiently advanced technology becomes indistinguishable from magic &mdash; extended here into a genuine comparison of operational logic: HTML and CSS as spellcasting syntax, hyperlinks as ritual pathways, global connectivity as a form of remote viewing. The early web&#39;s visual vernacular (low-res graphics, raw markup, blinking GIFs) becomes the aesthetic language for the research.
+            </p>
+            <p><span class="kw">Tools &amp; Skills</span><br>
+              ▸ Zine Design &mdash; layout, visual hierarchy, print<br>
+              ▸ Video Collage &mdash; abstract found footage editing<br>
+              ▸ Archival Research &mdash; 90s/00s internet history<br>
+              ▸ Conceptual Writing &mdash; technology + occult theory<br>
+              ▸ Image-making &mdash; symbolic
+            </p>
+          </td>
+          <td width="50%">
+            <!-- GIF: floated inline inside right column of case study -->
+            <a href="#" class="gif-inline-right"><img src="gifs/2ZHDL52OJGW25XRVLB7PD3NBMJC7ESON.gif" alt=""></a>
+            <p><span class="kw">Challenge:</span><br>
+              The primary challenge was making an abstract theoretical argument legible across two different media simultaneously &mdash; without either the zine becoming a dry academic text or the video becoming pure aesthetics with no conceptual anchor.
+            </p>
+            <p>
+              Research moved across two largely separate bodies of knowledge: the material history of early internet culture (HTML conventions, dial-up interfaces, net art, GeoCities-era web design) and the study of occult traditions &mdash; paganism, Wicca, ritual symbolism, and practices like remote viewing. Finding the genuine structural overlap between these two systems, rather than forcing a superficial visual analogy, was the core intellectual task.
+            </p>
+            <p>
+              The video collage required sourcing and editing abstract imagery from the early internet era and combining it with symbols drawn from magical traditions &mdash; binary code alongside runic systems, spellcasting syntax alongside markup language &mdash; in a way that was visually coherent and conceptually precise rather than decorative.
+            </p>
+            <p><span class="kw">Outcome:</span><br>
+              The project produced two finished artifacts: a video collage merging early-internet imagery with occult visual language, and a printed zine that operationalizes the research into a tangible, navigable framework &mdash; giving the theoretical argument a physical form readers can hold and move through.
+            </p>
+            <p>
+              The work established a template for subsequent projects: ULTRANET translated the same synthesis of media theory and digital culture into a physical installation, and LOGIN Magazine applied the same research-first editorial logic to independent publishing. Both grew directly from the methods developed here.
+            </p>
+            <p><span class="kw">Key Takeaway:</span><br>
+              This project was the starting point. It established a working method &mdash; build a theoretical framework, then translate it into a visual system &mdash; and sparked a sustained interest in the internet and technology as the primary themes of the work that followed. Every major project since has been, in some form, an extension of the questions first asked here.
+            </p>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- GIF STRIP: pair of badges before red ad -->
+    <div class="gif-strip">
+      <a href="#" class="gif-badge"><img src="gifs/GQ5DMIPL7ZXG7DSBIBMWY67ITL4HPCOB.gif" alt=""></a>
+      <a href="#" class="gif-badge"><img src="gifs/QEXXC6U72GCYDRKFBIWZKPDFO7XXEYWI.gif" alt=""></a>
+    </div>
+
+    <!-- FAKE AD 2 -->
+    <a class="ad-banner red" href="PDF/zine.pdf" download="as-above-so-below-zine.pdf">
+      ☽ DOWNLOAD THE ZINE PDF &mdash; FREE ☾
+    </a>
+
+    <div class="div-text">&#9670; &#9670; &#9670; ZINE VIEWER &#9670; &#9670; &#9670;</div>
+
+    <!-- ZINE VIEWER -->
+    <div id="zine">
+      <div class="sec-head">III. THE ZINE &mdash; FLIP TO READ</div>
+      <hr class="sec-rule">
+
+      <div class="zine-titlebar">
+        <span>&#9654; AS ABOVE SO BELOW &mdash; ZINE SPREADS</span>
+        <a href="PDF/zine.pdf" download="as-above-so-below-zine.pdf" style="color:#ffff00;font-family:Arial;font-size:10px;font-weight:bold;letter-spacing:0.1em;text-decoration:none;">[ DOWNLOAD ]</a>
+      </div>
+
+      <div id="zine-loading">
+        <span id="zine-progress" style="font-family:'Courier New',monospace;font-size:13px;color:#00ff00;letter-spacing:0.2em;">&#9608; LOADING ZINE...</span>
+      </div>
+
+      <div id="book-wrap">
+        <div id="book"></div>
+      </div>
+
+      <div class="zine-controls" id="zine-nav" style="display:none;">
+        <button class="zb" id="zb-prev">&#171; PREV PAGE</button>
+        <span id="zb-counter" style="font-family:'Courier New',monospace;font-size:12px;color:#0000ff;letter-spacing:0.1em;">SPREAD 1</span>
+        <button class="zb" id="zb-next">NEXT PAGE &#187;</button>
+      </div>
+      <div class="dot-bar" style="justify-content:center;">
+        <a href="PDF/zine.pdf" target="_blank" class="zb" style="text-decoration:none;">OPEN FULL SCREEN &#9654;</a>
+      </div>
+    </div>
+
+    <div class="stars">★ &nbsp; ★ &nbsp; ★ &nbsp; ★ &nbsp; ★ &nbsp; ★ &nbsp; ★ &nbsp; ★ &nbsp; ★ &nbsp; ★</div>
+
+    <!-- WIZARD: small gif at bottom -->
+    <div style="text-align:center; margin: 10px 0 6px;">
+      <img src="gifs/ES3HARVXZVRCQDYF673G5UO4DAFAC74G.gif" alt="" style="width:88px; height:88px; object-fit:cover; image-rendering:pixelated; border: 2px solid #0000ff;">
+    </div>
+
+    <!-- GIF WEBRING: classic webring badge row before the closing marquee -->
+    <div class="gif-webring">
+      <div class="gif-webring-label">— web ring —</div>
+      <a href="#" class="gif-badge"><img src="gifs/B6HTSDSPDJQRHWSICHP6RCOTDNCO2RJP.gif" alt=""></a>
+    </div>
+
+    <!-- MARQUEE 2 -->
+    <div class="mq-bar" style="margin-bottom:10px;">
+      <span class="mq-inner rev">
+        &nbsp;&nbsp; ◆ AS ABOVE SO BELOW ◆ CALDER ANDERSON ◆ PARSONS MFA ◆ 2023 ◆ AS ABOVE SO BELOW ◆ CALDER ANDERSON ◆ PARSONS MFA ◆ 2023 ◆
+      </span>
+    </div>
+
+  </div><!-- #content-area -->
+
+  <!-- FOOTER -->
+  <div id="footer">
+    <div class="visit-ctr" id="vctr">VISITORS: 001337</div><br>
+    <div class="footer-links">
+      <a href="https://calder-anderson.com">calder-anderson.com</a>
+      <a href="mailto:">E-Mail</a>
+    </div>
+    <div style="margin-top:5px; font-size:9px; color:#aaaaff;">
+      Best viewed in Netscape Navigator 4.0 at 800&times;600 &nbsp;|&nbsp; &copy; 2023 Calder Anderson &nbsp;|&nbsp; All Rights Reserved
+    </div>
+  </div>
+
+</div><!-- #page -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://unpkg.com/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+<script>
+  // Visitor counter
+  document.getElementById('vctr').textContent =
+    'VISITORS: ' + String(Math.floor(Math.random() * 8000) + 1000).padStart(6,'0');
+
+  // Flip book
+  let pageFlip;
+  let pdfDocCached = null;
+
+  async function initZine() {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const prog    = document.getElementById('zine-progress');
+    const loading = document.getElementById('zine-loading');
+    const bookWrap = document.getElementById('book-wrap');
+    const nav     = document.getElementById('zine-nav');
+    const book    = document.getElementById('book');
+
+    // Clear any previous render before re-init
+    if (pageFlip) { try { pageFlip.destroy(); } catch(e) {} pageFlip = null; }
+    book.innerHTML = '';
+    loading.style.display  = 'block';
+    bookWrap.style.display = 'none';
+    nav.style.display      = 'none';
+
+    try {
+      if (!pdfDocCached) pdfDocCached = await pdfjsLib.getDocument('PDF/zine.pdf').promise;
+      const pdfDoc   = pdfDocCached;
+      const numPages = pdfDoc.numPages;
+
+      // Determine scale from first page
+      const firstPage = await pdfDoc.getPage(1);
+      const vp0    = firstPage.getViewport({ scale: 1 });
+      // Read content-area's actual inner content width (clientWidth includes padding, so subtract it)
+      let targetW;
+      if (window.innerWidth < 768) {
+        // On mobile use viewport width with a small margin
+        targetW = Math.max(window.innerWidth - 8, 100);
+      } else {
+        const contentEl = document.getElementById('content-area');
+        const caStyle   = window.getComputedStyle(contentEl);
+        targetW = Math.floor(
+          contentEl.clientWidth
+          - parseFloat(caStyle.paddingLeft)
+          - parseFloat(caStyle.paddingRight)
+        ) || 700;
+      }
+      const scale  = targetW / vp0.width;
+      const targetH = Math.round(vp0.height * scale);
+
+      // Render all pages into the book container
+      for (let i = 1; i <= numPages; i++) {
+        prog.textContent = '\u25A0 LOADING PAGE ' + i + ' OF ' + numPages + '...';
+
+        const page = await pdfDoc.getPage(i);
+        const vp   = page.getViewport({ scale });
+
+        const canvas  = document.createElement('canvas');
+        canvas.width  = Math.round(vp.width);
+        canvas.height = Math.round(vp.height);
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'page';
+        const img = document.createElement('img');
+        img.src = canvas.toDataURL('image/jpeg', 0.92);
+        pageDiv.appendChild(img);
+        book.appendChild(pageDiv);
+      }
+
+      if (window.innerWidth < 768) {
+        // ── Mobile: simple page gallery, no StPageFlip ──
+        var mPages = Array.from(book.querySelectorAll('.page'));
+        var mIdx = 0;
+        mPages.forEach(function(d, i) {
+          d.style.display  = i === 0 ? 'block' : 'none';
+          d.style.width    = targetW + 'px';
+          d.style.height   = targetH + 'px';
+        });
+        book.style.width  = targetW + 'px';
+        book.style.margin = '0 auto';
+        document.getElementById('zb-counter').textContent = 'PAGE 1 / ' + numPages;
+        document.getElementById('zb-prev').onclick = function() {
+          if (mIdx > 0) {
+            mPages[mIdx].style.display = 'none';
+            mIdx--;
+            mPages[mIdx].style.display = 'block';
+            document.getElementById('zb-counter').textContent = 'PAGE ' + (mIdx+1) + ' / ' + numPages;
+          }
+        };
+        document.getElementById('zb-next').onclick = function() {
+          if (mIdx < mPages.length - 1) {
+            mPages[mIdx].style.display = 'none';
+            mIdx++;
+            mPages[mIdx].style.display = 'block';
+            document.getElementById('zb-counter').textContent = 'PAGE ' + (mIdx+1) + ' / ' + numPages;
+          }
+        };
+
+      } else {
+        // ── Desktop: StPageFlip ──
+        pageFlip = new St.PageFlip(book, {
+          width: targetW,
+          height: targetH,
+          showCover: true,
+          usePortrait: true,
+          autoSize: false,
+          maxShadowOpacity: 0.6,
+          flippingTime: 800,
+          useMouseEvents: true,
+        });
+
+        pageFlip.loadFromHTML(book.querySelectorAll('.page'));
+
+        pageFlip.on('flip', function(e) {
+          const spread = Math.floor(e.data / 2) + 1;
+          const total  = Math.ceil(numPages / 2);
+          document.getElementById('zb-counter').textContent =
+            'SPREAD ' + spread + ' / ' + total;
+        });
+
+        document.getElementById('zb-prev').onclick = function() { pageFlip.flipPrev(); };
+        document.getElementById('zb-next').onclick = function() { pageFlip.flipNext(); };
+      }
+
+      loading.style.display  = 'none';
+      bookWrap.style.display = 'flex';
+      nav.style.display      = 'flex';
+
+    } catch (err) {
+      // Clear cache so next attempt re-fetches
+      pdfDocCached = null;
+      prog.textContent = '\u2716 ERROR: ' + err.message;
+    }
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (!pageFlip) return;
+    if (e.key === 'ArrowRight') pageFlip.flipNext();
+    if (e.key === 'ArrowLeft')  pageFlip.flipPrev();
+  });
+
+  // Use window load so CDN scripts and PDF are fully ready before init
+  window.addEventListener('load', initZine);
+
+  // Re-init zine on orientation change so it fills the new width
+  window.addEventListener('orientationchange', function() {
+    setTimeout(initZine, 300);
+  });
+</script>
+</body>
+</html>

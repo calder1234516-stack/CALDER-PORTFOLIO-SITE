@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>graphic work — calder anderson</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400&family=Geist:wght@300;400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #ffffff;
+    --text: #111;
+    --accent: #0000ff;
+    --font: 'Geist', 'Geist Mono', sans-serif;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    overflow: hidden;
+    cursor: none;
+    font-family: var(--font);
+  }
+
+  #canvas-container {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .img-node {
+    position: absolute;
+    will-change: left, top;
+    cursor: none;
+  }
+
+  .img-node img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    transition: object-fit 0s;
+  }
+
+  body.grid-mode .img-node img {
+    object-fit: contain;
+  }
+
+  .img-node:hover {
+    z-index: 50 !important;
+    outline: 1.5px solid var(--accent);
+  }
+
+  .img-node.dragging {
+    z-index: 200 !important;
+    outline: 1.5px solid var(--accent);
+  }
+
+  #cursor {
+    position: fixed;
+    width: 6px; height: 6px;
+    background: var(--text);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: width 0.12s, height 0.12s, background 0.12s;
+  }
+  #cursor.over-image {
+    width: 10px; height: 10px;
+    background: var(--accent);
+  }
+  #cursor.dragging-image {
+    width: 8px; height: 8px;
+    background: var(--accent);
+  }
+
+  #header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 18px 28px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+  }
+  #header .title {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+    opacity: 0.3;
+    font-weight: 300;
+  }
+  #header .count {
+    font-size: 10px;
+    color: var(--text);
+    opacity: 0.2;
+    font-weight: 300;
+  }
+
+  #lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: rgba(255,255,255,0.96);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    cursor: none;
+  }
+  #lightbox.active { opacity: 1; pointer-events: all; }
+  #lightbox-img {
+    max-width: 86vw;
+    max-height: 86vh;
+    object-fit: contain;
+    display: block;
+    transform: scale(0.97);
+    transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  }
+  #lightbox.active #lightbox-img { transform: scale(1); }
+  #lightbox-close {
+    position: absolute;
+    top: 22px; right: 28px;
+    font-family: var(--font);
+    font-size: 10px;
+    font-weight: 300;
+    color: rgba(0,0,0,0.3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: none;
+    transition: color 0.15s;
+    user-select: none;
+  }
+  #lightbox-close:hover { color: var(--accent); }
+  #lightbox-index {
+    position: absolute;
+    bottom: 22px; left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font);
+    font-size: 9px;
+    font-weight: 300;
+    color: rgba(0,0,0,0.2);
+    letter-spacing: 0.1em;
+  }
+
+  #hint {
+    position: fixed;
+    bottom: 22px; left: 28px;
+    z-index: 200;
+    font-size: 9px;
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    color: var(--text);
+    opacity: 0.18;
+    text-transform: uppercase;
+    line-height: 1.9;
+    pointer-events: none;
+    transition: opacity 0.6s;
+  }
+  #hint.hidden { opacity: 0; }
+
+  #zoom-level {
+    position: fixed;
+    bottom: 22px; right: 28px;
+    font-size: 9px;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    color: var(--text);
+    opacity: 0;
+    transition: opacity 0.4s;
+    z-index: 200;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+  #zoom-level.show { opacity: 0.2; }
+
+  #back-link {
+    position: fixed;
+    bottom: 22px;
+    right: 28px;
+    z-index: 200;
+    font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 9px;
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(0,0,0,0.3);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  #back-link:hover { color: var(--accent); }
+
+  /* ── MOBILE ── */
+  @media (max-width: 767px) {
+    body { cursor: auto; overflow: hidden; }
+    #cursor { display: none; }
+    .img-node { cursor: pointer; }
+    .img-node:hover { outline: none; }
+    #grid-btn { cursor: pointer; }
+    #back-link { cursor: pointer; }
+    #lightbox { cursor: pointer; }
+    #lightbox-close { cursor: pointer; top: 16px; right: 18px; }
+    #header { padding: 14px 18px; }
+    #hint { display: none; }
+    #zoom-level { display: none; }
+  }
+
+  #center-text {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    pointer-events: none;
+    text-align: center;
+    max-width: 260px;
+    font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 300;
+    line-height: 1.75;
+    letter-spacing: 0.01em;
+    color: rgba(0,0,0,0.28);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+
+  #grid-btn {
+    pointer-events: all;
+    background: none;
+    border: none;
+    font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 9px;
+    font-weight: 300;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(0,0,0,0.3);
+    cursor: none;
+    transition: color 0.15s;
+    padding: 4px 0;
+  }
+  #grid-btn:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+
+<div id="header">
+  <span class="title">calder anderson — graphic work</span>
+  <span class="count" id="img-count">0 images</span>
+</div>
+
+<div id="canvas-container"></div>
+
+<div id="center-text">
+  <p>An archive of graphic work made between 2022 and 2026 — one-off projects, personal experiments, and unused work. Posters, graphics, and everything in between.</p>
+  <button id="grid-btn" onclick="toggleGrid()">⊞ grid view</button>
+</div>
+
+<div id="lightbox">
+  <span id="lightbox-close">close [esc]</span>
+  <img id="lightbox-img" src="" alt="">
+  <span id="lightbox-index"></span>
+</div>
+
+<div id="zoom-level"></div>
+<a id="back-link" href="../../calder-FULLY-annotated.html">← back</a>
+
+<script>
+// ─── Refs ─────────────────────────────────────────────────────────────────────
+const container = document.getElementById('canvas-container');
+const lightbox  = document.getElementById('lightbox');
+const lbImg     = document.getElementById('lightbox-img');
+const lbIndex   = document.getElementById('lightbox-index');
+const countEl   = document.getElementById('img-count');
+const zoomEl    = document.getElementById('zoom-level');
+const cursorEl  = document.getElementById('cursor');
+const hintEl    = document.getElementById('hint');
+let zoomTimer;
+
+// ─── Mobile detection ─────────────────────────────────────────────────────────
+const isMobile = window.innerWidth < 768;
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let images          = [];
+let pan             = { x: 0, y: 0 };
+let scale           = 1;
+let mouse           = { x: -9999, y: -9999 };
+let isSpinning      = true;
+let needCloud       = false;  // only true when lightbox is open
+let isDragging      = false;
+let dragStart       = { x: 0, y: 0 };
+let panStart        = { x: 0, y: 0 };
+let currentLbIndex  = -1;
+
+// image drag state
+let draggedNode    = null;
+let imgDragStart   = { mx: 0, my: 0, nx: 0, ny: 0 }; // mouse & node world pos at drag start
+let isImageDragging = false;
+
+// ─── Ring/oval position — circle on desktop, oval on mobile ──────────────────
+function ringPosition(i, total) {
+  const angleStep = (Math.PI * 2) / total;
+  const theta = i * angleStep;
+  if (isMobile) {
+    // oval: narrow horizontally to fit screen, tall vertically to wrap around text
+    return { rx: 138, ry: 295, theta };
+  }
+  return { rx: 280, ry: 280, theta };
+}
+
+// ─── Cloud rest position ──────────────────────────────────────────────────────
+function cloudPosition(i) {
+  const goldenAngle = 2.399963;
+  const r     = 95 * Math.sqrt(i + 1);
+  const theta = i * goldenAngle + (Math.random() - 0.5) * 0.5;
+  return { x: Math.cos(theta) * r, y: Math.sin(theta) * r };
+}
+
+// ─── Sizes ────────────────────────────────────────────────────────────────────
+const RING_SIZE = isMobile ? { w: 62, h: 62 } : { w: 110, h: 110 };
+
+function randomSize() {
+  const roll = Math.random();
+  if (roll < 0.07)  return { w: 260 + Math.random() * 100, h: 200 + Math.random() * 80 };
+  if (roll < 0.25)  return { w: 150 + Math.random() * 70,  h: 120 + Math.random() * 60 };
+  return              { w: 74  + Math.random() * 56,  h: 62  + Math.random() * 46 };
+}
+
+// ─── Add image ────────────────────────────────────────────────────────────────
+function addImage(src, index) {
+  // We'll recalculate ring positions for all nodes after adding,
+  // so pass a placeholder orbit here and patch below.
+  const cloud = cloudPosition(index);
+
+  const el  = document.createElement('div');
+  el.className = 'img-node';
+  const img = document.createElement('img');
+  img.src = src;
+  img.draggable = false;
+  el.appendChild(img);
+  container.appendChild(el);
+
+  const cloudSize = randomSize();
+
+  const node = {
+    src, el, index,
+    cx: cloud.x, cy: cloud.y,
+    rx: 210, ry: 210, baseTheta: 0,
+    x: cloud.x, y: cloud.y,
+    vx: 0, vy: 0,
+    // ring (uniform) size
+    rw: RING_SIZE.w, rh: RING_SIZE.h,
+    // cloud (varied) size
+    cw: cloudSize.w, ch: cloudSize.h,
+    // current rendered size (interpolated)
+    w: RING_SIZE.w, h: RING_SIZE.h,
+    phase:      Math.random() * Math.PI * 2,
+    floatSpeed: 0.3 + Math.random() * 0.4,
+    floatAmt:   2   + Math.random() * 3,
+    ix: 0, iy: 0,
+  };
+
+  // image drag
+  el.addEventListener('mousedown', e => {
+    e.stopPropagation();
+
+    const cx = window.innerWidth  / 2 + pan.x;
+    const cy = window.innerHeight / 2 + pan.y;
+    const mxWorld = (e.clientX - cx) / scale;
+    const myWorld = (e.clientY - cy) / scale;
+
+    draggedNode   = node;
+    isImageDragging = false;
+    imgDragStart  = { mx: mxWorld, my: myWorld, nx: node.x, ny: node.y };
+
+    // snapshot world positions of ALL images so we can translate them uniformly
+    images.forEach(other => {
+      other.dragStartX  = other.x;
+      other.dragStartY  = other.y;
+      other.cloudStartX = other.cx;
+      other.cloudStartY = other.cy;
+    });
+
+    el.classList.add('dragging');
+    cursorEl.classList.add('dragging-image');
+
+    let prevMxW = imgDragStart.mx;
+    let prevMyW = imgDragStart.my;
+
+    const onMove = e2 => {
+      isImageDragging = true;
+      const mxW2 = (e2.clientX - (window.innerWidth  / 2 + pan.x)) / scale;
+      const myW2 = (e2.clientY - (window.innerHeight / 2 + pan.y)) / scale;
+
+      const ddx = mxW2 - imgDragStart.mx;
+      const ddy = myW2 - imgDragStart.my;
+
+      // move ALL images by the same world-space delta from their drag-start positions
+      images.forEach(other => {
+        other.x  = other.dragStartX + ddx;
+        other.y  = other.dragStartY + ddy;
+        other.vx = 0;
+        other.vy = 0;
+        // keep cloud rest in sync so spring target follows too
+        other.cx = other.cloudStartX + ddx;
+        other.cy = other.cloudStartY + ddy;
+      });
+    };
+
+    const onUp = () => {
+      el.classList.remove('dragging');
+      cursorEl.classList.remove('dragging-image');
+
+      if (!isImageDragging) {
+        openLightbox(node.index);
+      }
+      // cloud rests already updated live during drag — nothing to snap
+
+      draggedNode     = null;
+      isImageDragging = false;
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup',   onUp);
+    };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup',   onUp);
+  });
+
+  el.addEventListener('mouseenter', () => { if (!isImageDragging) cursorEl.classList.add('over-image'); });
+  el.addEventListener('mouseleave', () => { if (!isImageDragging) cursorEl.classList.remove('over-image'); });
+
+  images.push(node);
+  rebuildRings();
+  countEl.textContent = `${images.length} image${images.length !== 1 ? 's' : ''}`;
+}
+
+// ─── Rebuild ring positions whenever image count changes ──────────────────────
+function rebuildRings() {
+  const total = images.length;
+  images.forEach((n, i) => {
+    const pos = ringPosition(i, total);
+    n.rx        = pos.rx;
+    n.ry        = pos.ry;
+    n.baseTheta = pos.theta;
+  });
+}
+
+// ─── Animation ────────────────────────────────────────────────────────────────
+const SPIN_SPEED = 0.5;
+const SPRING     = 0.06;
+const DAMPING    = 0.78;
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+function easeInOut(t)  { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+
+let spinAngle  = 0;
+let spinWeight = 1;   // 1 = on circle, 0 = in cloud. drifts smoothly.
+let lastT      = null;
+
+// ─── Grid mode ────────────────────────────────────────────────────────────────
+let gridMode    = false;
+let gridWeight  = 0;   // 0 = circle/cloud, 1 = grid
+let gridTargets = [];  // { x, y, w, h } in world coords per image
+
+function computeGridTargets() {
+  const W   = window.innerWidth;
+  const H   = window.innerHeight;
+  const pad = 24;
+  const gap = 8;
+  const n   = images.length;
+
+  const tr     = document.getElementById('center-text').getBoundingClientRect();
+  const margin = 20;
+  const ax1 = tr.left  - margin, ay1 = tr.top    - margin;
+  const ax2 = tr.right + margin, ay2 = tr.bottom + margin;
+
+  let cols = Math.max(4, Math.ceil(Math.sqrt(n * (W / H))));
+
+  outer:
+  for (let colAttempt = 0; colAttempt < 12; colAttempt++, cols++) {
+    // Try the minimum rows needed, then increment one at a time until enough valid slots
+    const minRows = Math.ceil(n / cols);
+    for (let rows = minRows; rows <= minRows + 4; rows++) {
+      const cellW = (W - 2*pad - (cols-1)*gap) / cols;
+      const cellH = (H - 2*pad - (rows-1)*gap) / rows;
+      const valid = [];
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const sx = pad + c*(cellW+gap);
+          const sy = pad + r*(cellH+gap);
+          if (sx < ax2 && sx+cellW > ax1 && sy < ay2 && sy+cellH > ay1) continue;
+          valid.push({
+            x: sx + cellW/2 - W/2,
+            y: sy + cellH/2 - H/2,
+            w: cellW,
+            h: cellH,
+          });
+        }
+      }
+
+      if (valid.length >= n) {
+        gridTargets = images.map((_, i) => valid[i]);
+        return;
+      }
+    }
+  }
+}
+
+function toggleGrid() {
+  gridMode = !gridMode;
+  const btn = document.getElementById('grid-btn');
+  if (gridMode) {
+    pan   = { x: 0, y: 0 };
+    scale = 1;
+    computeGridTargets();
+    isSpinning = false;
+    needCloud  = false;
+    btn.textContent = '○ circle view';
+    document.body.classList.add('grid-mode');
+  } else {
+    isSpinning = true;
+    btn.textContent = '⊞ grid view';
+    document.body.classList.remove('grid-mode');
+  }
+}
+
+function animate(t) {
+  requestAnimationFrame(animate);
+
+  const dt   = lastT === null ? 0 : Math.min((t - lastT) * 0.001, 0.05);
+  lastT = t;
+  const time = t * 0.001;
+
+  const cx = window.innerWidth  / 2 + pan.x;
+  const cy = window.innerHeight / 2 + pan.y;
+
+  // ── hover: only pause spinAngle, never affect spinWeight or positions ──
+  if (!lightbox.classList.contains('active') && !isImageDragging) {
+    let anyHovered = false;
+    images.forEach(n => {
+      // use last-frame screen position stored on node
+      if (n._sx !== undefined) {
+        const pad = 6;
+        if (mouse.x >= n._sx + pad && mouse.x <= n._sx + n._sw - pad &&
+            mouse.y >= n._sy + pad && mouse.y <= n._sy + n._sh - pad) {
+          anyHovered = true;
+        }
+      }
+    });
+    // hover pauses the angle advance but does NOT change spinWeight
+    isSpinning = !anyHovered;
+  }
+
+  // spinAngle advances only when isSpinning
+  if (isSpinning) spinAngle += SPIN_SPEED * dt;
+
+  // spinWeight only drifts when lightbox state changes (openLightbox/closeLightbox set needCloud)
+  const wTarget = needCloud ? 0 : 1;
+  spinWeight   += (wTarget - spinWeight) * Math.min(1, 4 * dt);
+  spinWeight    = Math.max(0, Math.min(1, spinWeight));
+
+  // gridWeight drifts toward 1 when gridMode is on
+  const gTarget = gridMode ? 1 : 0;
+  gridWeight   += (gTarget - gridWeight) * Math.min(1, 3.5 * dt);
+  gridWeight    = Math.max(0, Math.min(1, gridWeight));
+
+  images.forEach((n, i) => {
+    const gt = gridTargets[i];
+
+    // Size: blend ring/cloud size toward grid cell size
+    const baseW = lerp(n.cw, n.rw, spinWeight);
+    const baseH = lerp(n.ch, n.rh, spinWeight);
+    n.w = gt ? lerp(baseW, gt.w, easeInOut(gridWeight)) : baseW;
+    n.h = gt ? lerp(baseH, gt.h, easeInOut(gridWeight)) : baseH;
+
+    if (n === draggedNode) {
+      const rx = cx + n.x * scale - (n.w * scale) / 2;
+      const ry = cy + n.y * scale - (n.h * scale) / 2;
+      n._sx = rx; n._sy = ry; n._sw = n.w * scale; n._sh = n.h * scale;
+      n.el.style.cssText = `left:${rx}px;top:${ry}px;width:${n._sw}px;height:${n._sh}px;z-index:200;`;
+      return;
+    }
+
+    const theta   = n.baseTheta + spinAngle;
+    const circleX = Math.cos(theta) * n.rx;
+    const circleY = Math.sin(theta) * n.ry;
+
+    const fx     = Math.sin(time * n.floatSpeed * 0.7 + n.phase) * n.floatAmt;
+    const fy     = Math.cos(time * n.floatSpeed * 0.5 + n.phase * 1.3) * n.floatAmt * 0.55;
+    const cloudX = n.cx + fx;
+    const cloudY = n.cy + fy;
+
+    // Base target from ring/cloud blend
+    let baseTX, baseTY;
+    if (spinWeight > 0.98) {
+      baseTX = circleX; baseTY = circleY;
+    } else if (spinWeight < 0.02) {
+      baseTX = cloudX;  baseTY = cloudY;
+    } else {
+      baseTX = lerp(cloudX, circleX, easeInOut(spinWeight));
+      baseTY = lerp(cloudY, circleY, easeInOut(spinWeight));
+    }
+
+    // Blend toward grid target
+    const targetX = gt ? lerp(baseTX, gt.x, easeInOut(gridWeight)) : baseTX;
+    const targetY = gt ? lerp(baseTY, gt.y, easeInOut(gridWeight)) : baseTY;
+
+    if (spinWeight > 0.98 && gridWeight < 0.02) {
+      // Pure ring: snap directly
+      n.x  = circleX;
+      n.y  = circleY;
+      n.vx = 0;
+      n.vy = 0;
+    } else {
+      n.vx += (targetX - n.x) * SPRING;
+      n.vy += (targetY - n.y) * SPRING;
+      n.vx *= DAMPING;
+      n.vy *= DAMPING;
+      n.x  += n.vx;
+      n.y  += n.vy;
+    }
+
+    const rx = cx + n.x * scale - (n.w * scale) / 2;
+    const ry = cy + n.y * scale - (n.h * scale) / 2;
+    n._sx = rx; n._sy = ry; n._sw = n.w * scale; n._sh = n.h * scale;
+    n.el.style.cssText = `left:${rx}px;top:${ry}px;width:${n._sw}px;height:${n._sh}px;z-index:${Math.round(10 - n.w / 30)};`;
+  });
+}
+
+// ─── Mouse tracking ───────────────────────────────────────────────────────────
+window.addEventListener('mousemove', e => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  cursorEl.style.left = e.clientX + 'px';
+  cursorEl.style.top  = e.clientY + 'px';
+});
+
+
+// ─── Zoom ─────────────────────────────────────────────────────────────────────
+container.addEventListener('wheel', e => {
+  e.preventDefault();
+  scale = Math.min(Math.max(scale * (e.deltaY > 0 ? 0.92 : 1.09), 0.15), 6);
+  clearTimeout(zoomTimer);
+  zoomEl.textContent = `${Math.round(scale * 100)}%`;
+  zoomEl.classList.add('show');
+  zoomTimer = setTimeout(() => zoomEl.classList.remove('show'), 900);
+}, { passive: false });
+
+// ─── Lightbox ─────────────────────────────────────────────────────────────────
+function openLightbox(i) {
+  currentLbIndex = i;
+  lbImg.src = images[i].src;
+  lbIndex.textContent = `${i + 1} / ${images.length}`;
+  lightbox.classList.add('active');
+  isSpinning = false;
+  needCloud  = true;
+  hintEl.classList.add('hidden');
+}
+function closeLightbox() {
+  lightbox.classList.remove('active');
+  currentLbIndex = -1;
+  isSpinning = true;
+  needCloud  = false;
+  hintEl.classList.remove('hidden');
+}
+lightbox.addEventListener('click', closeLightbox);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLightbox();
+  if (!lightbox.classList.contains('active')) return;
+  if (e.key === 'ArrowRight') openLightbox((currentLbIndex + 1) % images.length);
+  if (e.key === 'ArrowLeft')  openLightbox((currentLbIndex - 1 + images.length) % images.length);
+});
+
+// ─── Seed placeholders ────────────────────────────────────────────────────────
+const seedColors = [
+  ['#111','#f5f5f5'],['#f5f5f5','#111'],['#0000ff','#fff'],
+  ['#c8ff00','#111'],['#ff8c00','#fff'],['#1a1a2e','#c8ff00'],
+  ['#e0ddd8','#111'],['#111','#ff8c00'],['#4a90d9','#fff'],
+  ['#222','#e0ddd8'],['#0000ff','#f5f5f5'],['#fff','#333'],
+];
+function makeSVG(label, bg, fg, w, h) {
+  return `data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
+      <rect width="${w}" height="${h}" fill="${bg}"/>
+      <text x="${w/2}" y="${h/2+4}" font-family="monospace" font-size="11"
+        fill="${fg}" text-anchor="middle" opacity="0.35">${label}</text>
+    </svg>`
+  )}`;
+}
+const PROJECT_IMAGES = [
+  '../project_images/2.jpg',
+  '../project_images/3.jpg',
+  '../project_images/4.jpg',
+  '../project_images/5.jpg',
+  '../project_images/Artboard 7-100.jpg',
+  '../project_images/Energy Never Dies-01.jpg',
+  '../project_images/GODS ARMY POSTER-01.jpg',
+  '../project_images/Luckd-out-final.jpg',
+  '../project_images/SIENNA BIRTHDAY PARTY.png',
+  '../project_images/SUFFERING HAPPINESS POSTERS AND GRAPHICS-02.jpg',
+  '../project_images/SUFFERING HAPPINESS POSTERS AND GRAPHICS-03.jpg',
+  '../project_images/SUFFERING HAPPINESS POSTERS AND GRAPHICS-04.jpg',
+  '../project_images/SUFFERING HAPPINESS POSTERS AND GRAPHICS-05.jpg',
+  '../project_images/SUFFERING HAPPINESS POSTERS AND GRAPHICS-06.jpg',
+  '../project_images/SUFFERING HAPPINESS POSTERS AND GRAPHICS-07.jpg',
+  '../project_images/Screenshot 2023-05-30 190143.png',
+  '../project_images/Untitled-1-01.png',
+  '../project_images/Untitled-1-02.png',
+  '../project_images/Untitled-1-04.png',
+  '../project_images/Untitled-1.jpg',
+  '../project_images/c02 2024 type-01.png',
+  '../project_images/ctd poster version 5_Page_1.jpg',
+  '../project_images/mdma poster-01.jpg',
+  '../project_images/modern day magic mood board graphic 2.jpg',
+  '../project_images/open decks graphic scanned.jpg',
+  '../project_images/open decks ids final-01.jpg',
+  '../project_images/open decks ids final-02.jpg',
+  '../project_images/open decks ids final-03.jpg',
+  '../project_images/open decks ids final-04.jpg',
+  '../project_images/open decks ids final-05.jpg',
+  '../project_images/open decks ids final-06.jpg',
+  '../project_images/open decks ids final-07.jpg',
+  '../project_images/personal mosiac.jpg',
+  '../project_images/sick cover final version.jpg',
+  '../project_images/signal blur paper sleeve mockup.png',
+  '../project_images/signal blur record mockup.png',
+  '../project_images/superbloomed concept art-01.jpg',
+  '../project_images/superbloomed concept art-02.jpg',
+  '../project_images/superbloomed concept art-03.jpg',
+];
+PROJECT_IMAGES.forEach((src, i) => addImage(src, i));
+
+// ─── Touch support (mobile) ───────────────────────────────────────────────────
+if (isMobile) {
+  // Tap on image nodes to open lightbox
+  document.querySelectorAll('.img-node').forEach((el, i) => {
+    let t0, x0, y0;
+    el.addEventListener('touchstart', e => {
+      t0 = Date.now(); x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+    }, { passive: true });
+    el.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - x0;
+      const dy = e.changedTouches[0].clientY - y0;
+      if (Date.now() - t0 < 300 && Math.abs(dx) < 12 && Math.abs(dy) < 12) {
+        openLightbox(i);
+      }
+    }, { passive: true });
+  });
+
+  // Canvas pan via touch
+  let canvasTouch = null;
+  container.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) {
+      canvasTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY, px: pan.x, py: pan.y };
+    }
+  }, { passive: true });
+  container.addEventListener('touchmove', e => {
+    if (canvasTouch && e.touches.length === 1) {
+      pan.x = canvasTouch.px + (e.touches[0].clientX - canvasTouch.x);
+      pan.y = canvasTouch.py + (e.touches[0].clientY - canvasTouch.y);
+    }
+  }, { passive: true });
+  container.addEventListener('touchend', () => { canvasTouch = null; }, { passive: true });
+
+  // Lightbox: swipe to navigate, tap to close
+  let lbX0;
+  lightbox.addEventListener('touchstart', e => { lbX0 = e.touches[0].clientX; }, { passive: true });
+  lightbox.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - lbX0;
+    if (Math.abs(dx) > 40) {
+      if (dx < 0) openLightbox((currentLbIndex + 1) % images.length);
+      else         openLightbox((currentLbIndex - 1 + images.length) % images.length);
+    } else {
+      closeLightbox();
+    }
+  }, { passive: true });
+}
+
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>

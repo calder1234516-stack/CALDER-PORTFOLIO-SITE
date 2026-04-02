@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOGIN MAGAZINE /// CASE STUDY</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=VT323&display=swap');
+
+  :root {
+    --bg:        #020d04;
+    --bg2:       #030f05;
+    --green:     #1a7a2a;
+    --green-hi:  #2db83d;
+    --green-lo:  #0d4a17;
+    --green-dim: #3a6644;
+    --chrome:    #c8d4c0;
+    --chrome-hi: #e0ecda;
+    --white:     #f0f4ee;
+    --dim:       #4a7055;
+    --border:    rgba(45,184,61,0.18);
+    --border-hi: rgba(45,184,61,0.4);
+    --grid:      rgba(45,184,61,0.03);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'Google Sans', 'Share Tech Mono', sans-serif;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* MATRIX CANVAS */
+  #matrix-bg {
+    position: fixed;
+    top:0; left:0; width:100%; height:100%;
+    z-index: 0;
+    opacity: 0.45;
+  }
+
+  /* GRID OVERLAY */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events:none; z-index: 1;
+  }
+
+  /* SCANLINES */
+  body::after {
+    content:'';
+    position:fixed; inset:0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 3px,
+      rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px
+    );
+    pointer-events:none; z-index: 9000;
+  }
+
+  /* ===================== PRELOADER ===================== */
+  #preloader {
+    position:fixed; inset:0; background:var(--bg);
+    z-index:99999; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:20px;
+  }
+
+  .pre-logo img { width: 260px; height: auto; }
+
+  .pre-meta {
+    font-size:10px; letter-spacing:0.3em; color:var(--dim); text-transform:uppercase;
+  }
+
+  .pre-bar-wrap {
+    width:280px; border:1px solid var(--border-hi); padding:3px;
+  }
+
+  .pre-bar {
+    height:3px; background:var(--green-hi); width:0%;
+    animation:loadbar 2.2s ease-in-out forwards;
+    box-shadow: 0 0 8px var(--green-hi);
+  }
+
+  .pre-status {
+    font-size:9px; letter-spacing:0.25em; color:var(--dim);
+    text-transform:uppercase; animation:blink 0.6s step-end infinite;
+  }
+
+  @keyframes loadbar { 0%{width:0%} 30%{width:42%} 60%{width:71%} 85%{width:88%} 100%{width:100%} }
+  @keyframes blink { 50%{opacity:0} }
+  @keyframes fadein { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeout { to{opacity:0;pointer-events:none} }
+  @keyframes scrollpulse { 0%,100%{transform:scaleY(1);opacity:1} 50%{transform:scaleY(0.5);opacity:0.4} }
+
+  #preloader.done { animation:fadeout 0.4s 0.2s ease forwards; }
+
+  /* ===================== SITE ===================== */
+  #site { position:relative; z-index:2; }
+
+  /* ===================== TOPBAR ===================== */
+  #topbar {
+    position:sticky; top:0; z-index:1000;
+    background:rgba(2,13,4,0.93);
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 40px; height:40px;
+    backdrop-filter:blur(6px);
+  }
+
+  .tb-left {
+    font-size:9px; letter-spacing:0.3em; color:var(--dim); text-transform:uppercase;
+  }
+
+  .tb-left strong { color:var(--green-hi); font-style:normal; }
+
+  #topbar nav { display:flex; gap:32px; }
+
+  #topbar nav a {
+    font-size:9px; letter-spacing:0.25em; color:var(--dim);
+    text-decoration:none; text-transform:uppercase; transition:color 0.15s;
+    display:flex; align-items:center; gap:6px;
+  }
+
+  #topbar nav a::before { content:'•'; color:var(--green-hi); font-size:10px; }
+  #topbar nav a:hover { color:var(--white); }
+
+  .tb-right { font-size:9px; letter-spacing:0.2em; color:var(--dim); }
+  .tb-right span { color:var(--green-hi); }
+
+  /* CONNECTION BAR */
+  .connection-bar {
+    padding:8px 40px; border-bottom:1px solid var(--border);
+    background:rgba(2,13,4,0.6);
+    display:flex; gap:32px;
+    font-size:8px; letter-spacing:0.2em; color:var(--dim); text-transform:uppercase;
+  }
+
+  .connection-bar span { display:flex; align-items:center; gap:6px; }
+  .connection-bar span::before {
+    content:''; width:5px; height:5px; background:var(--green-hi);
+    display:block; border-radius:50%;
+    animation:blink 2s ease infinite;
+    box-shadow:0 0 4px var(--green-hi);
+  }
+
+  /* ===================== HERO ===================== */
+  #hero {
+    min-height:100vh;
+    display:flex; flex-direction:column;
+    justify-content:flex-end;
+    padding:60px 40px 80px;
+    position:relative; overflow:hidden;
+  }
+
+  /* corner brackets */
+  .bracket-tl, .bracket-br {
+    position:absolute; width:20px; height:20px; pointer-events:none;
+  }
+
+  .bracket-tl {
+    top:40px; left:40px;
+    border-top:1px solid var(--border-hi);
+    border-left:1px solid var(--border-hi);
+  }
+
+  .bracket-br {
+    bottom:40px; left:40px;
+    border-bottom:1px solid var(--border-hi);
+    border-left:1px solid var(--border-hi);
+  }
+
+  /* diagonal accent line */
+  #hero::before {
+    content:'';
+    position:absolute; top:0; left:50%;
+    width:1px; height:100%;
+    background:linear-gradient(to bottom, transparent, rgba(45,184,61,0.1), transparent);
+    transform:rotate(-12deg) translateX(-50%);
+  }
+
+  .hero-corner-tl {
+    position:absolute; top:60px; left:40px;
+    font-size:9px; letter-spacing:0.3em; color:var(--dim);
+    line-height:1.8; text-transform:uppercase;
+  }
+
+  .hero-corner-tr {
+    position:absolute; top:60px; right:40px;
+    text-align:right; font-size:9px; letter-spacing:0.2em;
+    color:var(--dim); line-height:1.8;
+  }
+
+  .hero-eyebrow {
+    font-size:9px; letter-spacing:0.4em; color:var(--green-hi);
+    text-transform:uppercase; margin-bottom:20px;
+    animation:fadein 0.8s 2.8s both;
+  }
+
+  .hero-title {
+    animation:fadein 0.8s 3s both;
+  }
+
+  .hero-title img {
+    width: clamp(320px, 55vw, 700px);
+    height: auto;
+    display: block;
+  }
+
+  .hero-sub {
+    margin-top:28px; font-size:11px; letter-spacing:0.2em;
+    color:var(--dim); max-width:500px; line-height:1.8;
+    text-transform:uppercase; animation:fadein 0.8s 3.2s both;
+  }
+
+  .hero-meta-row {
+    margin-top:48px; display:flex; gap:48px;
+    animation:fadein 0.8s 3.4s both;
+  }
+
+  .hero-meta-item { display:flex; flex-direction:column; gap:4px; }
+
+  .hero-meta-item .label {
+    font-size:8px; letter-spacing:0.4em; color:var(--dim); text-transform:uppercase;
+  }
+
+  .hero-meta-item .value {
+    font-size:12px; letter-spacing:0.1em; color:var(--white);
+  }
+
+  .hero-scroll {
+    position:absolute; bottom:40px; right:40px;
+    font-size:9px; letter-spacing:0.3em; color:var(--dim);
+    text-transform:uppercase;
+    display:flex; align-items:center; gap:12px;
+    animation:fadein 0.8s 3.6s both;
+  }
+
+  .hero-scroll::after {
+    content:''; display:block; width:1px; height:40px;
+    background:linear-gradient(to bottom, var(--green-dim), transparent);
+    animation:scrollpulse 2s ease-in-out infinite;
+  }
+
+  /* ===================== SHARED SECTION ===================== */
+  .section { position:relative; z-index:2; }
+
+  .section-header {
+    display:flex; align-items:center; gap:16px;
+    padding:60px 40px 32px;
+    border-bottom:1px solid var(--border);
+  }
+
+  .section-number {
+    font-family:'VT323', monospace; font-size:72px;
+    color:rgba(45,184,61,0.07); line-height:1; user-select:none;
+  }
+
+  .section-label { display:flex; flex-direction:column; gap:4px; }
+
+  .section-label .eyebrow {
+    font-size:8px; letter-spacing:0.4em; color:var(--green-hi); text-transform:uppercase;
+  }
+
+  .section-label h2 {
+    font-family:'Orbitron', monospace; font-size:22px; font-weight:700;
+    letter-spacing:0.1em; text-transform:uppercase; color:var(--white);
+  }
+
+  .section-rule {
+    flex:1; height:1px;
+    background:linear-gradient(to right, var(--border-hi), transparent);
+  }
+
+  .section-id { font-size:9px; letter-spacing:0.3em; color:var(--dim); }
+
+  /* ===================== OVERVIEW ===================== */
+  #overview .inner {
+    display:grid; grid-template-columns:1fr 1fr;
+    border-bottom:1px solid var(--border);
+  }
+
+  #overview .col-text {
+    padding:60px 40px; border-right:1px solid var(--border);
+  }
+
+  #overview .col-text p {
+    font-size:13px; line-height:1.9; color:rgba(240,244,238,0.62);
+    margin-bottom:24px; letter-spacing:0.04em;
+  }
+
+  #overview .col-text p strong { color:var(--white); font-style:normal; }
+
+  #overview .col-specs { padding:60px 40px; }
+
+  .spec-table { width:100%; border-collapse:collapse; font-size:10px; }
+  .spec-table tr { border-bottom:1px solid var(--border); }
+  .spec-table td { padding:14px 0; vertical-align:top; }
+  .spec-table td:first-child {
+    color:var(--dim); letter-spacing:0.25em; text-transform:uppercase;
+    width:40%; font-size:9px;
+  }
+  .spec-table td:last-child { color:var(--white); letter-spacing:0.08em; }
+
+  /* ===================== STATS ===================== */
+  .stats-row {
+    display:grid; grid-template-columns:repeat(4,1fr);
+    border-bottom:1px solid var(--border);
+  }
+
+  .stat-cell {
+    padding:56px 40px; border-right:1px solid var(--border); position:relative;
+  }
+
+  .stat-cell:last-child { border-right:none; }
+
+  .stat-cell::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background:linear-gradient(to right, var(--green-hi), transparent); opacity:0.5;
+  }
+
+  .stat-value {
+    font-family:'Orbitron', monospace; font-size:48px; font-weight:900;
+    letter-spacing:-0.02em; line-height:1; margin-bottom:8px; color:var(--white);
+  }
+
+  .stat-value .accent { color:var(--green-hi); }
+
+  .stat-label {
+    font-size:9px; letter-spacing:0.3em; color:var(--dim);
+    text-transform:uppercase; line-height:1.6;
+  }
+
+  /* ===================== ZINE VIEWER ===================== */
+  .zine-viewer { position:relative; }
+
+  .zine-upload-zone {
+    width:100%; aspect-ratio:16/9;
+    background:#030c04;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:20px;
+    border-bottom:1px solid var(--border);
+    position:relative; overflow:hidden;
+    cursor:pointer; transition:background 0.2s;
+  }
+
+  .zine-upload-zone:hover { background:#040e06; }
+  .zine-upload-zone.drag-over { background:#061208; outline:1px dashed var(--border-hi); }
+  .zine-upload-zone.hidden { display:none; }
+
+  .zine-upload-icon {
+    font-size:9px; letter-spacing:0.4em; color:var(--green-hi);
+    text-transform:uppercase; display:flex; align-items:center; gap:12px;
+  }
+
+  .zine-upload-icon::before {
+    content:''; display:block; width:22px; height:22px;
+    border:1px solid var(--green-hi); transform:rotate(45deg);
+    box-shadow:0 0 8px rgba(45,184,61,0.25);
+  }
+
+  .zine-upload-hint {
+    font-size:9px; letter-spacing:0.22em; color:var(--dim); text-transform:uppercase;
+  }
+
+  .zine-upload-btn {
+    border:1px solid var(--border-hi); background:none;
+    font-family:'Google Sans', sans-serif;
+    font-size:9px; letter-spacing:0.3em; color:var(--green-hi);
+    text-transform:uppercase; padding:10px 24px; cursor:pointer; transition:all 0.15s;
+  }
+
+  .zine-upload-btn:hover { background:rgba(45,184,61,0.07); color:var(--white); }
+
+  .zine-stage {
+    width:100%; aspect-ratio:16/9;
+    background:#020b03;
+    position:relative; overflow:hidden;
+    display:none; border-bottom:1px solid var(--border);
+  }
+
+  .zine-stage.active { display:block; }
+
+  .zine-slide {
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; transition:opacity 0.35s ease; pointer-events:none;
+  }
+
+  .zine-slide.current { opacity:1; pointer-events:all; }
+
+  .zine-slide img {
+    max-width:100%; max-height:100%;
+    object-fit:contain; display:block;
+    user-select:none; -webkit-user-drag:none;
+  }
+
+  .zine-controls {
+    display:none; align-items:center; justify-content:space-between;
+    padding:14px 40px; border-bottom:1px solid var(--border);
+    background:rgba(2,13,4,0.7);
+  }
+
+  .zine-controls.active { display:flex; }
+
+  .zine-nav { display:flex; align-items:center; gap:0; }
+
+  .zine-btn {
+    background:none; border:1px solid var(--border);
+    font-family:'Google Sans', sans-serif;
+    font-size:9px; letter-spacing:0.3em; color:var(--dim);
+    text-transform:uppercase; padding:8px 20px; cursor:pointer; transition:all 0.15s;
+  }
+
+  .zine-btn:hover:not(:disabled) { border-color:var(--border-hi); color:var(--white); }
+  .zine-btn:disabled { opacity:0.2; cursor:default; }
+  .zine-btn.prev { border-right:none; }
+
+  .zine-counter {
+    font-size:10px; letter-spacing:0.28em; color:var(--white);
+    min-width:90px; text-align:center; border:1px solid var(--border);
+    padding:8px 0;
+  }
+
+  .zine-counter .cur { color:var(--green-hi); }
+
+  .zine-controls-right { display:flex; align-items:center; gap:0; }
+
+  .zine-add-btn {
+    background:none; border:1px solid var(--border);
+    font-family:'Google Sans', sans-serif;
+    font-size:9px; letter-spacing:0.3em; color:var(--dim);
+    text-transform:uppercase; padding:8px 20px; cursor:pointer; transition:all 0.15s;
+    border-right:none;
+  }
+
+  .zine-add-btn:hover { border-color:var(--border-hi); color:var(--white); }
+
+  .zine-clear-btn {
+    background:none; border:1px solid rgba(255,50,50,0.12);
+    font-family:'Google Sans', sans-serif;
+    font-size:9px; letter-spacing:0.3em; color:rgba(255,80,80,0.35);
+    text-transform:uppercase; padding:8px 20px; cursor:pointer; transition:all 0.15s;
+  }
+
+  .zine-clear-btn:hover { border-color:rgba(255,50,50,0.4); color:rgba(255,120,120,0.8); }
+
+  .zine-strip {
+    display:none; overflow-x:auto; overflow-y:hidden;
+    gap:0; border-bottom:1px solid var(--border);
+    scrollbar-width:thin; scrollbar-color:var(--green-lo) transparent;
+  }
+
+  .zine-strip.active { display:flex; }
+  .zine-strip::-webkit-scrollbar { height:3px; }
+  .zine-strip::-webkit-scrollbar-thumb { background:var(--green-lo); }
+
+  .zine-thumb {
+    flex-shrink:0; width:120px; height:72px; overflow:hidden;
+    cursor:pointer; position:relative; border-right:1px solid var(--border);
+    opacity:0.4; transition:opacity 0.2s;
+  }
+
+  .zine-thumb:hover { opacity:0.7; }
+  .zine-thumb.active { opacity:1; }
+
+  .zine-thumb::after {
+    content:''; position:absolute; inset:0;
+    border-bottom:2px solid transparent; transition:border-color 0.2s;
+    pointer-events:none;
+  }
+
+  .zine-thumb.active::after { border-bottom-color:var(--green-hi); }
+
+  .zine-thumb img { width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; }
+
+  .zine-thumb .tn-num {
+    position:absolute; bottom:3px; left:5px;
+    font-size:7px; letter-spacing:0.15em; color:rgba(240,244,238,0.45);
+  }
+
+  /* ===================== FOOTER (minimal) ===================== */
+  #footer {
+    border-top:1px solid var(--border);
+    padding:32px 40px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+
+  #footer .f-logo img { width: 120px; height: auto; }
+
+  #footer p {
+    font-size:9px; letter-spacing:0.2em; color:var(--dim); text-transform:uppercase;
+  }
+
+  .blink { color:var(--green-hi); animation:blink 1.4s step-end infinite; }
+
+  /* ===================== EASTER EGG MODAL ===================== */
+  #secret-modal {
+    position:fixed; inset:0; z-index:99998;
+    display:none; align-items:center; justify-content:center;
+    background:rgba(0,0,0,0.92);
+  }
+
+  #secret-modal.visible { display:flex; }
+
+  .secret-box {
+    border:1px solid var(--border-hi); background:var(--bg2);
+    padding:44px; max-width:420px; text-align:center; position:relative;
+  }
+
+  .secret-box::before {
+    content:'// CLASSIFIED';
+    position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+    background:var(--bg2); padding:0 12px;
+    font-size:8px; letter-spacing:0.4em; color:var(--green-hi);
+  }
+
+  .secret-box h3 {
+    font-family:'Orbitron', monospace; font-size:20px; font-weight:900;
+    text-transform:uppercase; letter-spacing:0.1em; margin-bottom:16px; color:var(--white);
+  }
+
+  .secret-box p {
+    font-size:11px; letter-spacing:0.06em;
+    color:rgba(240,244,238,0.52); line-height:1.8; margin-bottom:20px;
+  }
+
+  .secret-close {
+    font-size:9px; letter-spacing:0.3em; color:var(--dim); text-transform:uppercase;
+    cursor:pointer; border:1px solid var(--border); padding:8px 20px;
+    background:none; font-family:'Google Sans', sans-serif; transition:all 0.15s;
+  }
+
+  .secret-close:hover { border-color:var(--border-hi); color:var(--white); }
+
+  #click-tracker {
+    position:fixed; bottom:16px; left:20px; z-index:9000;
+    font-size:8px; letter-spacing:0.2em;
+    color:rgba(45,184,61,0.12); text-transform:uppercase;
+    user-select:none; cursor:default; transition:color 0.3s;
+  }
+
+  /* ===================== RESPONSIVE ===================== */
+  @media (max-width:768px) {
+    #overview .inner { grid-template-columns:1fr; }
+    #overview .col-text { border-right:none; border-bottom:1px solid var(--border); }
+    #spreads .spread-grid { grid-template-columns:1fr; }
+    .spread-item.large { grid-column:span 1; }
+    .stats-row { grid-template-columns:1fr 1fr; }
+    #topbar nav { display:none; }
+    .hero-title { font-size:36px; }
+    .hero-corner-tl, .hero-corner-tr { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="matrix-bg"></canvas>
+
+<!-- PRELOADER -->
+<div id="preloader">
+  <div class="pre-logo"><img src="new logo.svg" alt="Login Magazine"></div>
+  <div class="pre-meta">INDEPENDENT PUBLISHING VENTURE /// CASE STUDY ARCHIVE</div>
+  <div class="pre-bar-wrap"><div class="pre-bar"></div></div>
+  <div class="pre-status">PRELOADING...</div>
+</div>
+
+<div id="site">
+
+  <!-- TOPBAR -->
+  <header id="topbar">
+    <div class="tb-left"><strong>LOGIN MAGAZINE</strong> /// CASE STUDY 001</div>
+    <nav>
+      <a href="#overview">OVERVIEW</a>
+      <a href="#spreads">SPREADS</a>
+    </nav>
+    <div class="tb-right">STATUS: <span>ONLINE</span></div>
+  </header>
+
+  <!-- CONNECTION BAR -->
+  <div class="connection-bar">
+    <span>BROWSER: CURRENT</span>
+    <span>RESOLUTION: 1920×1080</span>
+    <span>PLUGINS: WEB</span>
+    <span>CONNECTION: BROADBAND</span>
+    <span>ISSUE: 001</span>
+  </div>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="bracket-tl"></div>
+    <div class="bracket-br"></div>
+
+    <div class="hero-corner-tl">
+      CALDER ANDERSON<br>
+      PARSONS MFA 2024<br>
+      NEW YORK, NY
+    </div>
+
+    <div class="hero-corner-tr">
+      STATUS: PUBLISHED<br>
+      FORMAT: PRINT / DIGITAL<br>
+      YEAR: 2024
+    </div>
+
+    <div class="hero-eyebrow">/// INDEPENDENT PUBLISHING VENTURE ///</div>
+
+    <div class="hero-title">
+      <img src="new logo.svg" alt="Login Magazine">
+    </div>
+
+    <div class="hero-sub">LOGIN MAGAZINE IS A PRINT PUBLICATION DOCUMENTING DIGITAL LIFE, ART, AND CULTURE AND THE EXPERIENCE OF LIVING ONLINE WHERE IDENTITY, CONSUMPTION, AND TECHNOLOGY CONTINUOUSLY INTERSECT. THROUGH ESSAYS, VISUAL WORK, AND CONTRIBUTIONS FROM ARTISTS, DESIGNERS, AND TECHNOLOGISTS, THE MAGAZINE EXPLORES HOW DIGITAL SYSTEMS SHAPE CULTURE, BEHAVIOR, AND PERCEPTION. DESIGNED AS A PHYSICAL ARTIFACT, LOGIN SLOWS THE FEED INTO SOMETHING MEANT TO BE HELD, REVISITED, AND ARCHIVED.</div>
+
+    <div class="hero-meta-row">
+      <div class="hero-meta-item">
+        <div class="label">ISSUE</div>
+        <div class="value">001</div>
+      </div>
+      <div class="hero-meta-item">
+        <div class="label">FORMAT</div>
+        <div class="value">PERFECT BOUND / OFFSET</div>
+      </div>
+      <div class="hero-meta-item">
+        <div class="label">PAGES</div>
+        <div class="value">72PP</div>
+      </div>
+      <div class="hero-meta-item">
+        <div class="label">DISTRIBUTION</div>
+        <div class="value">DIRECT / CONSIGNMENT</div>
+      </div>
+      <div class="hero-meta-item">
+        <div class="label">ROLE</div>
+        <div class="value">ART DIRECTOR / PUBLISHER</div>
+      </div>
+    </div>
+
+    <div class="hero-scroll">SCROLL DOWN</div>
+  </section>
+
+  <!-- STATS -->
+  <section class="section">
+    <div class="stats-row">
+      <div class="stat-cell">
+        <div class="stat-value">72<span class="accent">PP</span></div>
+        <div class="stat-label">PAGES<br>FIRST ISSUE</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-value">01<span class="accent">.</span></div>
+        <div class="stat-label">ISSUES<br>PUBLISHED</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-value">100<span class="accent">%</span></div>
+        <div class="stat-label">PRE-ORDER<br>FUNDED</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-value">NYC<span class="accent">.</span></div>
+        <div class="stat-label">LAUNCH<br>LOCATION</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OVERVIEW -->
+  <section class="section" id="overview">
+    <div class="section-header">
+      <div class="section-number">01</div>
+      <div class="section-label">
+        <div class="eyebrow">/// SECTION ///</div>
+        <h2>OVERVIEW</h2>
+      </div>
+      <div class="section-rule"></div>
+      <div class="section-id">CS-001/OVERVIEW</div>
+    </div>
+    <div class="inner">
+      <div class="col-text">
+        <p><strong>LOGIN</strong> is a 134-page independent print publication documenting digital life, art, and culture — specifically the artists, designers, and technologists whose practice is shaped by the contemporary internet: surveillance capitalism, AI, and the institutions of late-stage social media.</p>
+        <p>The magazine positions itself within a lineage: net art (the 90s/00s experimentation with a new medium), Post-Internet art (the 2010s critique of big data and attention economy), and the current moment — what comes after the systems we inherited from 25 years of platform capitalism.</p>
+
+        <p><strong>TOOLS &amp; SKILLS</strong><br>
+        ▸ Editorial Design — 134-page InDesign layout<br>
+        ▸ Branding — identity, visual language, tone<br>
+        ▸ Print Production — prepress, bulk print run<br>
+        ▸ Entrepreneurship — pre-order, profitable release<br>
+        ▸ PR &amp; Marketing — social strategy, daily cadence<br>
+        ▸ Operations — logistics, fulfillment, customer comms<br>
+        ▸ Interviewing &amp; Writing — 7 original interviews + op-eds</p>
+
+        <p><strong>CHALLENGE</strong><br>
+        The central challenge was building every layer of an independent magazine from scratch — alone. Concept, editorial vision, interview sourcing, writing, layout, production, marketing, and fulfillment all ran concurrently with no team.</p>
+        <p>Editorially, the task was identifying the right voices: people actively working at the edge of the internet's current transition. Interviews included Riley Daggs (AI for medical research), Jake Harper (SOOT — a new image search interface), Aidan Walker (internet culture researcher and writer), and Zane Kind (Silk — a blogging platform subverting the social media business model). Each required individual outreach, interview editing, and section layout.</p>
+        <p>Beyond editorial, LOGIN had to function as a business. The pre-order phase needed to fund the print run, which required building marketing infrastructure and public-facing brand trust from zero — without institutional backing or a budget.</p>
+
+        <p><strong>OUTCOME</strong><br>
+        The first release turned a profit. What began as a school project became a functioning independent publication with a paying readership, a distributed print run, and an ongoing editorial identity.</p>
+        <p>The pre-order campaign funded the bulk print run in full. The remaining inventory supports a launch event and potential consignment placement — expanding distribution beyond the initial audience.</p>
+        <p>LOGIN demonstrated that a single designer, operating with full creative control, can produce and commercialize a print publication at professional scale. It strengthened cross-disciplinary execution: design, writing, production, PR, and business operations — all within one sustained project.</p>
+
+        <p><strong>KEY TAKEAWAY</strong><br>
+        LOGIN proves independent publishing is viable as both a cultural project and a business — and demonstrates the capacity to own every phase of a complex, multi-disciplinary production from first concept through profitable release.</p>
+      </div>
+      <div class="col-specs">
+        <table class="spec-table">
+          <tr><td>ROLE</td><td>Art Director, Publisher, Designer</td></tr>
+          <tr><td>ISSUE</td><td>001 — The .EXE Issue</td></tr>
+          <tr><td>FORMAT</td><td>Perfect Bound, Offset Print</td></tr>
+          <tr><td>TRIM SIZE</td><td>8.5" × 11"</td></tr>
+          <tr><td>PAGES</td><td>134pp + Cover</td></tr>
+          <tr><td>PRINT RUN</td><td>Bulk / Pre-Order Funded</td></tr>
+          <tr><td>DISTRIBUTION</td><td>Direct Mail + NYC Consignment</td></tr>
+          <tr><td>LAUNCH</td><td>Live Event, New York City</td></tr>
+          <tr><td>TOOLS</td><td>InDesign, Illustrator, Photoshop</td></tr>
+          <tr><td>INTERVIEWS</td><td>7 Original</td></tr>
+          <tr><td>THEMATIC FOCUS</td><td>Digital Culture, Net Art, Platform Capitalism</td></tr>
+          <tr><td>OUTCOME</td><td>Profitable First Release</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- SPREADS / ZINE VIEWER -->
+  <section class="section" id="spreads">
+    <div class="section-header">
+      <div class="section-number">02</div>
+      <div class="section-label">
+        <div class="eyebrow">/// SECTION ///</div>
+        <h2>SPREADS</h2>
+      </div>
+      <div class="section-rule"></div>
+      <div class="section-id">CS-001/SPREADS</div>
+    </div>
+
+    <div class="zine-viewer">
+
+      <!-- UPLOAD ZONE (shown when empty) -->
+      <div class="zine-upload-zone" id="zineUploadZone">
+        <div class="zine-upload-icon">UPLOAD SPREADS</div>
+        <div class="zine-upload-hint">DRAG + DROP OR CLICK TO SELECT // JPG, PNG, WEBP</div>
+        <button class="zine-upload-btn" onclick="event.stopPropagation(); document.getElementById('zineFileInput').click()">SELECT FILES</button>
+      </div>
+
+      <!-- HIDDEN FILE INPUT -->
+      <input type="file" id="zineFileInput" accept="image/*" multiple style="display:none">
+
+      <!-- STAGE (shown when images loaded) -->
+      <div class="zine-stage" id="zineStage"></div>
+
+      <!-- CONTROLS BAR -->
+      <div class="zine-controls" id="zineControls">
+        <div class="zine-nav">
+          <button class="zine-btn prev" id="zinePrev">◀ PREV</button>
+          <div class="zine-counter"><span class="cur" id="zineCur">01</span> / <span id="zineTotal">01</span></div>
+          <button class="zine-btn next" id="zineNext">NEXT ▶</button>
+        </div>
+        <div class="zine-controls-right">
+          <button class="zine-add-btn" onclick="document.getElementById('zineFileInput').click()">+ ADD MORE</button>
+          <button class="zine-clear-btn" id="zineClear">CLEAR ALL</button>
+        </div>
+      </div>
+
+      <!-- FILMSTRIP -->
+      <div class="zine-strip" id="zineStrip"></div>
+
+    </div>
+  </section>
+
+  <!-- MINIMAL FOOTER -->
+  <footer id="footer">
+    <div class="f-logo"><img src="new logo.svg" alt="Login Magazine"></div>
+    <p>EST. 2024 LOGIN MAGAZINE /// <a href="https://loginmag.net" style="color:var(--green-hi);text-decoration:none;">LOGINMAG.NET</a></p>
+    <p>STATUS: <span class="blink">ONLINE</span></p>
+  </footer>
+
+</div>
+
+<!-- SECRET MODAL (Konami Code) -->
+<div id="secret-modal">
+  <div class="secret-box">
+    <h3>ACCESS GRANTED</h3>
+    <p>You found the backdoor. The magazine started as a note in a voice memo at 2am. The pre-order campaign had 72 hours left and was 3 units short of funding. Someone bought 4.</p>
+    <p style="font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:var(--green-hi);">// THIS MESSAGE WILL SELF-DESTRUCT //</p>
+    <br>
+    <button class="secret-close" onclick="document.getElementById('secret-modal').classList.remove('visible')">CLOSE CHANNEL</button>
+  </div>
+</div>
+
+<div id="click-tracker">CLICKS: <span id="click-count">0</span></div>
+
+<script>
+// MATRIX RAIN
+(function(){
+  var c = document.getElementById('matrix-bg');
+  var ctx = c.getContext('2d');
+  var W, H, cols, drops;
+  function init(){
+    W = c.width = window.innerWidth;
+    H = c.height = window.innerHeight;
+    cols = Math.floor(W / 13);
+    drops = [];
+    for(var i=0;i<cols;i++) drops[i] = Math.random() * -H/13;
+  }
+  function draw(){
+    ctx.fillStyle = 'rgba(2,13,4,0.055)';
+    ctx.fillRect(0,0,W,H);
+    ctx.font = '13px Share Tech Mono, monospace';
+    for(var i=0;i<drops.length;i++){
+      var ch = Math.random() > 0.5 ? '1' : '0';
+      var b = Math.random();
+      ctx.fillStyle = b > 0.97 ? '#4dff6e' : b > 0.78 ? '#1a7a2a' : '#0a3a12';
+      ctx.fillText(ch, i*13, drops[i]*13);
+      if(drops[i]*13 > H && Math.random() > 0.975) drops[i] = 0;
+      drops[i] += 0.38 + Math.random()*0.28;
+    }
+  }
+  init();
+  setInterval(draw, 50);
+  window.addEventListener('resize', init);
+})();
+
+// PRELOADER
+window.addEventListener('load', function(){
+  setTimeout(function(){
+    var p = document.getElementById('preloader');
+    p.classList.add('done');
+    setTimeout(function(){ p.style.display='none'; }, 600);
+  }, 2600);
+});
+
+// KONAMI CODE
+var k=[38,38,40,40,37,39,37,39,66,65], kp=0;
+document.addEventListener('keydown', function(e){
+  if(e.keyCode===k[kp]){ kp++; if(kp===k.length){ document.getElementById('secret-modal').classList.add('visible'); kp=0; } }
+  else kp=0;
+});
+
+// CLICK COUNTER
+var clicks=0;
+document.addEventListener('click', function(){
+  clicks++;
+  document.getElementById('click-count').textContent = clicks;
+  if(clicks===100){
+    document.getElementById('click-tracker').style.color='rgba(45,184,61,0.5)';
+    document.getElementById('click-tracker').textContent='100 CLICKS. YOU ARE THE ATTENTION ECONOMY.';
+  }
+});
+
+// TITLE GLITCH
+var titles=['LOGIN MAGAZINE /// CASE STUDY','L0G1N_MAG4Z1N3.EXE','WE ARE THE MEDIA.','LOGIN MAGAZINE /// CASE STUDY','ATTENTION IS CURRENCY.','>> UPLOADING CONSCIOUSNESS...','LOGIN MAGAZINE /// CASE STUDY'];
+var ti=0;
+setInterval(function(){ ti=(ti+1)%titles.length; document.title=titles[ti]; }, 3200);
+
+// CONSOLE
+console.log('%c LOGIN MAGAZINE','color:#2db83d;font-family:monospace;font-size:28px;font-weight:bold;');
+console.log('%c loginmag.net — issue 001 available now','color:#1a7a2a;font-family:monospace;font-size:11px;');
+
+// ZINE VIEWER
+(function(){
+  var images = [];
+  var current = 0;
+
+  var zone    = document.getElementById('zineUploadZone');
+  var input   = document.getElementById('zineFileInput');
+  var stage   = document.getElementById('zineStage');
+  var controls= document.getElementById('zineControls');
+  var strip   = document.getElementById('zineStrip');
+  var prevBtn = document.getElementById('zinePrev');
+  var nextBtn = document.getElementById('zineNext');
+  var clearBtn= document.getElementById('zineClear');
+  var curEl   = document.getElementById('zineCur');
+  var totalEl = document.getElementById('zineTotal');
+
+  function pad(n){ return n < 10 ? '0'+n : ''+n; }
+
+  function render(){
+    // stage slides
+    stage.innerHTML = '';
+    images.forEach(function(src, i){
+      var slide = document.createElement('div');
+      slide.className = 'zine-slide' + (i===current?' current':'');
+      var img = document.createElement('img');
+      img.src = src;
+      img.alt = 'Spread '+(i+1);
+      slide.appendChild(img);
+      stage.appendChild(slide);
+    });
+
+    // filmstrip
+    strip.innerHTML = '';
+    images.forEach(function(src, i){
+      var thumb = document.createElement('div');
+      thumb.className = 'zine-thumb' + (i===current?' active':'');
+      var timg = document.createElement('img');
+      timg.src = src;
+      var tn = document.createElement('div');
+      tn.className = 'tn-num';
+      tn.textContent = pad(i+1);
+      thumb.appendChild(timg);
+      thumb.appendChild(tn);
+      thumb.addEventListener('click', function(){ goTo(i); });
+      strip.appendChild(thumb);
+    });
+
+    // counter
+    curEl.textContent = pad(current+1);
+    totalEl.textContent = pad(images.length);
+
+    // button states
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === images.length - 1;
+
+    // scroll active thumb into view
+    var activeTn = strip.querySelector('.zine-thumb.active');
+    if(activeTn) activeTn.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+  }
+
+  function goTo(idx){
+    if(idx < 0 || idx >= images.length) return;
+    current = idx;
+    render();
+  }
+
+  function loadFiles(files){
+    var fileArr = Array.from(files).filter(function(f){ return f.type.startsWith('image/'); });
+    if(!fileArr.length) return;
+    var loaded = 0;
+    fileArr.forEach(function(file){
+      var reader = new FileReader();
+      reader.onload = function(e){
+        images.push(e.target.result);
+        loaded++;
+        if(loaded === fileArr.length){
+          // show viewer
+          zone.classList.add('hidden');
+          stage.classList.add('active');
+          controls.classList.add('active');
+          strip.classList.add('active');
+          current = images.length - fileArr.length; // jump to first new
+          render();
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // file input change
+  input.addEventListener('change', function(){ loadFiles(this.files); this.value=''; });
+
+  // click upload zone
+  zone.addEventListener('click', function(){ input.click(); });
+
+  // drag + drop
+  zone.addEventListener('dragover', function(e){ e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', function(){ zone.classList.remove('drag-over'); });
+  zone.addEventListener('drop', function(e){
+    e.preventDefault(); zone.classList.remove('drag-over');
+    loadFiles(e.dataTransfer.files);
+  });
+
+  // also allow drop on stage
+  stage.addEventListener('dragover', function(e){ e.preventDefault(); });
+  stage.addEventListener('drop', function(e){ e.preventDefault(); loadFiles(e.dataTransfer.files); });
+
+  // nav buttons
+  prevBtn.addEventListener('click', function(){ goTo(current-1); });
+  nextBtn.addEventListener('click', function(){ goTo(current+1); });
+
+  // clear
+  clearBtn.addEventListener('click', function(){
+    if(!confirm('CLEAR ALL SPREADS?')) return;
+    images = []; current = 0;
+    stage.classList.remove('active');
+    controls.classList.remove('active');
+    strip.classList.remove('active');
+    zone.classList.remove('hidden');
+    stage.innerHTML = ''; strip.innerHTML = '';
+  });
+
+  // keyboard arrows
+  document.addEventListener('keydown', function(e){
+    if(images.length === 0) return;
+    if(e.key==='ArrowRight' || e.key==='ArrowDown') goTo(current+1);
+    if(e.key==='ArrowLeft'  || e.key==='ArrowUp')   goTo(current-1);
+  });
+})();
+</script>
+</body>
+</html>

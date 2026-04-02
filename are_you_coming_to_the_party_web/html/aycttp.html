@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Are You Coming to the Party?</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400&display=swap" rel="stylesheet">
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  background-image: url('../aycttp_images/page_backround/IMG_3732 (1).JPG');
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+  background-color: #000;
+  scroll-behavior: smooth;
+  min-height: 100%;
+}
+
+body {
+  width: 100%;
+  background: none;
+  overflow-x: hidden;
+}
+
+/* ── VIEWER SECTION: full-viewport, pinned ── */
+#viewer-section {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: transparent;
+}
+
+/* ── SPREAD CONTAINER ── */
+#spread {
+  position: relative;
+  width: min(100vw, calc(100vh * 17 / 11));
+  height: min(100vh, calc(100vw * 11 / 17));
+}
+
+/* ── SPREAD IMAGES (crossfade pair) ── */
+.spread-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+  transition: opacity 0.35s ease;
+}
+.spread-img.hidden { opacity: 0; pointer-events: none; }
+
+/* ── COVER MODE: single 8.5×11 page, centered ── */
+#spread.is-cover .spread-img {
+  position: absolute;
+  top: 0;
+  left: 25%;
+  right: auto;
+  bottom: auto;
+  width: 50%;
+  height: 100%;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+#spread.is-cover #gutter { display: none; }
+
+/* ── GUTTER (center fold) ── */
+#gutter {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 30;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(0,0,0,0.14) 20%,
+    rgba(0,0,0,0.40) 42%,
+    rgba(0,0,0,0.52) 50%,
+    rgba(0,0,0,0.40) 58%,
+    rgba(0,0,0,0.14) 80%,
+    transparent 100%
+  );
+}
+#gutter::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0,0,0,0.30) 10%,
+    rgba(0,0,0,0.45) 50%,
+    rgba(0,0,0,0.30) 90%,
+    transparent 100%
+  );
+}
+
+/* ── CLICK ZONES ── */
+#zone-left, #zone-right {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  z-index: 10;
+}
+#zone-left  { left: 0;  cursor: w-resize; }
+#zone-right { right: 0; cursor: e-resize; }
+
+/* Arrow hints on hover */
+#zone-left::after, #zone-right::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 10px; height: 10px;
+  border-top: 1.5px solid rgba(255,255,255,0.25);
+  border-right: 1.5px solid rgba(255,255,255,0.25);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+#zone-left::after  { left: 16px;  transform: translateY(-50%) rotate(-135deg); }
+#zone-right::after { right: 16px; transform: translateY(-50%) rotate(45deg); }
+#zone-left:hover::after, #zone-right:hover::after { opacity: 1; }
+
+/* ── COUNTER ── */
+#counter {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.3);
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* ── SCROLL CUE ── */
+#scroll-cue {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+  pointer-events: none;
+  z-index: 50;
+  animation: cue-pulse 2.5s ease-in-out infinite;
+}
+@keyframes cue-pulse {
+  0%, 100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+  50%       { opacity: 1;   transform: translateX(-50%) translateY(4px); }
+}
+
+/* ── GRADIENT TRANSITION ── */
+#fade-strip {
+  display: none;
+}
+
+/* ── CONTENT SECTION ── */
+#content {
+  position: relative;
+  z-index: 3;
+  background: none;
+  padding: 160px 60px 140px;
+}
+
+/* Dark overlay — fades in at top, holds through content, darkens to near-black at bottom */
+#content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0,
+    rgba(0,0,0,0.30) 80px,
+    rgba(0,0,0,0.62) 220px,
+    rgba(0,0,0,0.62) calc(100% - 280px),
+    rgba(0,0,0,0.88) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.content-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1160px;
+  margin: 0 auto;
+}
+
+#content h1 {
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(2.2rem, 6vw, 5rem);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 28px;
+}
+
+#content .meta {
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  line-height: 2.2;
+  margin-bottom: 56px;
+}
+
+/* ── 3-COLUMN GRID ── */
+.case-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 48px;
+}
+
+.case-col h2 {
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #c0392b;
+  margin-bottom: 20px;
+}
+
+.case-col p {
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.9;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 16px;
+}
+
+.case-col p:last-child { margin-bottom: 0; }
+
+.skills-label {
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.85);
+  margin-top: 24px;
+  margin-bottom: 10px;
+}
+
+.skills-list {
+  list-style: none;
+  margin-bottom: 20px;
+}
+
+.skills-list li {
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.78rem;
+  line-height: 1.8;
+  color: #c0392b;
+  font-weight: 600;
+}
+
+.collaborator {
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.55);
+  margin-top: 8px;
+}
+
+.collaborator span {
+  color: rgba(255,255,255,0.85);
+}
+
+.key-takeaway {
+  margin-top: 16px;
+}
+
+.key-takeaway strong {
+  color: #c0392b;
+  font-weight: 700;
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 72px;
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.back-link:hover { color: #fff; }
+
+/* ── MOBILE ── */
+@media (max-width: 767px) {
+
+  /* Single continuous background image behind entire page */
+  html {
+    background-image: url('../aycttp_images/page_backround/IMG_3732 (1).JPG');
+    background-size: cover;
+    background-position: center top;
+    background-attachment: scroll;
+    min-height: 100%;
+  }
+
+  body {
+    background: none;
+  }
+
+  /* Viewer: wrap tightly around the magazine, no empty space below */
+  #viewer-section {
+    height: auto;
+    padding: 56px 0 0;
+    background: transparent;
+    align-items: flex-start;
+  }
+
+  /* Cover: portrait ratio, constrained to viewport width */
+  #spread.is-cover {
+    width: min(80vw, calc(85vh * 8.5 / 11));
+    height: min(85vh, calc(80vw * 11 / 8.5));
+  }
+  #spread.is-cover .spread-img {
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Hide fade-strip (no black bg to fade from) */
+  #fade-strip {
+    display: none;
+  }
+
+  /* Counter */
+  #counter {
+    bottom: 24px;
+    font-size: 0.55rem;
+  }
+
+  /* Scroll cue: hide since viewer is no longer full-screen */
+  #scroll-cue {
+    display: none;
+  }
+
+  /* Content: no own background — global bg flows through; pull text up close to viewer */
+  #content {
+    padding: 28px 24px 80px;
+    background: none;
+  }
+
+  /* Fade overlay in from transparent so there's no hard line at the section boundary */
+  #content::before {
+    background: linear-gradient(
+      to bottom,
+      transparent 0,
+      rgba(0,0,0,0.30) 40px,
+      rgba(0,0,0,0.62) 120px
+    );
+  }
+
+  /* Title */
+  #content h1 {
+    margin-bottom: 16px;
+  }
+
+  /* Meta */
+  #content .meta {
+    margin-bottom: 36px;
+  }
+
+  /* Grid: single column */
+  .case-grid {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+
+  /* Border between stacked columns */
+  .case-col + .case-col {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 40px;
+  }
+
+  /* Back link */
+  .back-link {
+    margin-top: 48px;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ── VIEWER ── -->
+<section id="viewer-section">
+  <div id="spread">
+    <img id="img-a" class="spread-img" alt="">
+    <img id="img-b" class="spread-img hidden" alt="">
+    <div id="gutter"></div>
+    <div id="zone-left"  onclick="prev()"></div>
+    <div id="zone-right" onclick="next()"></div>
+  </div>
+  <div id="scroll-cue">scroll</div>
+</section>
+
+<div id="counter"></div>
+
+<!-- ── GRADIENT TRANSITION ── -->
+<div id="fade-strip"></div>
+
+<!-- ── PROJECT INFO ── -->
+<section id="content">
+  <div class="content-inner">
+    <h1>Are You Coming<br>to the Party?</h1>
+    <div class="meta">
+      publication &nbsp;·&nbsp; 2024
+    </div>
+
+    <div class="case-grid">
+
+      <!-- PROJECT -->
+      <div class="case-col">
+        <h2>Project</h2>
+        <p>Are You Coming to the Party? is a 156-page documentary publication co-created with Ryka Ali, capturing the underground nightlife scene of New York City — its promoters, DJs, bottle girls, party-goers, and the self-organized spaces that define the city's most compelling after-dark culture.</p>
+        <p>The publication is positioned against nostalgia and mainstream club documentation: it centers emerging voices and smaller, community-driven events over established institutions, building a vernacular editorial language rooted in authenticity rather than spectacle.</p>
+        <div class="skills-label">Tools &amp; Skills</div>
+        <ul class="skills-list">
+          <li>▸ Editorial Design — 156-page layout</li>
+          <li>▸ Creative Direction — visual + tonal language</li>
+          <li>▸ Photography — field documentation</li>
+          <li>▸ Interviewing — promoter, 2 DJs, bottle girl</li>
+          <li>▸ Moodboarding — 25 years of archival research</li>
+          <li>▸ Collaborative Production — co-directed with Ryka Ali</li>
+        </ul>
+        <div class="collaborator">Collaborator: <span>Ryka Ali</span></div>
+      </div>
+
+      <!-- CHALLENGE -->
+      <div class="case-col">
+        <h2>Challenge</h2>
+        <p>The central challenge was documenting NYC nightlife in a way that felt authentic — not nostalgic, not judgmental. Nightlife photography has a long history of either glamorizing or othering its subjects; the project required developing an editorial framework that could hold space for intimacy, critique, and community without collapsing into either.</p>
+        <p>Research spanned 25 years of party photography, underground zines, and nightlife archives. Field research ran parallel: identifying the most interesting people within their immediate network to interview and photograph. The editorial subjects — a promoter, two DJs, and a bottle girl — were chosen deliberately to represent the full labor ecosystem of a party, not just its visible performers.</p>
+        <p>The final production phase compressed into a hard deadline, with editing and layout running until the night before submission. Working under sustained pressure required fast decision-making, real-time prioritization, and maintaining design quality without the buffer of revision cycles.</p>
+      </div>
+
+      <!-- OUTCOME -->
+      <div class="case-col">
+        <h2>Outcome</h2>
+        <p>The finished publication functions as both a cultural time capsule and a proof of editorial vision. It successfully documented emerging voices in NYC nightlife while building a coherent, community-rooted identity across 156 pages — designed, written, and produced collaboratively from the ground up.</p>
+        <p>While AYCTP was not commercialized, it directly informed the production and business infrastructure built for LOGIN Magazine — serving as a prototype for how to execute an independent publication at scale. The lessons in what not to do (distribution, monetization, audience building) became the blueprint for LOGIN's successful pre-order and profitable first release.</p>
+        <p class="key-takeaway"><strong>Key Takeaway:</strong> AYCTP demonstrated the capacity to lead a high-stakes, deadline-driven editorial production — building skills in creative direction, community documentation, and collaborative design that directly enabled the commercial success of LOGIN.</p>
+      </div>
+
+    </div>
+
+    <a href="../../calder-FULLY-annotated.html" class="back-link">← back</a>
+  </div>
+</section>
+
+<script>
+const BASE = '../aycttp_images/WEBSITEeditedARE YOU COMING TO THE PARTY FINAL';
+
+// Build ordered list: first file has no number, then 2–89
+const SPREADS = [BASE + '.jpg'];
+for (let i = 2; i <= 89; i++) SPREADS.push(BASE + i + '.jpg');
+
+let current     = 0;
+let transitioning = false;
+let activeSlot  = 'a'; // which img element is currently visible
+
+const imgA    = document.getElementById('img-a');
+const imgB    = document.getElementById('img-b');
+const counter = document.getElementById('counter');
+const spread  = document.getElementById('spread');
+
+function activeImg()   { return activeSlot === 'a' ? imgA : imgB; }
+function inactiveImg() { return activeSlot === 'a' ? imgB : imgA; }
+
+function isCover(idx) {
+  return idx === 0 || idx === SPREADS.length - 1;
+}
+
+function goTo(idx) {
+  if (transitioning || idx < 0 || idx >= SPREADS.length || idx === current) return;
+  transitioning = true;
+
+  // Apply cover class BEFORE incoming image fades in, so it's positioned correctly
+  if (isCover(idx)) {
+    spread.classList.add('is-cover');
+  }
+
+  const incoming = inactiveImg();
+  incoming.src = SPREADS[idx];
+  incoming.classList.remove('hidden');
+
+  // Fade out current image
+  activeImg().classList.add('hidden');
+
+  // Remove cover class mid-fade when leaving a cover
+  if (isCover(current) && !isCover(idx)) {
+    setTimeout(() => spread.classList.remove('is-cover'), 185);
+  }
+
+  setTimeout(() => {
+    current    = idx;
+    activeSlot = activeSlot === 'a' ? 'b' : 'a';
+    inactiveImg().classList.add('hidden');
+    transitioning = false;
+    updateCounter();
+    preload(idx + 1);
+    preload(idx - 1);
+  }, 370);
+
+  updateCounter();
+}
+
+function next() { goTo(current + 1); }
+function prev() { goTo(current - 1); }
+
+function updateCounter() {
+  if (isCover(current)) {
+    counter.textContent = '';
+    spread.classList.add('is-cover');
+  } else {
+    counter.textContent = `${current} / ${SPREADS.length - 2}`;
+    spread.classList.remove('is-cover');
+  }
+}
+
+function preload(idx) {
+  if (idx < 0 || idx >= SPREADS.length) return;
+  const img = new Image();
+  img.src = SPREADS[idx];
+}
+
+// ── INIT ──
+imgA.src = SPREADS[0];
+updateCounter();
+preload(1);
+
+// ── KEYBOARD ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') next();
+  if (e.key === 'ArrowLeft')  prev();
+});
+
+// ── TOUCH SWIPE ──
+let touchStartX = 0;
+const viewerEl = document.getElementById('viewer-section');
+viewerEl.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+}, { passive: true });
+viewerEl.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 40) { // 40px threshold
+    if (dx < 0) next();
+    else         prev();
+  }
+}, { passive: true });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ULTRANET</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Geist:wght@300;400&display=swap" rel="stylesheet">
+<style>
+
+:root {
+  --bg: #000;
+  --fg: #fff;
+  --accent: #0000ff;
+  --mono: 'Share Tech Mono', monospace;
+  --body: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+::selection { background: #0000ff; color: #fff; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: #fff;
+  color: var(--fg);
+  font-family: var(--body);
+  overflow-x: hidden;
+}
+
+/* ── HERO: full-viewport 3D room ── */
+#room-wrap {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#scene {
+  /* 3D stage — perspective applied here so all children share one vanishing point */
+  width: 100%;
+  height: 100%;
+  perspective: 900px;
+  perspective-origin: 50% 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+#grid {
+  transform-style: preserve-3d;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  width: 88vw;
+  height: 88vh;
+  gap: 0;
+  position: relative;
+}
+
+/* Each cell is a wrapper that applies the 3D transform */
+.cell {
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+}
+
+/* iframe fills the cell completely — 3px bleed on all sides kills seams */
+.cell iframe {
+  position: absolute;
+  top: -3px; left: -3px;
+  width: calc(100% + 6px);
+  height: calc(100% + 6px);
+  border: none;
+  pointer-events: none;
+  display: block;
+}
+
+/* ─ Column transforms ─ */
+.cell.col-left   { transform: rotateY(48deg);  }
+.cell.col-center { transform: rotateY(0deg);   }
+.cell.col-right  { transform: rotateY(-48deg); }
+
+/* ─ Row transforms — top tips back, bottom tips forward ─ */
+.cell.row-top.col-left   { transform: rotateY(48deg)  rotateX(-10deg); transform-origin: bottom center; }
+.cell.row-top.col-center { transform: rotateX(-10deg);                  transform-origin: bottom center; }
+.cell.row-top.col-right  { transform: rotateY(-48deg) rotateX(-10deg); transform-origin: bottom center; }
+
+.cell.row-bot.col-left   { transform: rotateY(48deg)  rotateX(10deg);  transform-origin: top center; }
+.cell.row-bot.col-center { transform: rotateX(10deg);                   transform-origin: top center; }
+.cell.row-bot.col-right  { transform: rotateY(-48deg) rotateX(10deg);  transform-origin: top center; }
+
+
+/* vignette on the whole room */
+#room-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.85) 100%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* music play button — pinned top-right, never blocks the page */
+#music-overlay {
+  position: fixed;
+  top: 24px;
+  right: 28px;
+  z-index: 100;
+  pointer-events: none; /* wrapper doesn't block clicks */
+  animation: overlayIn 0.4s ease both;
+}
+#music-overlay.dismissed {
+  animation: overlayOut 0.35s ease forwards;
+}
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes overlayOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+#music-overlay-btn {
+  pointer-events: all; /* only the button itself is clickable */
+  background: #fff;
+  border: none;
+  color: #000;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+#music-overlay-btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* music toggle button (shown after play pressed) */
+#music-btn {
+  position: fixed;
+  top: 24px;
+  right: 28px;
+  z-index: 100;
+  display: none;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+/* scroll cue */
+#scroll-cue {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.35; }
+  50%       { opacity: 0.9;  }
+}
+
+/* ── CONTENT BELOW ── */
+#content {
+  background: #fff;
+  padding: 60px 60px 140px;
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* gradient fade strip — full width, sits between hero and content */
+#fade-strip {
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(to bottom, #000 0%, #fff 100%);
+  display: block;
+}
+
+.content-header {
+  margin-bottom: 56px;
+}
+
+.title-block h1 {
+  margin-bottom: 18px;
+}
+
+.title-block h1 img {
+  display: block;
+  max-width: 520px;
+  width: 100%;
+  height: auto;
+}
+
+.title-block .meta {
+  font-family: var(--body);
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.45);
+  line-height: 2;
+}
+
+.title-block .meta span {
+  color: var(--accent);
+}
+
+/* ── 3-COLUMN CASE GRID ── */
+.case-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 72px;
+}
+
+.case-col h2 {
+  font-family: var(--body);
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #0000ff;
+  margin-bottom: 20px;
+}
+
+.case-col p {
+  font-family: var(--body);
+  font-size: 0.82rem;
+  line-height: 1.9;
+  color: #000;
+  margin-bottom: 16px;
+  font-weight: 300;
+}
+
+.case-col p:last-child { margin-bottom: 0; }
+
+.skills-label {
+  font-family: var(--body);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #000;
+  margin-top: 24px;
+  margin-bottom: 10px;
+}
+
+.skills-list {
+  list-style: none;
+  margin-bottom: 20px;
+}
+
+.skills-list li {
+  font-family: var(--body);
+  font-size: 0.78rem;
+  line-height: 1.8;
+  color: #0000ff;
+  font-weight: 600;
+}
+
+.collaborator {
+  font-family: var(--body);
+  font-size: 0.72rem;
+  color: rgba(0,0,0,0.5);
+  margin-top: 8px;
+}
+
+.collaborator span { color: #000; }
+
+.key-takeaway strong { color: #0000ff; font-weight: 700; }
+
+/* ── STILLS ROW (below text) ── */
+.stills-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 3px;
+  margin-bottom: 32px;
+}
+
+.still {
+  aspect-ratio: 3/2;
+  background: #111;
+  overflow: hidden;
+  position: relative;
+}
+
+.still img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(0.8);
+  transition: filter 0.3s, transform 0.3s;
+  cursor: zoom-in;
+}
+
+.still:hover img { filter: saturate(1.2); transform: scale(1.03); }
+
+/* stream button */
+.stream-btn {
+  display: inline-block;
+  margin-top: 12px;
+  margin-right: 12px;
+  font-family: var(--body);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  background: #000;
+  padding: 10px 18px;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+.stream-btn:hover {
+  background: var(--accent);
+}
+
+/* back link */
+.back-link {
+  display: inline-block;
+  margin-top: 80px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.35);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.back-link:hover { color: #000; }
+
+/* ── LIGHTBOX ── */
+#lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 999;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+#lightbox.open { display: flex; }
+#lightbox img {
+  max-width: 92vw;
+  max-height: 92vh;
+  object-fit: contain;
+  box-shadow: 0 0 80px rgba(0,0,0,0.8);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 767px) {
+
+  /* single column — each video full width, stacked */
+  #room-wrap  { height: auto; }
+  #scene      { height: auto; align-items: flex-start; justify-content: flex-start; }
+
+  #grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: unset;
+    width: 100vw;
+    height: auto;
+    gap: 0;
+  }
+
+  .cell {
+    aspect-ratio: 16 / 9;
+    width: 100vw;
+    transform: none !important;
+  }
+
+  .cell iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    transform: none;
+  }
+
+  /* no vignette on mobile */
+  #room-wrap::after { display: none; }
+
+  /* fade strip */
+  #fade-strip     { height: 80px; }
+
+  /* content */
+  #content        { padding: 40px 20px 80px; }
+
+  /* case study: single column */
+  .case-grid      { grid-template-columns: 1fr; gap: 36px; }
+
+  /* stills: 2 columns on small screens */
+  .stills-grid    { grid-template-columns: repeat(2, 1fr); }
+
+  /* music button: bigger touch target */
+  #music-overlay-btn,
+  #music-btn      { padding: 10px 20px; font-size: 0.65rem; }
+
+  /* logo */
+  .title-block h1 img { max-width: 280px; }
+
+  /* stream buttons: full width */
+  .stream-btn     { display: block; margin-right: 0; margin-bottom: 10px; text-align: center; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     HERO — 3×3 perspective room
+     ✏️  Replace each YOUR_VIDEO_ID with the
+         YouTube video ID from the URL:
+         youtube.com/watch?v=YOUR_VIDEO_ID
+     ═══════════════════════════════════════ -->
+<div id="room-wrap">
+  <div id="scene">
+    <div id="grid">
+
+      <!-- ROW 1 — top -->
+      <div class="cell row-top col-left">
+        <iframe src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      </div>
+      <div class="cell row-top col-center">
+        <iframe src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      </div>
+      <div class="cell row-top col-right">
+        <iframe src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      </div>
+
+      <!-- ROW 2 — bottom -->
+      <div class="cell row-bot col-left">
+        <iframe src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      </div>
+      <div class="cell row-bot col-center">
+        <iframe src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      </div>
+      <div class="cell row-bot col-right">
+        <iframe src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      </div>
+
+    </div><!-- #grid -->
+  </div><!-- #scene -->
+
+  <div id="scroll-cue">scroll</div>
+</div><!-- #room-wrap -->
+
+<!-- SHARED: Spotify embed replaces local audio -->
+<div id="music-overlay">
+  <button id="music-overlay-btn" onclick="startMusic()">&#9654; play</button>
+</div>
+
+<iframe id="music-btn"
+  width="300" height="80"
+  frameborder="0"
+  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+  style="display:none; border-radius:4px;">
+</iframe>
+
+<script>
+function startMusic() {
+  const overlay = document.getElementById('music-overlay');
+  const embed   = document.getElementById('music-btn');
+
+  embed.src = 'https://open.spotify.com/embed/album/3dWz9rSvNmsJsd8L9nGG4W?utm_source=generator&theme=0';
+  embed.style.display = 'block';
+
+  overlay.classList.add('dismissed');
+  overlay.addEventListener('animationend', () => overlay.remove(), { once: true });
+}
+
+// Inject iframe srcs on load — same 6 videos on all platforms
+(function() {
+  const srcs = [
+    'https://www.youtube.com/embed/COjJlihMxQs?autoplay=1&mute=1&loop=1&playlist=COjJlihMxQs&controls=0&disablekb=1&modestbranding=1&rel=0&start=60',
+    'https://www.youtube.com/embed/_aQ0nF3nrCM?autoplay=1&mute=1&loop=1&playlist=_aQ0nF3nrCM&controls=0&disablekb=1&modestbranding=1&rel=0&start=180',
+    'https://www.youtube.com/embed/J6bXlmYBY9o?autoplay=1&mute=1&loop=1&playlist=J6bXlmYBY9o&controls=0&disablekb=1&modestbranding=1&rel=0&start=300',
+    'https://www.youtube.com/embed/MjcFwj4T6jA?autoplay=1&mute=1&loop=1&playlist=MjcFwj4T6jA&controls=0&disablekb=1&modestbranding=1&rel=0&start=0',
+    'https://www.youtube.com/embed/HlYr2SGQP_E?autoplay=1&mute=1&loop=1&playlist=HlYr2SGQP_E&controls=0&disablekb=1&modestbranding=1&rel=0&start=420',
+    'https://www.youtube.com/embed/RkB-gnwOFLs?autoplay=1&mute=1&loop=1&playlist=RkB-gnwOFLs&controls=0&disablekb=1&modestbranding=1&rel=0&start=540'
+  ];
+  document.querySelectorAll('#grid .cell iframe').forEach(function(iframe, i) {
+    iframe.src = srcs[i];
+  });
+})();
+</script>
+
+
+<div id="fade-strip"></div>
+
+<!-- ═══════════════════════════════════════
+     CONTENT — below the fold
+     ✏️  Edit text, add stills below
+     ═══════════════════════════════════════ -->
+<div id="content">
+
+  <div class="content-header">
+    <div class="title-block">
+      <h1><img src="ULTRANET/OG ULTRANET LOGO-07.png" alt="ULTRANET"></h1>
+      <div class="meta">
+        <span>audio · visual installation</span><br>
+        2025
+      </div>
+    </div>
+  </div>
+
+  <div class="case-grid">
+
+    <!-- PROJECT -->
+    <div class="case-col">
+      <h2>Project</h2>
+      <p>ULTRANET is a multi-channel audiovisual installation co-created with Ryka Ali, translating the overstimulating architecture of online media consumption into a physical gallery environment.</p>
+      <div class="skills-label">Tools &amp; Skills</div>
+      <ul class="skills-list">
+        <li>▸ TouchDesigner — audio-reactive system</li>
+        <li>▸ FL Studio — original score composition</li>
+        <li>▸ Adobe Creative Suite — collage &amp; branding</li>
+        <li>▸ Systems Thinking — 10-projector AV setup</li>
+        <li>▸ Video Production — 50 source collages</li>
+        <li>▸ Brand &amp; Social Strategy — daily post schedule</li>
+      </ul>
+      <div class="collaborator">Collaborator: <span>Ryka Ali</span></div>
+    </div>
+
+    <!-- CHALLENGE -->
+    <div class="case-col">
+      <h2>Challenge</h2>
+      <p>The core challenge was translating the disorienting, dopamine-driven logic of doomscrolling into a spatial, sensory experience — without simply replicating a screen.</p>
+      <p>Research drew on the San Francisco Video Riots of the late 1990s (live multi-projection events) and MK Ultra's psychological manipulation experiments, establishing a framework that treats surveillance capitalism, influencer culture, and cognitive overload as interconnected conditions of digital life.</p>
+      <p>Practically: producing enough content to cover every wall of the gallery — 50 video collages sourced from 200+ found-footage clips — and synchronizing them to an original hour-long music set via a live TouchDesigner audio-reactive pipeline. The installation required mounting 10 ceiling projectors connected by 50-foot HDMI cables across borrowed hardware from multiple contributors.</p>
+    </div>
+
+    <!-- OUTCOME -->
+    <div class="case-col">
+      <h2>Outcome</h2>
+      <p>Hundreds of attendees over 4 hours. The event was free — a deliberate decision to preserve democratic access to the work and remain consistent with its critique of attention-economy platforms.</p>
+      <p>The intended effect was contemplative and unsettling. What materialized was closer to a party — an unintentional but conceptually resonant outcome: the same apathy and dissociation the work diagnosed played out live in the room.</p>
+      <p>The project demonstrated end-to-end production ownership: concept development, archival research, video editing, music composition, real-time AV systems, event logistics, and public-facing brand strategy — all executed under one cohesive conceptual framework.</p>
+      <p><strong class="key-takeaway">Key Takeaway:</strong> ULTRANET proved the ability to carry a conceptually rigorous idea from initial research through full-scale physical installation — adapting in real time, leading cross-functional collaboration, and making decisive creative choices under constraint.</p>
+    </div>
+
+  </div>
+
+  <!-- IMAGES ROW -->
+  <div class="stills-grid">
+    <div class="still"><img src="ULTRANET/ULTRANET 1.jpg" alt=""></div>
+    <div class="still"><img src="ULTRANET/ULTRANET 2.jpg" alt=""></div>
+    <div class="still"><img src="ULTRANET/ULTRANET 3.jpg" alt=""></div>
+    <div class="still"><img src="ULTRANET/ULTRANET 4.jpg" alt=""></div>
+    <div class="still"><img src="ULTRANET/ULTRANET 5.jpg" alt=""></div>
+    <div class="still"><img src="ULTRANET/ULTRANET 6.jpg" alt=""></div>
+  </div>
+
+  <a href="https://share.amuse.io/album/calder-anderson-ultranet" target="_blank" class="stream-btn">Stream the soundtrack</a>
+  <a href="PDF/ultranet_process_book_web.pdf" target="_blank" class="stream-btn">View process book</a>
+
+  <a href="calder-FULLY-annotated.html" class="back-link">← back</a>
+
+
+</div><!-- #content -->
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+document.querySelectorAll('.still img').forEach(img => {
+  img.addEventListener('click', () => openLightbox(img.src));
+});
+</script>
+
+</body>
+</html>

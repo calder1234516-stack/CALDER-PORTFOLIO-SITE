@@ -1,0 +1,107 @@
+<!-- CALDER ANDERSON — INDEX / SCATTER VIEW
+     Paste into a Cargo Code block.
+     Add fonts in: Settings → Design → Custom Code → Head Code:
+     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet">
+-->
+
+<style>
+#ca-scatter {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: #fff;
+  overflow: hidden;
+}
+.ca-s-item {
+  position: absolute;
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1.2;
+  color: #000;
+  transition: color 0.12s;
+}
+.ca-s-item:hover { color: #0000FF; }
+.ca-s-name {
+  display: block;
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 400;
+  white-space: nowrap;
+}
+.ca-s-tag {
+  display: block;
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.55em;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.ca-s-item:hover .ca-s-tag { opacity: 1; color: #0000FF; }
+</style>
+
+<div id="ca-scatter"></div>
+
+<script>
+(function() {
+
+const PROJECTS = [
+  { label:'Login Magazine',     tag:'print · publishing',    url:'/login-magazine', group:'print'   },
+  { label:'Graphic Work',       tag:'design · typography',   url:'/graphic',        group:'design'  },
+  { label:'Photography',        tag:'image · documentation', url:'/photography',    group:'image'   },
+  { label:'Video Installation', tag:'moving image · space',  url:'/video',          group:'image'   },
+  { label:'Music Production',   tag:'sound · composition',   url:'/music',          group:'sound'   },
+  { label:'Styling',            tag:'fashion · editorial',   url:'/styling',        group:'fashion' },
+  { label:'Zine Archive',       tag:'print · ephemera',      url:'/zines',          group:'print'   },
+  { label:'Internet Culture',   tag:'theory · research',     url:'/research',       group:'theory'  },
+  { label:'Collaborations',     tag:'ryka ali · others',     url:'/collabs',        group:'collab'  },
+  { label:'About',              tag:'context · contact',     url:'/about',          group:'info'    },
+];
+
+const GROUP_CENTERS = {
+  print:   { bx:0.14, by:0.22 },
+  design:  { bx:0.42, by:0.14 },
+  image:   { bx:0.68, by:0.20 },
+  sound:   { bx:0.76, by:0.52 },
+  fashion: { bx:0.56, by:0.68 },
+  theory:  { bx:0.26, by:0.72 },
+  collab:  { bx:0.52, by:0.42 },
+  info:    { bx:0.82, by:0.80 },
+};
+
+const META = [
+  { fs:'1.6rem',  ox: 0,   oy: 0   },
+  { fs:'0.85rem', ox: 55,  oy: 30  },
+  { fs:'1.1rem',  ox: 0,   oy: 0   },
+  { fs:'0.78rem', ox: 35,  oy:-22  },
+  { fs:'0.9rem',  ox: 0,   oy: 0   },
+  { fs:'0.82rem', ox:-28,  oy: 22  },
+  { fs:'0.95rem', ox: 28,  oy:-28  },
+  { fs:'0.75rem', ox:-36,  oy: 18  },
+  { fs:'0.88rem', ox: 18,  oy: 10  },
+  { fs:'0.72rem', ox: 0,   oy: 0   },
+];
+
+function build() {
+  const el  = document.getElementById('ca-scatter');
+  const W   = el.clientWidth, H = el.clientHeight, pad = 90;
+  el.innerHTML = '';
+  PROJECTS.forEach((p, i) => {
+    const gc = GROUP_CENTERS[p.group], m = META[i];
+    const x  = Math.max(pad, Math.min(W-pad, gc.bx*(W-pad*2)+pad+m.ox));
+    const y  = Math.max(pad, Math.min(H-pad, gc.by*(H-pad*2)+pad+m.oy));
+    const a  = document.createElement('a');
+    a.className = 'ca-s-item';
+    a.href      = p.url;
+    a.style.cssText = `left:${x}px; top:${y}px; font-size:${m.fs};`;
+    a.innerHTML = `<span class="ca-s-name">${p.label}</span><span class="ca-s-tag">${p.tag}</span>`;
+    el.appendChild(a);
+  });
+}
+
+window.addEventListener('resize', build);
+build();
+
+})();
+</script>

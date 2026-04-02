@@ -1,0 +1,235 @@
+<!-- CALDER ANDERSON — NODE NETWORK
+     Paste into a Cargo Code block.
+     Add fonts in: Settings → Design → Custom Code → Head Code:
+     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet">
+-->
+
+<style>
+#ca-network-wrap {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: #fff;
+  overflow: hidden;
+  cursor: default;
+}
+#ca-canvas {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+#ca-tooltip {
+  position: absolute;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+}
+#ca-tooltip.show { opacity: 1; }
+#ca-tt-name {
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: #0000FF;
+  white-space: nowrap;
+}
+#ca-tt-tag {
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.55rem;
+  color: #0000FF;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+</style>
+
+<div id="ca-network-wrap">
+  <canvas id="ca-canvas"></canvas>
+  <div id="ca-tooltip">
+    <div id="ca-tt-name"></div>
+    <div id="ca-tt-tag"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+
+const PROJECTS = [
+  { id:0, label:'Login Magazine',     tag:'print · publishing',    url:'/login-magazine', r:14 },
+  { id:1, label:'Graphic Work',       tag:'design · typography',   url:'/graphic',        r:9  },
+  { id:2, label:'Photography',        tag:'image · documentation', url:'/photography',    r:9  },
+  { id:3, label:'Video Installation', tag:'moving image · space',  url:'/video',          r:10 },
+  { id:4, label:'Music Production',   tag:'sound · composition',   url:'/music',          r:8  },
+  { id:5, label:'Styling',            tag:'fashion · editorial',   url:'/styling',        r:8  },
+  { id:6, label:'Zine Archive',       tag:'print · ephemera',      url:'/zines',          r:9  },
+  { id:7, label:'Internet Culture',   tag:'theory · research',     url:'/research',       r:7  },
+  { id:8, label:'Collaborations',     tag:'ryka ali · others',     url:'/collabs',        r:8  },
+  { id:9, label:'About',              tag:'context · contact',     url:'/about',          r:6  },
+];
+
+const EDGES = [
+  [0,1],[0,2],[0,5],[0,6],[0,8],
+  [1,3],[1,6],[1,7],
+  [2,3],[2,5],[2,8],
+  [3,4],[3,7],
+  [4,7],[4,8],
+  [5,8],[5,6],
+  [6,7],[7,9],[8,9],[0,9],
+];
+
+const wrap    = document.getElementById('ca-network-wrap');
+const canvas  = document.getElementById('ca-canvas');
+const ctx     = canvas.getContext('2d');
+const tooltip = document.getElementById('ca-tooltip');
+const ttName  = document.getElementById('ca-tt-name');
+const ttTag   = document.getElementById('ca-tt-tag');
+
+let DPR = 1, W = 0, H = 0;
+let pos = [];
+let dragIdx = -1, dragTX = 0, dragTY = 0, dragMoved = false;
+let hoveredIdx = -1, simRunning = false;
+
+const K_SPRING  = 0.028, REST_LEN = 380, DAMPING = 0.76, PIN_K = 0.50;
+const K_REPULSE = 26000, REPULSE_R = 300;
+
+function resize() {
+  DPR = window.devicePixelRatio || 1;
+  W = wrap.clientWidth;
+  H = wrap.clientHeight;
+  canvas.width  = W * DPR;
+  canvas.height = H * DPR;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  initPos();
+  draw();
+}
+
+function initPos() {
+  const cx = W / 2, cy = H / 2;
+  const spread = Math.min(W * 0.88, H * 0.88) * 0.50;
+  const seeds  = [0, 0.12, 0.22, 0.08, 0.18, 0.05, 0.15, 0.25, 0.03, 0.20];
+  pos = PROJECTS.map((p, i) => {
+    const angle  = (i / PROJECTS.length) * Math.PI * 2 - Math.PI / 2;
+    const dist   = p.id === 0 ? spread * 0.08 : spread * (0.72 + seeds[i] * 0.32);
+    const jitter = p.id === 0 ? 0 : (seeds[i] - 0.12) * spread * 0.5;
+    return { x: cx + Math.cos(angle)*dist + jitter, y: cy + Math.sin(angle)*dist + jitter*0.6, vx:0, vy:0 };
+  });
+}
+
+function simStep() {
+  const margin = 60, cx = W/2, cy = H/2;
+  if (dragIdx >= 0) {
+    pos[dragIdx].vx += (dragTX - pos[dragIdx].x) * PIN_K;
+    pos[dragIdx].vy += (dragTY - pos[dragIdx].y) * PIN_K;
+  }
+  EDGES.forEach(([ai, bi]) => {
+    const a = pos[ai], b = pos[bi];
+    const dx = b.x-a.x, dy = b.y-a.y, d = Math.sqrt(dx*dx+dy*dy)||1;
+    const f = (d - REST_LEN) * K_SPRING;
+    const fx = dx/d*f, fy = dy/d*f;
+    a.vx+=fx; a.vy+=fy; b.vx-=fx; b.vy-=fy;
+  });
+  const N = PROJECTS.length;
+  for (let i=0; i<N; i++) for (let j=i+1; j<N; j++) {
+    const a=pos[i], b=pos[j];
+    const dx=a.x-b.x, dy=a.y-b.y, d2=dx*dx+dy*dy||1, d=Math.sqrt(d2);
+    if (d < REPULSE_R) { const f=K_REPULSE/(d2*d), fx=dx*f, fy=dy*f; a.vx+=fx; a.vy+=fy; b.vx-=fx; b.vy-=fy; }
+  }
+  pos.forEach(p => {
+    p.vx += (cx-p.x)*0.0005; p.vy += (cy-p.y)*0.0005;
+    p.vx *= DAMPING; p.vy *= DAMPING;
+    p.x = Math.max(margin, Math.min(W-margin, p.x+p.vx));
+    p.y = Math.max(margin, Math.min(H-margin, p.y+p.vy));
+  });
+  draw();
+  const moving = pos.some(p => Math.abs(p.vx)>0.04||Math.abs(p.vy)>0.04);
+  if (moving || dragIdx >= 0) requestAnimationFrame(simStep);
+  else simRunning = false;
+}
+
+function kick() { if (!simRunning) { simRunning=true; requestAnimationFrame(simStep); } }
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  EDGES.forEach(([ai,bi]) => {
+    const a=pos[ai], b=pos[bi], active=(ai===hoveredIdx||bi===hoveredIdx);
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+    ctx.strokeStyle = active ? '#0000FF' : '#d0d0d0';
+    ctx.lineWidth   = active ? 1 : 0.8;
+    ctx.stroke();
+  });
+  PROJECTS.forEach((p,i) => {
+    const {x,y}=pos[i], hov=(i===hoveredIdx);
+    ctx.beginPath(); ctx.arc(x, y, p.r*(hov?1.3:1), 0, Math.PI*2);
+    ctx.fillStyle = hov ? '#0000FF' : '#000';
+    ctx.fill();
+  });
+  if (hoveredIdx >= 0) {
+    const p=PROJECTS[hoveredIdx], {x,y}=pos[hoveredIdx];
+    tooltip.style.left = x+'px'; tooltip.style.top = (y+p.r*1.3+10)+'px';
+    ttName.textContent = p.label; ttTag.textContent = p.tag;
+    tooltip.classList.add('show');
+  } else { tooltip.classList.remove('show'); }
+}
+
+function hit(mx,my) {
+  for (let i=PROJECTS.length-1; i>=0; i--) {
+    const dx=mx-pos[i].x, dy=my-pos[i].y;
+    if (dx*dx+dy*dy <= (PROJECTS[i].r+6)**2) return i;
+  }
+  return -1;
+}
+
+// Mouse
+canvas.addEventListener('mousemove', e => {
+  const r = canvas.getBoundingClientRect();
+  const mx = e.clientX-r.left, my = e.clientY-r.top;
+  if (dragIdx >= 0) {
+    if (Math.abs(e.clientX-dragTX)>2||Math.abs(e.clientY-dragTY)>2) dragMoved=true;
+    dragTX=e.clientX; dragTY=e.clientY; kick(); canvas.style.cursor='grabbing';
+  } else {
+    const h=hit(mx,my); if(h!==hoveredIdx){hoveredIdx=h; draw();}
+    canvas.style.cursor = h>=0 ? 'pointer' : 'default';
+  }
+});
+canvas.addEventListener('mousedown', e => {
+  const r=canvas.getBoundingClientRect();
+  const h=hit(e.clientX-r.left, e.clientY-r.top);
+  if (h>=0) { dragIdx=h; dragTX=e.clientX; dragTY=e.clientY; dragMoved=false; pos[h].vx=0; pos[h].vy=0; kick(); e.preventDefault(); }
+});
+window.addEventListener('mouseup', () => {
+  if (dragIdx>=0) { const m=dragMoved, i=dragIdx; dragIdx=-1; kick(); if(!m) window.location.href=PROJECTS[i].url; }
+});
+canvas.addEventListener('mouseleave', () => { if(dragIdx<0){hoveredIdx=-1; draw();} });
+
+// Touch
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const r=canvas.getBoundingClientRect(), t=e.touches[0];
+  const h=hit(t.clientX-r.left, t.clientY-r.top);
+  if(h>=0){dragIdx=h; dragTX=t.clientX; dragTY=t.clientY; dragMoved=false; pos[h].vx=0; pos[h].vy=0; kick();}
+}, {passive:false});
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if(dragIdx<0) return;
+  const t=e.touches[0];
+  if(Math.abs(t.clientX-dragTX)>2||Math.abs(t.clientY-dragTY)>2) dragMoved=true;
+  dragTX=t.clientX; dragTY=t.clientY; kick();
+}, {passive:false});
+canvas.addEventListener('touchend', () => {
+  if(dragIdx>=0){const m=dragMoved,i=dragIdx; dragIdx=-1; kick(); if(!m) window.location.href=PROJECTS[i].url;}
+});
+
+window.addEventListener('resize', resize);
+resize();
+
+})();
+</script>

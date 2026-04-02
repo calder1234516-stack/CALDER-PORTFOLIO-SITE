@@ -1,0 +1,14 @@
+# Original high-res images — site uses project_images/ instead
+graphic_work/project_images_originals/
+
+# Local audio files — replaced by Spotify embed
+audio/
+
+# Dev zip archives
+files.zip
+files 2.zip
+
+# OS clutter
+.DS_Store
+Thumbs.db
+desktop.ini
