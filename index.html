@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<!-- =============================================================
+     CALDER ANDERSON — PORTFOLIO SITE
+     Fully annotated — every line explained in plain English.
+     =============================================================
+
+     WHAT IS THIS FILE?
+     One single file that contains your entire portfolio homepage.
+     It has three parts woven together:
+       CSS  — controls how everything LOOKS (colours, sizes, fonts)
+       HTML — the actual elements on the page (text, buttons, canvas)
+       JS   — JavaScript: makes everything INTERACTIVE (physics, drawing, clicks)
+
+     HOW TO OPEN AND EDIT IT:
+     Use a plain-text editor. Recommended (free): VS Code → code.visualstudio.com
+     Do NOT use Word or Pages — they corrupt code.
+     Notepad (Windows) or TextEdit set to plain text (Mac) also work.
+
+     HOW TO PREVIEW:
+     Save this file → double-click it → it opens in your browser.
+     After each edit: save → refresh browser (Cmd+R or F5).
+
+     HOW TO FIND SECTIONS:
+     Press Cmd+F (Mac) or Ctrl+F (Windows) to search inside the file.
+     Search for section names like "YOUR NAME" or "PROJECT DATA".
+-->
+
+<html lang="en">
+<!-- lang="en" = this page is in English. Don't change this. -->
+
+<head>
+<!-- The head section is INVISIBLE. It loads fonts, styles, and settings. -->
+
+<meta charset="UTF-8">
+<!-- Supports all characters including accents and emoji. Don't change. -->
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Makes the site look right on phones. Don't change. -->
+
+<title>Calder Anderson</title>
+<!-- ✏️  EDIT: This text appears in the browser tab and in bookmarks.
+     Change "Calder Anderson" to whatever you want. -->
+
+
+<!-- =====================================================
+     SECTION A — FONTS
+     =====================================================
+     Loads two fonts from Google Fonts (free service).
+     Geist      = clean modern sans-serif. Used for all main text.
+     Geist Mono = typewriter-style monospace. Used for tags and labels.
+
+     ✏️  TO CHANGE FONTS:
+     1. Go to fonts.google.com
+     2. Pick a font → Get font → Get embed code
+     3. Replace the second <link> line below with your new URL
+     4. Also update --font in SECTION B (design tokens) below
+
+     ON CARGO: paste both lines into Settings → Design → Custom Code → Head Code
+     instead of leaving them here.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<!-- Pre-connects to Google for faster loading. Don't change. -->
+
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet">
+<!-- Actually loads the fonts. If you change fonts, replace this whole line. -->
+
+
+<style>
+
+
+/* =====================================================
+   SECTION B — DESIGN TOKENS (COLOURS AND FONTS)
+   =====================================================
+   ✏️  CHANGE COLOURS HERE. These variables are used everywhere.
+   Change one value → it updates that colour across the whole site.
+
+   HOW TO USE HEX COLOURS:
+   A colour like #0000FF = blue. #000 = black. #fff = white.
+   Find colours at: coolors.co or just Google "colour picker".
+*/
+:root {
+
+  --bg: #fff;
+  /* ✏️  Site background colour. #fff = white. */
+
+  --fg: #000;
+  /* ✏️  Main text and node dot colour. #000 = black. */
+
+  --hover: #0000FF;
+  /* ✏️  THE ACCENT COLOUR. Used for node hover, edge hover, link hover,
+         tooltip text, and slideshow arrow hover.
+         Change this ONE value to retheme the whole site's accent colour.
+         Try: #ff2200 (red), #009900 (green), #aa00ff (purple) */
+
+  --mid: #999;
+  /* ✏️  Medium grey. Used for subtitle, tags, metadata labels. */
+
+  --light: #ddd;
+  /* ✏️  Very light grey. Used for the subtle hint text in the corner. */
+
+  --font: 'Geist','Helvetica Neue',Arial,sans-serif;
+  /* ✏️  The main typeface. If you changed the font in Section A,
+         update 'Geist' here to match the new font name.
+         The other fonts (Helvetica Neue, Arial) are fallbacks
+         if Google Fonts fails to load. Leave those as-is. */
+
+  --mono: 'Geist Mono',monospace;
+  /* ✏️  The monospace typeface for tags and labels.
+         Update 'Geist Mono' if you changed that font in Section A. */
+}
+
+
+/* =====================================================
+   SECTION C — BODY (BASE PAGE SETTINGS)
+   =====================================================
+   Makes the page fill the entire screen.
+   No scroll because the network canvas fills everything.
+*/
+html, body {
+  width: 100%;        /* Full screen width */
+  height: 100%;       /* Full screen height */
+  background: #fff;   /* ✏️  Page background (direct colour, not variable, loads first) */
+  font-family: var(--font); /* Uses the font from Section B */
+  overflow: hidden;   /* No scrollbar on the main page */
+  user-select: none;  /* Stops text being selected while you drag nodes */
+}
+
+
+/* =====================================================
+   SECTION D — HEADER (YOUR NAME, TOP-LEFT)
+   =====================================================
+   ✏️  TO EDIT THE TEXT: find <div id="header"> in the HTML below.
+   ✏️  TO MOVE IT: change top and left pixel values here.
+   ✏️  TO RESIZE TEXT: change font-size values here.
+*/
+#topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;        /* Vertically centers header and toggle on the same axis */
+  justify-content: space-between; /* Header left, toggle right */
+  padding: 16px 34px;
+  z-index: 200;
+  pointer-events: none;
+}
+#header {
+  pointer-events: none;
+}
+#header h1 {
+  /* Styles your name (the <h1> tag inside the header div) */
+  font-size: 3.5rem;  /* ✏️  Name text size. 1rem = 16px. Try 1rem or 1.2rem. */
+  font-weight: 400;   /* ✏️  400 = normal. 300 = lighter. 700 = bold. */
+  line-height: 1;
+  color: #000;        /* ✏️  Name text colour */
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+#header span {
+  /* Styles your subtitle/tagline (the <span> tag inside the header div) */
+  font-family: var(--mono); /* Monospace font */
+  font-size: 0.68rem;       /* ✏️  Subtitle text size */
+  color: var(--mid);        /* Grey colour from Section B */
+  display: block;
+  text-align: left;
+}
+
+
+/* =====================================================
+   SECTION E — TOGGLE BUTTONS (NETWORK / INDEX, TOP-RIGHT)
+   =====================================================
+   The "NETWORK | INDEX" switcher buttons.
+   ✏️  TO EDIT LABELS: find <div id="toggle"> in the HTML below.
+   ✏️  TO REPOSITION: change top and right values.
+   NOTE: If you're providing your own external buttons,
+   delete this whole CSS section AND the <div id="toggle"> HTML.
+*/
+#toggle {
+  display: flex;        /* Puts buttons side by side */
+  border: 1px solid #000; /* ✏️  Border around the group. Change #000 for other colour. */
+  pointer-events: auto; /* Re-enable clicks (topbar has pointer-events: none) */
+  flex-shrink: 0;
+}
+#toggle button {
+  background: none;
+  border: none;
+  cursor: pointer;    /* Hand cursor on hover */
+  padding: 6px 16px;  /* ✏️  6px top/bottom, 16px left/right. Adjust to resize buttons. */
+  font-family: var(--mono);
+  font-size: 0.6rem;  /* ✏️  Button text size */
+  letter-spacing: 0.12em;
+  text-transform: uppercase; /* Automatically ALL CAPS */
+  color: var(--mid);  /* Grey when inactive */
+}
+#toggle button + button {
+  border-left: 1px solid #000; /* ✏️  Divider line between buttons */
+}
+#toggle button.active {
+  /* The currently selected button (JavaScript adds/removes this class) */
+  background: #000; /* ✏️  Active button background */
+  color: #fff;      /* ✏️  Active button text colour */
+}
+#toggle button:not(.active):hover {
+  color: #0000FF; /* ✏️  Inactive button text colour on hover */
+}
+
+
+/* =====================================================
+   SECTION F — CORNER LABELS (BOTTOM LEFT AND RIGHT)
+   =====================================================
+   Small text in the bottom corners.
+   hint = bottom-right: "drag · click to open" (auto-updates per view)
+   meta = bottom-left: "2026"
+   ✏️  TO EDIT TEXT: find <div id="hint"> and <div id="meta"> in HTML.
+*/
+#hint {
+  position: fixed;
+  bottom: 26px;       /* ✏️  Pixels from bottom edge */
+  right: 34px;        /* ✏️  Pixels from right edge */
+  z-index: 200;
+  font-family: var(--mono);
+  font-size: 0.58rem; /* ✏️  Size of hint text */
+  color: #000;
+  pointer-events: none;
+}
+#meta {
+  position: fixed;
+  bottom: 26px;       /* ✏️  Same height as hint */
+  left: 34px;         /* ✏️  Pixels from left edge */
+  z-index: 200;
+  font-family: var(--mono);
+  font-size: 0.58rem; /* ✏️  Size of year text */
+  color: var(--light);
+  pointer-events: none;
+}
+#contact-footer {
+  position: fixed;
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: #000;
+  display: flex;
+  gap: 24px;
+  white-space: nowrap;
+}
+#contact-footer a {
+  color: #000;
+  text-decoration: none;
+}
+#contact-footer a:hover {
+  color: #0000ff;
+}
+/* Desktop: show "calder anderson, 2026", hide email link in #meta */
+.meta-mobile { display: none; }
+.meta-desktop { display: inline; }
+@media (max-width: 767px) {
+  /* Mobile: swap #meta to email, hide centered footer */
+  .meta-desktop { display: none; }
+  .meta-mobile  { display: inline; color: #000; text-decoration: none; }
+  #meta { pointer-events: auto; }
+  #contact-footer { display: none !important; }
+}
+
+/* =====================================================
+   SECTION — NETWORK EXPLAINER BOX (DESKTOP ONLY)
+*/
+#net-explainer {
+  position: fixed;
+  left: 34px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 210px;
+  background: #f2f2f2;
+  border: 1px solid #e0e0e0;
+  padding: 18px 20px;
+  z-index: 150;
+  pointer-events: none;
+}
+#net-explainer h4 {
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #999;
+  margin: 0 0 10px;
+  font-weight: 400;
+}
+#net-explainer p {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  line-height: 1.75;
+  color: #555;
+  margin: 0;
+}
+@media (max-width: 767px) {
+  #net-explainer {
+    left: 34px;
+    right: 34px;
+    width: auto;
+    top: auto;
+    transform: none;
+    bottom: 58px; /* sits just above the footer labels */
+    background: none;
+    border: none;
+    padding: 0;
+    text-align: center;
+  }
+  #net-explainer h4 { margin-bottom: 6px; }
+}
+
+
+/* =====================================================
+   SECTION G — TOOLTIP (LABEL ON NODE HOVER)
+   =====================================================
+   The floating label that appears below a node when hovered.
+   JavaScript moves it and shows/hides it. Don't edit this section.
+*/
+#tooltip {
+  position: fixed;           /* JavaScript sets left/top dynamically */
+  z-index: 300;              /* Above everything else */
+  pointer-events: none;      /* Can't accidentally hover the tooltip itself */
+  opacity: 0;                /* Invisible by default */
+  transition: opacity 0.12s; /* Fade in/out over 0.12 seconds */
+  display: flex;
+  flex-direction: column;    /* Stack name and tag vertically */
+  align-items: center;       /* Center both horizontally */
+  padding: 2px 6px;
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+#tooltip.show { opacity: 1; }
+/* JavaScript adds .show → opacity becomes 1 → tooltip fades in */
+
+#tt-name {
+  /* Project name in the tooltip (e.g. "Photography") */
+  font-size: 0.7rem;       /* ✏️  Tooltip name size */
+  font-weight: 550;
+  color: var(--hover);     /* Accent colour from Section B */
+  white-space: nowrap;     /* No line-wrapping */
+}
+#tt-tag {
+  /* Discipline tag in the tooltip (e.g. "image · documentation") */
+  font-family: var(--mono);
+  font-size: 0.55rem;      /* ✏️  Tooltip tag size — smaller than name */
+  color: var(--hover);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 2px;         /* Small gap between name and tag */
+  white-space: nowrap;
+}
+.c-tip {
+  position: fixed;
+  z-index: 299;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transform: translateX(-50%);
+}
+.c-tip.show { opacity: 1; }
+.c-tip-name {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--hover);
+  white-space: nowrap;
+}
+.c-tip-tag {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  color: var(--hover);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+
+/* =====================================================
+   SECTION H — NETWORK CANVAS
+   =====================================================
+   The drawing surface that JavaScript draws nodes and edges onto.
+   Covers the full screen. Don't edit this.
+*/
+#net-canvas {
+  position: fixed;   /* Full screen */
+  inset: 0;          /* top:0, right:0, bottom:0, left:0 — stretches to all edges */
+  display: block;
+  cursor: default;   /* JavaScript changes to 'pointer' (over node) or 'grabbing' (drag) */
+}
+
+
+/* =====================================================
+   SECTION I — SCATTER / INDEX VIEW
+   =====================================================
+   The text-based view when you click "Index".
+   Projects appear as text labels scattered around the screen.
+   Hidden by default — JavaScript shows it when needed.
+
+   .s-item  = each project link
+   .s-name  = the project title text
+   .s-tag   = the small discipline tag (hidden until hover)
+*/
+#scatter-view {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  background: #fff;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 120px;
+}
+
+/* ── INDEX LIST ── */
+.index-list {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.index-list-title {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--mid);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  padding: 0 24px 12px;
+  border-bottom: 1px solid #000;
+  display: flex;
+  gap: 0;
+}
+.index-list-title .col-year  { width: 72px; flex-shrink: 0; }
+.index-list-title .col-name  { flex: 1; }
+.index-list-title .col-tag   { width: 240px; flex-shrink: 0; text-align: right; }
+
+.index-row {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  padding: 28px 24px;
+  border-bottom: 1px solid #e8e8e8;
+  text-decoration: none;
+  color: #000;
+  perspective: 900px;
+  overflow: hidden;
+}
+
+/* the blue fill that wipes in from top */
+.index-row::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #0000ff;
+  transform-origin: top center;
+  transform: scaleY(0);
+  transition: transform 0.45s cubic-bezier(0.76, 0, 0.24, 1);
+  z-index: 0;
+}
+.index-row:hover::before {
+  transform: scaleY(1);
+}
+
+/* text layers sit above the blue fill */
+.index-year, .index-name, .index-tag {
+  position: relative;
+  z-index: 1;
+}
+
+/* text fades to white smoothly alongside the fill */
+.index-year  { transition: color 0.3s ease; }
+.index-name  { transition: color 0.3s ease; }
+.index-tag   { transition: color 0.3s ease; }
+.index-row:hover .index-year,
+.index-row:hover .index-name,
+.index-row:hover .index-tag { color: #fff; }
+
+.index-year {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--mid);
+  width: 72px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+.index-name {
+  flex: 1;
+  font-size: 1.25rem;
+  font-weight: 300;
+  line-height: 1.2;
+}
+.index-tag {
+  width: 240px;
+  flex-shrink: 0;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--mid);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: right;
+  padding-top: 4px;
+}
+
+@media (max-width: 600px) {
+  #scatter-view { padding: 90px 24px 60px; }
+  .index-tag { display: none; }
+  .index-year { width: 52px; }
+  .index-name { font-size: 1.05rem; }
+}
+
+
+/* =====================================================
+   SECTION I-MOBILE — MOBILE HEADER
+*/
+@media (max-width: 767px) {
+  #topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px 20px 12px;
+    gap: 8px;
+  }
+  #header h1 {
+    font-size: 2rem;
+    white-space: nowrap;
+  }
+  #header span {
+    font-size: 0.6rem;
+  }
+  #toggle {
+    align-self: flex-start;
+  }
+  #scatter-view {
+    padding: 120px 20px 60px;
+    align-items: flex-start;
+  }
+  .index-list {
+    margin: 0;
+  }
+}
+
+
+/* =====================================================
+   SECTION I-MOBILE2 — PROJECT PAGE MOBILE
+   =====================================================
+   Makes the project/about page readable on phones.
+*/
+
+/* Desktop: mobile portrait slot hidden, desktop portrait visible */
+#proj-portrait-slot { display: none; }
+.about-portrait-desktop { display: block; }
+
+@media (max-width: 767px) {
+  /* Back button: smaller offset on mobile */
+  #project-page > div:first-child {
+    top: 14px !important;
+    left: 18px !important;
+  }
+  /* Content wrapper: tighter padding */
+  #project-content {
+    padding: 68px 20px 80px !important;
+  }
+  /* Project header: less bottom gap */
+  #proj-header {
+    margin-bottom: 28px !important;
+  }
+  /* Portrait slot: shown above the line on mobile, tight gap below */
+  #proj-portrait-slot {
+    display: block !important;
+    margin-bottom: 16px !important;
+  }
+  #proj-portrait-slot .about-portrait-mobile {
+    width: 100%;
+    max-width: 260px;
+    height: auto;
+    object-fit: contain;
+    display: block;
+  }
+  /* Media area: collapse if empty (about page has no media) */
+  #proj-media:empty {
+    margin-bottom: 0 !important;
+  }
+  #proj-media {
+    margin-bottom: 24px !important;
+  }
+  /* Metadata grid: stack year/discipline above description, reduce top padding */
+  #proj-meta-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+    padding-top: 20px !important;
+  }
+  /* About text column: full width, no side portrait */
+  #proj-desc-col {
+    flex-direction: column !important;
+    gap: 0 !important;
+  }
+  /* Desktop portrait: hidden on mobile */
+  .about-portrait-desktop {
+    display: none !important;
+  }
+  /* Slideshow arrows: always visible on touch (no hover state) */
+  .slideshow-btn {
+    opacity: 1 !important;
+  }
+  .slideshow-counter {
+    opacity: 1 !important;
+  }
+}
+
+
+/* =====================================================
+   SECTION J — SLIDESHOW (IMAGE CAROUSEL)
+   =====================================================
+   Styles for slideshows on project pages.
+   Created when you use: { type: 'slideshow', images: [...] } in PAGE_DATA.
+   Don't need to edit this usually.
+   One editable thing: the arrow button hover colour (marked ✏️ below).
+*/
+.slideshow {
+  position: relative;
+  width: 100%;
+  margin-bottom: 3px;    /* Small gap below slideshow */
+  background: #f0f0f0;   /* ✏️  Placeholder colour while images load */
+  overflow: hidden;
+  user-select: none;
+}
+.slideshow-track {
+  /* The horizontal strip of all slides */
+  display: flex;
+  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 0.38s = slide animation duration. ✏️  Increase for slower, decrease for faster. */
+  will-change: transform;
+}
+.slideshow-track img {
+  width: 100%;
+  flex-shrink: 0;     /* Don't squish images */
+  display: block;
+  object-fit: cover;  /* Crop to fill — no distortion */
+}
+.slideshow-btn {
+  /* The ← → arrow buttons */
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%); /* Vertically center the button */
+  background: #fff;            /* ✏️  Arrow button background */
+  border: none;
+  cursor: pointer;
+  width: 36px;                 /* ✏️  Arrow button width */
+  height: 36px;                /* ✏️  Arrow button height */
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem;           /* ✏️  Size of the ← → characters */
+  color: #000;                 /* ✏️  Arrow character colour */
+  z-index: 10;
+  opacity: 0;                  /* Hidden until hover */
+  transition: opacity 0.15s;
+}
+.slideshow:hover .slideshow-btn { opacity: 1; } /* Arrows show on hover */
+.slideshow-btn.prev { left: 16px; }   /* ✏️  Left arrow position from left edge */
+.slideshow-btn.next { right: 16px; }  /* ✏️  Right arrow position from right edge */
+.slideshow-btn:hover {
+  background: #0000FF; /* ✏️  Arrow button colour ON HOVER. Change to match --hover. */
+  color: #fff;
+}
+.slideshow-counter {
+  /* "1 / 4" counter bottom-right */
+  position: absolute; bottom: 14px; right: 18px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.58rem; letter-spacing: 0.1em;
+  color: #fff;
+  background: rgba(0,0,0,0.35); /* Semi-transparent dark background */
+  padding: 3px 8px;
+  pointer-events: none; opacity: 0; transition: opacity 0.15s;
+}
+.slideshow:hover .slideshow-counter { opacity: 1; }
+.slideshow-dots {
+  /* Dot indicators bottom-center */
+  position: absolute; bottom: 14px; left: 50%;
+  transform: translateX(-50%); /* Center horizontally */
+  display: flex; gap: 5px;     /* ✏️  Space between dots */
+  pointer-events: none;
+}
+.slideshow-dot {
+  width: 5px; height: 5px;     /* ✏️  Dot size */
+  border-radius: 50%;          /* Makes it a circle */
+  background: rgba(255,255,255,0.5); /* Semi-transparent white */
+  transition: background 0.15s;
+}
+.slideshow-dot.active { background: #fff; } /* Current slide dot = fully white */
+
+</style>
+</head>
+
+<body>
+
+
+<!-- =====================================================
+     SECTION K — YOUR NAME (TOP-LEFT)
+     =====================================================
+     ✏️  EDIT: Change the text inside the tags below. -->
+<div id="topbar">
+<div id="header">
+  <h1>Calder Anderson</h1>
+  <!-- ✏️  YOUR NAME. Change "Calder Anderson" to your name. -->
+
+  <span>artist · designer · publisher · musician — based in new york</span>
+  <!-- ✏️  YOUR SUBTITLE. Change this to describe yourself.
+       · = Option+8 on Mac, or copy-paste it.
+       — = Option+Shift+- on Mac (em dash). -->
+</div>
+
+
+<!-- =====================================================
+     SECTION L — TOGGLE BUTTONS (TOP-RIGHT)
+     =====================================================
+     The Network / Index switcher.
+     NOTE: You said you're providing your own buttons.
+     If so, DELETE this entire block (from <div id="toggle"> to </div>).
+     Your buttons must call setView('network') or setView('scatter') on click.
+     Example for your button: onclick="setView('network')" -->
+<div id="toggle">
+  <button id="btn-net" class="active" onclick="setView('network')">Network</button>
+  <!-- id="btn-net"   = JavaScript uses this to mark it as active/inactive
+       class="active" = starts selected (black background)
+       onclick="..."  = calls setView('network') when clicked
+       Network        = ✏️  the label text. Change if you want. -->
+
+  <button id="btn-scatter" onclick="setView('scatter')">Index</button>
+  <!-- onclick="setView('scatter')" = switches to the index text view
+       Index = ✏️  the label text. Change if you want. -->
+</div>
+</div><!-- end #topbar -->
+
+
+<!-- =====================================================
+     SECTION M — CORNER LABELS
+     =====================================================
+     ✏️  Edit the text inside these divs. -->
+
+<div id="hint">drag · click to open</div>
+<!-- Bottom-right. ✏️  This is the initial text for the network view.
+     It's automatically changed to "click to open" in the index view. -->
+
+<div id="meta">
+  <span class="meta-desktop">calder anderson, 2026</span>
+  <a class="meta-mobile" href="https://mail.google.com/mail/?view=cm&fs=1&to=calder1234516@gmail.com" target="_blank" rel="noopener">calder1234516@gmail.com</a>
+</div>
+<!-- ✏️  Bottom-left. Desktop shows "calder anderson, 2026"; mobile shows email link. -->
+
+<div id="contact-footer">
+  <a href="https://mail.google.com/mail/?view=cm&fs=1&to=calder1234516@gmail.com" target="_blank" rel="noopener">calder1234516@gmail.com</a>
+  <a href="https://www.instagram.com/calder.a/" target="_blank" rel="noopener">instagram</a>
+</div>
+
+<div id="net-explainer">
+  <h4>about this network</h4>
+  <p>Each node is a project or body of work. Edges connect pieces that share a discipline or inform one another — mapping how practice moves through disciplines and mediums.</p>
+</div>
+
+
+<!-- The canvas drawing surface. JavaScript draws onto this. DON'T EDIT THIS TAG. -->
+<canvas id="net-canvas"></canvas>
+
+<!-- Tooltip div — JavaScript fills and moves this. DON'T EDIT. -->
+<div id="tooltip">
+  <div id="tt-name"></div> <!-- Project name goes here on hover -->
+  <div id="tt-tag"></div>  <!-- Discipline tag goes here on hover -->
+</div>
+<!-- Connected node labels — JavaScript manages these. DON'T EDIT. -->
+<div id="connected-tips"></div>
+
+<!-- Scatter index container — JavaScript fills this. DON'T EDIT. -->
+<div id="scatter-view"></div>
+
+
+<!-- =====================================================
+     JAVASCRIPT — THE INTERACTIVE ENGINE
+     Everything between <script> tags is JavaScript.
+     JavaScript makes everything interactive.
+     // = single line comment. /* ... */ = multi-line comment.
+     =====================================================  -->
+<script>
+
+
+/* =====================================================
+   SECTION N — PROJECT DATA
+   =====================================================
+   ✏️  THIS IS THE #1 MOST IMPORTANT THING TO EDIT.
+   Every line in { } is one project / one node on the network.
+
+   WHAT EACH FIELD MEANS:
+   ─────────────────────
+   id      = Unique number. NEVER change after setting. Used by EDGES below.
+   label   = Project name shown in tooltip and index. ✏️  Change this.
+   tag     = Discipline text shown below the name.    ✏️  Change this.
+   url     = Where clicking takes you.                ✏️  Change this.
+             '#login-magazine' = opens built-in project page (uses PAGE_DATA below)
+             '/my-page'        = link to a separate page on your site
+             'https://...'     = external link
+   r       = Dot size in pixels. Bigger = more prominent. ✏️  Change this.
+             Login Magazine = 14 (biggest). About = 6 (smallest).
+             Try values between 5 and 18.
+   group   = Which cluster in Index view. Must match GROUP_CENTERS (Section P).
+             Options: 'print', 'design', 'image', 'sound', 'fashion', 'theory', 'collab', 'info'
+
+   ─────────────────────
+   HOW TO ADD A PROJECT:
+   1. Copy any line from { id:X ... } to the closing },
+   2. Paste it before the ]; at the end of the list
+   3. Give it a new id (next number after 9, so id:10)
+   4. Fill in label, tag, url, r, group
+   5. Add its connections in EDGES below
+   6. Add its content in PAGE_DATA below (Section R)
+   EVERY line except the very last needs a comma at the end.
+
+   HOW TO REMOVE A PROJECT:
+   1. Delete its line here
+   2. Delete all its [a,b] pairs in EDGES that use its id
+   3. Delete its entry in PAGE_DATA
+   ─────────────────────
+*/
+const PROJECTS = [
+
+  { id:0, label:'Login Magazine',                  tag:'print · publishing',   url:'https://loginmag.net/',                                      r:14, group:'print',  year:'2025–ongoing' },
+  { id:1, label:'Graphic Work',                    tag:'design · typography',  url:'graphic_work/html/graphic-work.html',                        r:7,  group:'design', year:'2024' },
+  { id:3, label:'ULTRANET',                        tag:'moving image · space', url:'ultranet.html',                                              r:11, group:'image',  year:'2025' },
+  { id:6, label:'Are You Coming to The Party?',    tag:'print · ephemera',     url:'are_you_coming_to_the_party_web/html/aycttp.html',           r:10, group:'print',  year:'2024' },
+  { id:8, label:'About',                           tag:'context · contact',    url:'#about',                                                     r:10, group:'info',   year:'—'    },
+  { id:9, label:'As Above So Below',               tag:'zine · video',         url:'as%20above%20so%20below/as-above-so-below.html',             r:11, group:'image',  year:'2023' },
+];
+
+
+/* =====================================================
+   SECTION O — EDGES (WHICH NODES CONNECT)
+   =====================================================
+   Each [a, b] draws a line between node id:a and node id:b.
+   Also acts as a spring in the physics — connected nodes pull toward each other.
+
+   [0, 2] = draw a line between id:0 (Login Magazine) and id:2 (Photography)
+
+   ✏️  TO ADD A CONNECTION: add a new [a, b] pair
+   ✏️  TO REMOVE A CONNECTION: delete the [a, b] pair
+   ✏️  Every node should have at least one edge or it will float away!
+*/
+const EDGES = [
+  // Login Magazine (0) connects to: Graphic(1), ULTRANET(2), AYCTTP(3), About(4), AASB(5)
+  [0,1], [0,2], [0,3], [0,4], [0,5],
+
+  // Graphic Work (1) connects to: ULTRANET(2), AYCTTP(3), About(4), AASB(5)
+  [1,2], [1,3], [1,4], [1,5],
+
+  // ULTRANET (2) connects to: AYCTTP(3), About(4), AASB(5)
+  [2,3], [2,4], [2,5],
+
+  // AYCTTP (3) connects to: About(4), AASB(5)
+  [3,4], [3,5],
+
+  // About (4) connects to: AASB(5)
+  [4,5],
+
+  // Music Production — commented out
+  // [was 3,5], [was 3,6],
+
+  // Internet Culture — commented out
+  // [was 4,5], [was 4,6], [was 5,6],
+];
+
+
+/* =====================================================
+   SECTION P — CANVAS SETUP AND PHYSICS STATE
+   =====================================================
+   Sets up the canvas and internal tracking variables.
+   DON'T EDIT THIS SECTION.
+*/
+const canvas = document.getElementById('net-canvas');
+// Gets the <canvas> element from the HTML above
+
+const ctx = canvas.getContext('2d');
+// Gets the "2D drawing context" — the tool we draw shapes with
+// ctx.arc() draws circles. ctx.lineTo() draws lines.
+
+let DPR = 1;
+// Device Pixel Ratio. Will be 2 on retina/high-DPI screens (MacBooks, iPhones).
+// Lets the canvas draw at double resolution so dots and lines are sharp.
+
+function resizeCanvas() {
+  // Sizes the canvas to fill the screen at the right pixel density
+  DPR = window.devicePixelRatio || 1;
+  canvas.width  = window.innerWidth  * DPR; // Canvas internal width (2x on retina)
+  canvas.height = window.innerHeight * DPR; // Canvas internal height
+  canvas.style.width  = window.innerWidth  + 'px'; // But displayed at screen size
+  canvas.style.height = window.innerHeight + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  // Scales all drawing to match DPR so we can always think in screen pixels
+}
+
+// Physics state variables — managed by the simulation. Don't edit.
+let pos = [];
+// Array of { x, y, vx, vy } per node.
+// x, y = position on screen. vx, vy = velocity (speed + direction).
+
+let dragIdx = -1;   // Which node is being dragged? -1 = none
+let dragTX = 0;     // Cursor X while dragging
+let dragTY = 0;     // Cursor Y while dragging
+let dragMoved = false; // Did the drag move >2px? No = treat as a click.
+let hoveredIdx = -1; // Which node is the cursor over? -1 = none
+let simRunning = false; // Is the physics loop running?
+
+
+/* =====================================================
+   SECTION Q — PHYSICS CONSTANTS
+   =====================================================
+   ✏️  YOU CAN EDIT THESE to change how the network feels.
+   Change one at a time, save, and refresh to see the effect.
+*/
+const K_SPRING = 0.018;
+/* ✏️  SPRING STIFFNESS — how hard edges pull connected nodes together.
+   Higher = tighter/more responsive. Lower = looser.
+   Range: 0.01 (very loose) to 0.08 (quite tight). Current: 0.028 */
+
+/* REST_LEN is now computed dynamically per-frame in simStep so it scales with screen size. */
+/* ✏️  RESTING LENGTH — controlled by the 0.40 multiplier inside simStep().
+   Higher multiplier = nodes further apart. Lower = nodes closer together. */
+
+const DAMPING = 0.6;
+/* ✏️  DAMPING — how quickly motion slows each frame (like air resistance).
+   Lower = bouncy, keeps oscillating. Higher = settles quickly.
+   Range: 0.6 (very bouncy) to 0.92 (snappy). Current: 0.76 */
+
+const PIN_K = 0.4;
+/* ✏️  DRAG RESPONSIVENESS — how tightly a dragged node follows cursor.
+   Higher = snappy. Lower = heavy/laggy.
+   Range: 0.2 to 0.8. Current: 0.50 */
+
+const K_REPULSE = 26000;
+/* ✏️  REPULSION STRENGTH — how hard nodes push each other away when close.
+   Higher = more spacing between nodes. Lower = nodes can cluster.
+   Range: 10000 to 40000. Current: 26000 */
+
+const REPULSE_R = 200
+/* ✏️  REPULSION RADIUS — how close (px) two nodes must be before repelling.
+   Higher = repulsion kicks in from further away.
+   Range: 150 to 400. Current: 300 */
+
+
+/* =====================================================
+   SECTION P2 — INITIAL POSITIONS (DON'T EDIT)
+   =====================================================
+   Places nodes in a circle on startup. Physics takes over immediately.
+*/
+function initPositions() {
+  const W = window.innerWidth, H = window.innerHeight;
+  const cx = W / 2, cy = H / 2;
+  const spread = Math.min(W * 0.88, H * 0.88) * 0.50;
+  const outer = PROJECTS.filter(p => p.id !== 8); // All nodes except About
+  pos = PROJECTS.map((p, i) => {
+    if (p.id === 8) return { x: cx, y: cy, vx:0, vy:0 }; // About exactly at center
+    const oi = outer.indexOf(p);
+    const angle = (oi / outer.length) * Math.PI * 2 - Math.PI / 2;
+    // Distribute outer nodes evenly around a perfect circle
+    return { x: cx + Math.cos(angle) * spread * 0.72, y: cy + Math.sin(angle) * spread * 0.72, vx:0, vy:0 };
+  });
+}
+
+
+/* =====================================================
+   SECTION P3 — PHYSICS SIMULATION LOOP (DON'T EDIT)
+   =====================================================
+   Runs ~60 times per second while nodes are moving.
+   Each frame applies 4 forces, then updates positions.
+*/
+function simStep() {
+  const W = window.innerWidth, H = window.innerHeight;
+  const margin = 60; // Nodes stay at least 60px from screen edges
+  const REST_LEN = Math.min(W, H) * 0.40; // ✏️ Scale edge length to screen — change 0.40 to taste
+
+  // FORCE 1: Drag force — move dragged node toward cursor
+  if (dragIdx >= 0) {
+    const p = pos[dragIdx];
+    p.vx += (dragTX - p.x) * PIN_K; // Accelerate toward cursor X
+    p.vy += (dragTY - p.y) * PIN_K; // Accelerate toward cursor Y
+  }
+
+  // FORCE 2: Spring forces along edges
+  // Connected nodes pull toward REST_LEN distance apart
+  EDGES.forEach(([ai, bi]) => {
+    const a = pos[ai], b = pos[bi];
+    const dx = b.x - a.x, dy = b.y - a.y; // Vector from a to b
+    const d = Math.sqrt(dx*dx + dy*dy) || 1; // Distance between them
+    const f = (d - REST_LEN) * K_SPRING; // Spring force (+ve = pull, -ve = push)
+    const fx = (dx/d)*f, fy = (dy/d)*f;
+    a.vx += fx; a.vy += fy; // Push/pull node A
+    b.vx -= fx; b.vy -= fy; // Equal and opposite force on node B
+  });
+
+  // FORCE 3: Repulsion between all node pairs (stops crowding)
+  const N = PROJECTS.length;
+  for (let i = 0; i < N; i++) {
+    for (let j = i+1; j < N; j++) {
+      const a = pos[i], b = pos[j];
+      const dx = a.x-b.x, dy = a.y-b.y;
+      const d2 = dx*dx + dy*dy || 1;
+      const d = Math.sqrt(d2);
+      if (d < REPULSE_R) { // Only repel if within REPULSE_R pixels
+        const f = K_REPULSE / (d2 * d); // Stronger repulsion when closer
+        const fx = dx*f, fy = dy*f;
+        a.vx += fx; a.vy += fy; // Push A away from B
+        b.vx -= fx; b.vy -= fy; // Push B away from A
+      }
+    }
+  }
+
+  // FORCE 4: Weak centering pull (prevents graph drifting off screen)
+  const cx = W/2, cy = H/2;
+  pos.forEach(p => {
+    p.vx += (cx - p.x) * 0.0005; // Very weak pull toward horizontal center
+    p.vy += (cy - p.y) * 0.0005; // Very weak pull toward vertical center
+  });
+
+  // INTEGRATE: apply velocities, damp, clamp to screen bounds
+  const topMargin = W < 768 ? 190 : margin; // Extra clearance for stacked mobile header
+  let anyMoving = false;
+  pos.forEach(p => {
+    p.vx *= DAMPING; // Reduce velocity by DAMPING each frame (friction)
+    p.vy *= DAMPING;
+    p.x = Math.max(margin, Math.min(W - margin, p.x + p.vx)); // Move + clamp to bounds
+    p.y = Math.max(topMargin, Math.min(H - margin, p.y + p.vy));
+    if (Math.abs(p.vx) > 0.04 || Math.abs(p.vy) > 0.04) anyMoving = true;
+    // If any node is moving faster than 0.04px/frame, keep the loop going
+  });
+
+  draw(); // Redraw everything at new positions
+
+  if (anyMoving || dragIdx >= 0) requestAnimationFrame(simStep);
+  // Schedule next frame only if something is still moving, or we're dragging
+  else simRunning = false; // Otherwise stop — saves battery/CPU
+}
+
+function kickSim() {
+  // Starts the simulation loop if it's not already running
+  if (!simRunning) { simRunning = true; requestAnimationFrame(simStep); }
+}
+
+
+/* =====================================================
+   SECTION P4 — DRAW FUNCTION
+   =====================================================
+   Renders nodes and edges onto the canvas.
+   Called from simStep() every frame, and directly on hover/resize.
+
+   ✏️  Things you can change are marked below.
+*/
+const tooltip = document.getElementById('tooltip');
+const ttName  = document.getElementById('tt-name');
+const ttTag   = document.getElementById('tt-tag');
+
+function draw() {
+  const W = window.innerWidth, H = window.innerHeight;
+  ctx.clearRect(0, 0, W, H); // Erase the whole canvas before redrawing
+
+  // PASS 1: Draw edges (lines) — drawn first so they're behind nodes
+  EDGES.forEach(([ai, bi]) => {
+    const a = pos[ai], b = pos[bi]; // Start and end positions
+    const active = (ai === hoveredIdx || bi === hoveredIdx);
+    // Is either end of this edge connected to the hovered node?
+
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y); // Start of line
+    ctx.lineTo(b.x, b.y); // End of line
+
+    ctx.strokeStyle = active ? '#0000FF' : '#d0d0d0';
+    /* ✏️  Edge colour:
+         When adjacent to hovered node: '#0000FF' (blue) — change this
+         All other edges: '#d0d0d0' (light grey) — change this */
+
+    ctx.lineWidth = active ? 1 : 0.8;
+    /* ✏️  Edge thickness: 1px on hover, 0.8px normally.
+         Increase both for bolder lines. */
+
+    ctx.stroke(); // Actually draw the line
+  });
+
+  // PASS 2: Draw nodes (dots) — drawn after edges so they're on top
+  PROJECTS.forEach((p, i) => {
+    const { x, y } = pos[i];         // Node's current position
+    const hov = (i === hoveredIdx);  // Is this node being hovered?
+
+    ctx.beginPath();
+    ctx.arc(x, y, p.r * (hov ? 1.3 : 1), 0, Math.PI * 2);
+    // x, y = center of dot
+    // p.r × 1.3 = 30% bigger on hover. ✏️  Change 1.3 to adjust hover scale.
+    // 0 to Math.PI*2 = full circle
+
+    ctx.fillStyle = hov ? '#0000FF' : '#000';
+    /* ✏️  Node colour:
+         Hovered: '#0000FF' (blue)
+         Normal: '#000' (black) */
+
+    ctx.fill(); // Fill the circle
+  });
+
+  // PASS 3: Position the tooltip DOM element below the hovered node
+  if (hoveredIdx >= 0) {
+    const p = PROJECTS[hoveredIdx];
+    const { x, y } = pos[hoveredIdx];
+    tooltip.style.left      = x + 'px';
+    tooltip.style.top       = (y + p.r * 1.3 + 10) + 'px';
+    tooltip.style.transform = 'translateX(-50%)';
+    ttName.textContent = p.label;
+    ttTag.textContent  = p.tag;
+    tooltip.classList.add('show');
+
+    // PASS 4: Show DOM labels for all connected nodes
+    const connTips = document.getElementById('connected-tips');
+    const connected = new Set();
+    EDGES.forEach(([a, b]) => {
+      if (a === hoveredIdx) connected.add(b);
+      if (b === hoveredIdx) connected.add(a);
+    });
+
+    // Reuse or create one .c-tip per connected node
+    const existing = Array.from(connTips.children);
+    let ei = 0;
+    connected.forEach(idx => {
+      const cp = PROJECTS[idx];
+      const { x: nx, y: ny } = pos[idx];
+      let el = existing[ei++];
+      if (!el) { el = document.createElement('div'); el.className = 'c-tip'; connTips.appendChild(el); }
+      el.innerHTML = `<div class="c-tip-name">${cp.label}</div><div class="c-tip-tag">${cp.tag}</div>`;
+      el.style.left = nx + 'px';
+      el.style.top  = (ny + cp.r * 1.3 + 10) + 'px';
+      el.classList.add('show');
+    });
+    // Hide any extras
+    for (; ei < existing.length; ei++) existing[ei].classList.remove('show');
+
+  } else {
+    tooltip.classList.remove('show');
+    const connTips = document.getElementById('connected-tips');
+    Array.from(connTips.children).forEach(el => el.classList.remove('show'));
+  }
+}
+
+
+/* =====================================================
+   SECTION P5 — HIT TEST (DON'T EDIT)
+   =====================================================
+   Detects which node (if any) is under the cursor.
+   Returns node index (0-9) or -1 if none.
+*/
+function hitTest(mx, my) {
+  for (let i = PROJECTS.length - 1; i >= 0; i--) {
+    const dx = mx - pos[i].x; // Horizontal distance from cursor to node center
+    const dy = my - pos[i].y; // Vertical distance
+    if (dx*dx + dy*dy <= (PROJECTS[i].r + 6) ** 2) return i;
+    // Pythagorean check: if cursor is within radius (+6px buffer) → hit!
+  }
+  return -1; // No node under cursor
+}
+
+
+/* =====================================================
+   SECTION P6 — INPUT HANDLERS (DON'T EDIT)
+   =====================================================
+   Mouse and touch event listeners.
+   Logic: mousedown + no movement + mouseup = CLICK = navigate to project.
+          mousedown + movement = DRAG = move the node.
+*/
+
+// When cursor moves over the canvas
+canvas.addEventListener('mousemove', e => {
+  const mx = e.clientX, my = e.clientY;
+  if (dragIdx >= 0) {
+    // We're dragging: update drag target position
+    if (Math.abs(mx-dragTX) > 2 || Math.abs(my-dragTY) > 2) dragMoved = true;
+    // If moved >2px, mark as a real drag (not a click)
+    dragTX = mx; dragTY = my;
+    kickSim(); canvas.style.cursor = 'grabbing';
+  } else {
+    // Not dragging: update hover state
+    const hit = hitTest(mx, my);
+    if (hit !== hoveredIdx) { hoveredIdx = hit; draw(); }
+    // If hover changed: redraw to show/hide hover state
+    canvas.style.cursor = hit >= 0 ? 'pointer' : 'default';
+  }
+});
+
+// When mouse button is pressed on canvas
+canvas.addEventListener('mousedown', e => {
+  const hit = hitTest(e.clientX, e.clientY);
+  if (hit >= 0) {
+    dragIdx = hit; dragTX = e.clientX; dragTY = e.clientY; dragMoved = false;
+    pos[hit].vx = 0; pos[hit].vy = 0; // Stop node's current movement
+    canvas.style.cursor = 'grabbing';
+    e.preventDefault(); // Prevents text selection while dragging
+    kickSim();
+  }
+});
+
+// When mouse button is released (anywhere on page, not just canvas)
+window.addEventListener('mouseup', () => {
+  if (dragIdx >= 0) {
+    const wasMoved = dragMoved, idx = dragIdx;
+    dragIdx = -1; canvas.style.cursor = 'default'; kickSim();
+    if (!wasMoved) navigateTo(PROJECTS[idx].url);
+    // If barely moved = click → navigate to this project
+  }
+});
+
+// When cursor leaves the canvas area
+canvas.addEventListener('mouseleave', () => {
+  if (dragIdx < 0) { hoveredIdx = -1; draw(); } // Clear hover if not dragging
+});
+
+// Touch equivalents for mobile devices:
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  const hit = hitTest(t.clientX, t.clientY);
+  if (hit >= 0) {
+    dragIdx = hit; dragTX = t.clientX; dragTY = t.clientY; dragMoved = false;
+    pos[hit].vx = 0; pos[hit].vy = 0;
+    hoveredIdx = hit; // Show tooltip immediately on touch
+    kickSim();
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (dragIdx < 0) return;
+  const t = e.touches[0];
+  if (Math.abs(t.clientX-dragTX) > 2 || Math.abs(t.clientY-dragTY) > 2) dragMoved = true;
+  dragTX = t.clientX; dragTY = t.clientY;
+  hoveredIdx = dragIdx; // Keep tooltip visible while dragging
+  kickSim();
+}, { passive: false });
+
+canvas.addEventListener('touchend', () => {
+  if (dragIdx >= 0) {
+    const wasMoved = dragMoved, idx = dragIdx;
+    dragIdx = -1;
+    hoveredIdx = -1; // Hide tooltip on release
+    draw();
+    kickSim();
+    if (!wasMoved) navigateTo(PROJECTS[idx].url);
+  }
+});
+
+
+/* =====================================================
+   SECTION P7 — SCATTER INDEX LAYOUT
+   =====================================================
+   ✏️  THESE TWO THINGS YOU CAN EDIT:
+
+   GROUP_CENTERS — where each group cluster sits on screen.
+   bx = 0 (left edge) to 1 (right edge)
+   by = 0 (top) to 1 (bottom)
+   ✏️  Move a cluster by adjusting its bx / by.
+
+   SCATTER_META — per-project font size and offset.
+   fs = font size (e.g. '1.6rem' = big, '0.72rem' = small)
+   ox = horizontal nudge in pixels (+ = right, - = left)
+   oy = vertical nudge in pixels (+ = down, - = up)
+   ✏️  Rows match PROJECTS in order (row 0 = id:0, etc.)
+*/
+const GROUP_CENTERS = {
+  print:   { bx:0.12, by:0.42 }, // ✏️  Left, vertical center. Login Magazine + Are You Coming.
+  design:  { bx:0.48, by:0.18 }, // ✏️  Center, upper. Graphic Work.
+  image:   { bx:0.76, by:0.32 }, // ✏️  Right, upper-middle. Photography + Video Installation.
+  sound:   { bx:0.72, by:0.65 }, // ✏️  Right, lower-middle. Music Production.
+  fashion: { bx:0.40, by:0.74 }, // ✏️  Center-left, lower. Styling.
+  theory:  { bx:0.18, by:0.74 }, // ✏️  Left, lower. Internet Culture.
+  collab:  { bx:0.52, by:0.50 }, // ✏️  Center of screen.
+  info:    { bx:0.82, by:0.76 }  // ✏️  Right, bottom. About.
+};
+
+const SCATTER_META = [
+  // Row 0 → Login Magazine  r:14
+  { fs:'1.60rem', ox: 0,   oy: 0   },
+  // Row 1 → Graphic Work    r:7
+  { fs:'0.83rem', ox: 55,  oy: 30  },
+  // Row 2 → ULTRANET  r:11
+  { fs:'1.27rem', ox: 35,  oy:-22  },
+  // Row 3 → Are You Coming to The Party?  r:10
+  { fs:'1.16rem', ox: 28,  oy:-28  },
+  // Row 4 → About           r:10
+  { fs:'1.16rem', ox: 0,   oy: 0   },
+  // Row 5 → As Above So Below  r:11
+  { fs:'1.27rem', ox:-40,  oy: 20  },
+  // { fs:'0.94rem', ox: 0,   oy: 0   },  // Music Production (commented out)
+  // { fs:'1.05rem', ox:-36,  oy: 18  },  // Internet Culture (commented out)
+];
+
+// Builds the chronological index list.
+// Called when switching to Index view and on window resize.
+function buildScatter() {
+  const el = document.getElementById('scatter-view');
+  el.innerHTML = '';
+
+  const list = document.createElement('div');
+  list.className = 'index-list';
+
+  // Header row
+  const header = document.createElement('div');
+  header.className = 'index-list-title';
+  header.innerHTML = '<span class="col-year">Year</span><span class="col-name">Project</span><span class="col-tag">Discipline</span>';
+  list.appendChild(header);
+
+  // Sort most recent first; "ongoing" entries float to top
+  const sorted = PROJECTS.filter(p => p.id !== 8)
+    .sort((a, b) => {
+      const av = a.year.includes('ongoing') ? '9999' : a.year;
+      const bv = b.year.includes('ongoing') ? '9999' : b.year;
+      return bv < av ? -1 : bv > av ? 1 : 0;
+    });
+
+  sorted.forEach(p => {
+    const a = document.createElement('a');
+    a.className = 'index-row';
+    a.href = p.url;
+    a.innerHTML = `<span class="index-year">${p.year}</span><span class="index-name">${p.label}</span><span class="index-tag">${p.tag}</span>`;
+    list.appendChild(a);
+  });
+
+  el.appendChild(list);
+}
+
+
+/* =====================================================
+   SECTION P8 — VIEW TOGGLE (DON'T EDIT)
+   =====================================================
+   setView(v) switches between 'network' and 'scatter'.
+   Called by the HTML buttons: onclick="setView('network')"
+   If using external buttons, call it the same way.
+*/
+let currentView = 'network'; // Tracks active view. Starts on 'network'.
+
+function setView(v) {
+  currentView = v;
+  // Update active state of the built-in toggle buttons
+  document.getElementById('btn-net').classList.toggle('active', v === 'network');
+  document.getElementById('btn-scatter').classList.toggle('active', v === 'scatter');
+  // Update hint text
+  document.getElementById('hint').textContent = v === 'network' ? 'drag · click to open' : 'click to open';
+  const sv = document.getElementById('scatter-view');
+  const explainer = document.getElementById('net-explainer');
+  if (v === 'network') {
+    sv.style.display = 'none'; canvas.style.display = 'block'; tooltip.style.display = ''; explainer.style.display = ''; draw();
+  } else {
+    canvas.style.display = 'none'; tooltip.style.display = 'none'; sv.style.display = 'flex'; explainer.style.display = 'none'; buildScatter();
+  }
+}
+
+
+/* =====================================================
+   SECTION P9 — STARTUP (DON'T EDIT)
+   =====================================================
+   Initialises everything when the page loads.
+*/
+function init() {
+  resizeCanvas();   // Set canvas to screen size
+  initPositions();  // Place nodes in starting positions
+  draw();           // Draw first frame
+}
+
+window.addEventListener('resize', () => {
+  // Re-initialise on window resize
+  resizeCanvas(); initPositions();
+  if (currentView === 'network') draw();
+  else buildScatter();
+});
+
+init(); // Run now!
+
+</script>
+
+
+<!-- =====================================================
+     PROJECT PAGE OVERLAY
+     =====================================================
+     The full-screen page shown when you click a node.
+     Hidden by default. The router (below) shows it.
+
+     ✏️  TO CHANGE LAYOUT: edit the HTML structure here.
+     ✏️  TO CHANGE CONTENT: edit PAGE_DATA in the next script block.
+-->
+<div id="project-page" style="
+  position:fixed; inset:0;
+  background:#fff;          /* ✏️  Project page background */
+  z-index:500;              /* Above everything */
+  display:none;             /* Hidden by default */
+  overflow-y:auto;          /* Scrollable for long projects */
+  font-family:'Geist','Helvetica Neue',Arial,sans-serif;
+">
+
+  <!-- BACK BUTTON — top-left, always visible even when scrolling -->
+  <div style="position:fixed; top:26px; left:34px; z-index:600;">
+    <button onclick="navigateTo('#')" style="
+      background:none; border:none; cursor:pointer; padding:0;
+      font-family:'Geist Mono',monospace; font-size:0.6rem;
+      letter-spacing:0.12em; text-transform:uppercase; color:#999;
+      display:flex; align-items:center; gap:8px;
+    ">← back</button>
+    <!-- ✏️  "← back" = the button label. Change if you want. -->
+  </div>
+
+  <!-- CONTENT WRAPPER — controls width and margins -->
+  <div id="project-content" style="
+    max-width:1600px;         /* ✏️  Max width of content. Reduce for narrower column. */
+    margin:0 auto;            /* Centers the content horizontally */
+    padding:100px 80px 140px; /* ✏️  Spacing: 100px top, 80px sides, 140px bottom */
+  ">
+
+    <!-- PROJECT TAG + TITLE (filled by JavaScript from PAGE_DATA) -->
+    <div id="proj-header" style="margin-bottom:64px;">
+
+      <p id="proj-tag" style="
+        font-family:'Geist Mono',monospace; font-size:0.62rem;
+        letter-spacing:0.16em; text-transform:uppercase;
+        color:#0000FF;      /* ✏️  Discipline tag colour above the title */
+        margin-bottom:6px;
+      "></p>
+      <!-- JavaScript fills this with the project's tag -->
+
+      <h1 id="proj-title" style="
+        font-size:clamp(2rem, 5vw, 3.8rem); /* Responsive: min 2rem, max 3.8rem */
+        font-weight:400; line-height:1.08; letter-spacing:-0.02em;
+        color:#000; /* ✏️  Title colour */
+      "></h1>
+      <!-- JavaScript fills this with the project's title -->
+    </div>
+
+    <!-- PORTRAIT SLOT — about page only: portrait shown here on mobile (above the line) -->
+    <div id="proj-portrait-slot" style="margin-bottom:32px;"></div>
+
+    <!-- MEDIA AREA — images, videos, slideshows injected here by JavaScript -->
+    <!-- DON'T put anything here — it's auto-filled from PAGE_DATA below -->
+    <div id="proj-media" style="margin-bottom:72px;"></div>
+
+    <!-- DESCRIPTION — two columns: metadata left, text right -->
+    <div id="proj-meta-grid" style="
+      display:grid;
+      grid-template-columns:200px 1fr; /* ✏️  200px = left column width. 1fr = rest of space. */
+      gap:60px;                         /* ✏️  Space between columns */
+      align-items:start;
+      border-top:1px solid #f0f0f0;    /* ✏️  Thin separator line. #f0f0f0 = very light grey. */
+      padding-top:48px;
+    ">
+      <!-- LEFT COLUMN: Year and Discipline -->
+      <div>
+        <p style="font-family:'Geist Mono',monospace; font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; color:#999; margin-bottom:12px;">Year</p>
+        <p id="proj-year" style="font-family:'Geist Mono',monospace; font-size:0.72rem; color:#0000ff; margin-bottom:32px;"></p>
+        <!-- JavaScript fills this with the year range -->
+        <p id="proj-discipline-label" style="font-family:'Geist Mono',monospace; font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; color:#999; margin-bottom:12px;">Discipline</p>
+        <p id="proj-tag2" style="font-family:'Geist Mono',monospace; font-size:0.72rem; color:#0000ff;"></p>
+        <!-- JavaScript fills this with the discipline tag or email link -->
+      </div>
+      <!-- RIGHT COLUMN: Description text + optional side image -->
+      <div id="proj-desc-col" style="display:flex; gap:48px; align-items:flex-start;">
+        <p id="proj-desc" style="
+          font-size:1.05rem;  /* ✏️  Description text size */
+          line-height:1.8;    /* ✏️  Line spacing. 1.8 is very readable. */
+          color:#000;
+          font-weight:300;    /* Light weight for editorial feel */
+          max-width:640px;    /* ✏️  Max text line length. Keeps it readable. */
+          flex:1;
+        "></p>
+        <!-- JavaScript fills this with the description text -->
+        <img id="proj-side-img" style="display:none; width:240px; height:auto; object-fit:contain; flex-shrink:0;" src="" alt="">
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+/* =====================================================
+   SECTION R — PAGE DATA
+   =====================================================
+   ✏️  THIS IS THE #2 MOST IMPORTANT THING TO EDIT.
+   This is the content of each project page.
+   The KEY (e.g. 'login-magazine') must match the url in PROJECTS
+   without the # symbol.
+
+   FIELDS:
+   title  = large heading on the project page
+   tag    = small text above the title (same as in PROJECTS)
+   year   = shown in the left metadata column
+   desc   = the paragraph text. Use \n\n for a paragraph break.
+   media  = array of content blocks (see types below)
+
+   ─────────────────────────────────
+   MEDIA BLOCK TYPES:
+   ─────────────────────────────────
+   SINGLE IMAGE:
+   { type: 'image', src: 'images/filename.jpg' }
+   → Put image files in an 'images' folder next to this HTML file.
+   → File names: lowercase, no spaces, use hyphens. E.g. 'login-cover.jpg'
+
+   SIDE-BY-SIDE IMAGES:
+   { type: 'image-grid', images: ['images/a.jpg', 'images/b.jpg'] }
+   → Add more paths for 3-up, 4-up grids.
+
+   SLIDESHOW (swipeable carousel):
+   { type: 'slideshow', aspect: '3/2', images: ['images/a.jpg', 'images/b.jpg', ...] }
+   → aspect: '3/2' (default), '16/9' (widescreen), '1/1' (square), '4/5' (portrait)
+
+   VIMEO VIDEO:
+   { type: 'vimeo', id: '123456789' }
+   → Get the ID from vimeo.com/123456789 → id is '123456789'
+
+   YOUTUBE VIDEO:
+   { type: 'youtube', id: 'dQw4w9WgXcQ' }
+   → Get the ID from youtube.com/watch?v=dQw4w9WgXcQ → id is 'dQw4w9WgXcQ'
+
+   SELF-HOSTED VIDEO:
+   { type: 'video', src: 'videos/film.mp4', poster: 'images/thumb.jpg' }
+   → poster is optional. Put videos in a 'videos' folder.
+
+   SOUNDCLOUD:
+   { type: 'soundcloud', url: 'https://soundcloud.com/yourname/yourtrack' }
+   → Copy the full URL from your SoundCloud track page.
+
+   BANDCAMP:
+   { type: 'bandcamp', src: 'https://bandcamp.com/EmbeddedPlayer/...' }
+   → Get this from your Bandcamp page → Share/Embed → "Embed this album" → copy the src URL.
+   ─────────────────────────────────
+*/
+const PAGE_DATA = {
+
+  'login-magazine': {
+    title: 'Login Magazine',
+    tag: 'print · publishing',
+    year: '2025–ongoing',
+    desc: 'Login Magazine is an independent print publication exploring internet culture, digital identity, and the aesthetics of networked life. Issue 001 launched in early 2025 with a limited print run.',
+    // ✏️  Change this description to your actual text.
+    // Use \n\n between paragraphs: 'First paragraph.\n\nSecond paragraph.'
+    media: [
+      { type: 'image-grid', images: ['images/login-01.jpg', 'images/login-02.jpg'] },
+      // ✏️  Replace filenames. Put your images in an 'images' folder next to this file.
+      { type: 'image', src: 'images/login-03.jpg' },
+    ],
+  },
+
+  'graphic': {
+    title: 'Graphic Work',
+    tag: 'design · typography',
+    year: '2022–present',
+    desc: 'A body of graphic design work spanning editorial layouts, identity systems, and typographic experiments.',
+    media: [
+      { type: 'image-grid', images: ['images/graphic-01.jpg', 'images/graphic-02.jpg'] },
+      { type: 'image', src: 'images/graphic-03.jpg' },
+    ],
+  },
+
+
+  'video': {
+    title: 'ULTRANET',
+    tag: 'moving image · space',
+    year: '2023–present',
+    desc: 'Video installation work exploring archival footage, surveillance aesthetics, and the relationship between screens and physical space.',
+    media: [
+      { type: 'vimeo', id: 'VIDEO_ID' },
+      // ✏️  Replace VIDEO_ID with the number from your Vimeo URL.
+      //     vimeo.com/987654321 → id: '987654321'
+      // Alternatives (remove the // to use one instead):
+      // { type: 'youtube', id: 'VIDEO_ID' },
+      // { type: 'video', src: 'videos/film.mp4', poster: 'images/thumb.jpg' },
+      { type: 'image', src: 'images/video-still-01.jpg' },
+    ],
+  },
+
+  'music': {
+    title: 'Music Production',
+    tag: 'sound · composition',
+    year: '2020–present',
+    desc: 'Original music production and sound design spanning ambient, electronic, and experimental modes.',
+    media: [
+      { type: 'soundcloud', url: 'https://soundcloud.com/YOUR_USERNAME/YOUR_TRACK' },
+      // ✏️  Replace with your SoundCloud track URL from the browser address bar.
+      // Alternative: { type: 'bandcamp', src: 'https://bandcamp.com/EmbeddedPlayer/...' },
+      { type: 'image', src: 'images/music-01.jpg' },
+    ],
+  },
+
+
+  'zines': {
+    title: 'Are You Coming to The Party?',
+    tag: 'print · ephemera',
+    year: '2020–present',
+    desc: 'An ongoing archive of self-published zines exploring print as a resistant medium.',
+    media: [
+      { type: 'image-grid', images: ['images/zine-01.jpg', 'images/zine-02.jpg'] },
+      { type: 'image-grid', images: ['images/zine-03.jpg', 'images/zine-04.jpg'] },
+    ],
+  },
+
+  'research': {
+    title: 'Internet Culture',
+    tag: 'theory · research',
+    year: '2023–present',
+    desc: 'Research and writing on surveillance capitalism, attention engineering, and the cultural politics of networked platforms.',
+    media: [
+      { type: 'image', src: 'images/research-01.jpg' },
+    ],
+  },
+
+  'collabs': {
+    title: 'Collaborations',
+    tag: 'ryka ali · others',
+    year: '2021–present',
+    desc: 'Ongoing collaborative work with Ryka Ali and other artists, designers, and musicians across print, image, and performance contexts.',
+    media: [
+      { type: 'image-grid', images: ['images/collab-01.jpg', 'images/collab-02.jpg'] },
+      { type: 'image', src: 'images/collab-03.jpg' },
+    ],
+  },
+
+  'about': {
+    title: 'About',
+    tag: 'context · contact',
+    year: '',  // ✏️  Empty = no year shown on About page
+    desc: 'Calder Anderson is a multidisciplinary designer and creative director based in New York City. His work sits at the intersection of graphic design, editorial, and digital culture — built from concept through final output with equal attention to ideas and execution. He builds cohesive visual systems across brand identity, editorial design, and experiential media, grounded in a genuine understanding of how design functions inside the media environments people actually live in. Open to junior creative, art direction, and design roles where strategy and visual storytelling intersect.',
+    // ✏️  Change this to your bio. \n\n = paragraph break.
+    sideImage: 'about/CALDER-PORTRAIT-POLOROID.jpg',
+    media: []
+  }
+  // ↑ Last entry: NO comma
+
+};
+
+
+/* =====================================================
+   SECTION S — MEDIA RENDERER (DON'T EDIT)
+   =====================================================
+   Reads the media array from PAGE_DATA and builds
+   the HTML for each block type on the project page.
+*/
+function renderMedia(mediaArr) {
+  const container = document.getElementById('proj-media');
+  container.innerHTML = ''; // Clear previous project's media
+  const imgStyle = 'width:100%; display:block; object-fit:cover;';
+  const gap = '3px';
+  (mediaArr || []).forEach(block => {
+    let el;
+    if (block.type === 'image') {
+      el = document.createElement('div');
+      el.style.cssText = 'margin-bottom:3px;';
+      el.innerHTML = `<img src="${block.src}" style="${imgStyle} aspect-ratio:auto;" loading="lazy" onerror="this.parentElement.style.background='#f0f0f0'; this.parentElement.style.aspectRatio='16/9'; this.remove();">`;
+      // onerror: if image file not found, show grey placeholder instead of broken icon
+    } else if (block.type === 'image-grid') {
+      el = document.createElement('div');
+      el.style.cssText = `display:grid; grid-template-columns:repeat(${block.images.length},1fr); gap:${gap}; margin-bottom:3px;`;
+      // Creates equal columns for however many images are in the array
+      block.images.forEach(src => { el.innerHTML += `<img src="${src}" style="${imgStyle} aspect-ratio:4/3;" loading="lazy" onerror="this.style.background='#f0f0f0'; this.removeAttribute('src');">`; });
+    } else if (block.type === 'vimeo') {
+      el = document.createElement('div');
+      el.style.cssText = 'position:relative; padding-bottom:56.25%; height:0; overflow:hidden; margin-bottom:3px; background:#f0f0f0;';
+      // padding-bottom:56.25% = 16:9 aspect ratio (9/16 = 0.5625) for responsive iframe
+      el.innerHTML = `<iframe src="https://player.vimeo.com/video/${block.id}?title=0&byline=0&portrait=0&color=0000ff" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+    } else if (block.type === 'youtube') {
+      el = document.createElement('div');
+      el.style.cssText = 'position:relative; padding-bottom:56.25%; height:0; overflow:hidden; margin-bottom:3px; background:#f0f0f0;';
+      el.innerHTML = `<iframe src="https://www.youtube.com/embed/${block.id}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+    } else if (block.type === 'video') {
+      el = document.createElement('div'); el.style.cssText = 'margin-bottom:3px;';
+      el.innerHTML = `<video src="${block.src}" ${block.poster ? `poster="${block.poster}"` : ''} controls style="width:100%; display:block;"></video>`;
+    } else if (block.type === 'soundcloud') {
+      el = document.createElement('div'); el.style.cssText = 'margin-bottom:24px;';
+      el.innerHTML = `<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=${encodeURIComponent(block.url)}&color=%230000ff&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"></iframe>`;
+    } else if (block.type === 'slideshow') {
+      el = document.createElement('div'); el.className = 'slideshow';
+      const aspect = block.aspect || '3/2', imgs = block.images || [];
+      el.innerHTML = `<div class="slideshow-track" style="aspect-ratio:${aspect}">${imgs.map(src=>`<img src="${src}" style="aspect-ratio:${aspect};" loading="lazy" onerror="this.style.background='#e8e8e8'; this.removeAttribute('src');">`).join('')}</div><button class="slideshow-btn prev">←</button><button class="slideshow-btn next">→</button><div class="slideshow-counter">1 / ${imgs.length}</div><div class="slideshow-dots">${imgs.map((_,i)=>`<div class="slideshow-dot ${i===0?'active':''}"></div>`).join('')}</div>`;
+      requestAnimationFrame(() => {
+        const track=el.querySelector('.slideshow-track'), counter=el.querySelector('.slideshow-counter'), dots=el.querySelectorAll('.slideshow-dot'), total=imgs.length; let current=0;
+        function goTo(n){ current=((n%total)+total)%total; track.style.transform=`translateX(-${current*100}%)`; counter.textContent=`${current+1} / ${total}`; dots.forEach((d,i)=>d.classList.toggle('active',i===current)); }
+        el.querySelector('.prev').addEventListener('click',e=>{e.stopPropagation();goTo(current-1);});
+        el.querySelector('.next').addEventListener('click',e=>{e.stopPropagation();goTo(current+1);});
+        el.setAttribute('tabindex','0');
+        el.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')goTo(current-1);if(e.key==='ArrowRight')goTo(current+1);});
+        let tX=0;
+        el.addEventListener('touchstart',e=>{tX=e.touches[0].clientX;},{passive:true});
+        el.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tX;if(Math.abs(dx)>40)goTo(dx<0?current+1:current-1);});
+      });
+    } else if (block.type === 'bandcamp') {
+      el = document.createElement('div'); el.style.cssText = 'margin-bottom:24px;';
+      el.innerHTML = `<iframe style="border:0; width:100%; height:120px;" src="${block.src}" seamless></iframe>`;
+    }
+    if (el) container.appendChild(el);
+  });
+}
+
+
+/* =====================================================
+   SECTION T — HASH ROUTER (DON'T EDIT)
+   =====================================================
+   Handles navigation between network and project pages.
+   URL: yoursite.com/#photography → shows Photography project page
+   URL: yoursite.com/             → shows the network
+
+   navigateTo(hash) = programmatic navigation:
+     navigateTo('#photography') → opens project page
+     navigateTo('#')            → returns to network
+*/
+function navigateTo(hash) {
+  if (!hash.startsWith('#')) {
+    window.location.href = hash; // Relative or external URL — navigate directly
+    return;
+  }
+  window.location.hash = hash.replace('#','') ? hash : '';
+  // Set the URL hash. If it's just '#', clear the hash entirely.
+  handleRoute();
+}
+
+function handleRoute() {
+  const hash = window.location.hash.replace('#','').trim();
+  // Read the URL hash (e.g. 'photography' from page.html#photography)
+  const page = document.getElementById('project-page');
+  const netView = document.getElementById('net-canvas');
+  const scatterView = document.getElementById('scatter-view');
+  const toggle = document.getElementById('toggle');
+  const header = document.getElementById('header');
+  const hint      = document.getElementById('hint');
+  const meta      = document.getElementById('meta');
+  const contact   = document.getElementById('contact-footer');
+  const explainer = document.getElementById('net-explainer');
+
+  if (hash && PAGE_DATA[hash]) {
+    // Valid hash matching a project → show project page
+    const d = PAGE_DATA[hash];
+    document.getElementById('proj-title').textContent = d.title;
+    document.getElementById('proj-tag').textContent   = d.tag;
+    document.getElementById('proj-year').textContent  = d.year;
+    const tag2El    = document.getElementById('proj-tag2');
+    const labelEl   = document.getElementById('proj-discipline-label');
+    if (hash === 'about') {
+      labelEl.textContent = 'Contact';
+      tag2El.innerHTML = '<a href="https://mail.google.com/mail/?view=cm&fs=1&to=calder1234516@gmail.com" target="_blank" rel="noopener" style="color:#0000ff;text-decoration:none;">calder1234516@gmail.com</a>';
+    } else {
+      labelEl.textContent = 'Discipline';
+      tag2El.textContent  = d.tag;
+    }
+    const descCol = document.getElementById('proj-desc-col');
+    const descEl  = document.getElementById('proj-desc');
+    const sideImg = document.getElementById('proj-side-img');
+
+    if (hash === 'about' && d.sideImage) {
+      // ── About page: text left, portrait right (desktop) / portrait top (mobile) ──
+      descEl.style.display  = 'none';
+      sideImg.style.display = 'none';
+      descCol.style.cssText = 'display:flex;gap:48px;align-items:flex-start;';
+
+      // Clear any previous about layout
+      Array.from(descCol.querySelectorAll('.about-col, .about-portrait')).forEach(el => el.remove());
+      const portraitSlot = document.getElementById('proj-portrait-slot');
+      portraitSlot.innerHTML = '';
+
+      const textCol = document.createElement('p');
+      textCol.className = 'about-col';
+      textCol.style.cssText = 'font-size:1.05rem;line-height:1.8;color:#000;font-weight:300;margin:0;flex:1;min-width:0;';
+      textCol.textContent = d.desc.split('\n\n').join('\n\n');
+
+      // Desktop portrait: sits to the right of the text column
+      const portraitDesktop = document.createElement('img');
+      portraitDesktop.src = d.sideImage;
+      portraitDesktop.className = 'about-portrait about-portrait-desktop';
+      portraitDesktop.style.cssText = 'width:220px;flex-shrink:0;height:auto;object-fit:contain;';
+
+      // Mobile portrait: injected above the line in #proj-portrait-slot
+      const portraitMobile = document.createElement('img');
+      portraitMobile.src = d.sideImage;
+      portraitMobile.className = 'about-portrait about-portrait-mobile';
+      portraitMobile.alt = '';
+      portraitSlot.appendChild(portraitMobile);
+
+      descCol.appendChild(textCol);
+      descCol.appendChild(portraitDesktop);
+
+    } else {
+      // ── All other pages: standard layout ──
+      descEl.textContent    = d.desc;
+      descEl.style.display  = '';
+      descCol.style.cssText = 'display:flex;gap:48px;align-items:flex-start;';
+      Array.from(descCol.querySelectorAll('.about-col, .about-portrait')).forEach(el => el.remove());
+      document.getElementById('proj-portrait-slot').innerHTML = '';
+      if (d.sideImage) { sideImg.src = d.sideImage; sideImg.style.display = 'block'; }
+      else { sideImg.src = ''; sideImg.style.display = 'none'; }
+    }
+    renderMedia(d.media); // Render the media blocks
+    page.style.display = 'block';
+    netView.style.display = scatterView.style.display = toggle.style.display = hint.style.display = meta.style.display = header.style.display = contact.style.display = explainer.style.display = 'none';
+    // Hide all homepage elements
+    window.scrollTo(0, 0); // Scroll to top of project page
+  } else {
+    // No valid hash → show the network homepage
+    page.style.display = 'none'; // Hide project page
+    toggle.style.display = hint.style.display = meta.style.display = header.style.display = contact.style.display = ''; // Show homepage elements
+    explainer.style.display = currentView === 'network' ? '' : 'none'; // Only restore if network view is active
+    if (typeof currentView !== 'undefined') setView(currentView); // Restore last view
+    else netView.style.display = ''; // Fallback
+  }
+}
+
+window.addEventListener('hashchange', handleRoute); // Browser back/forward buttons
+window.addEventListener('DOMContentLoaded', handleRoute); // Page load
+handleRoute(); // Run immediately
+
+</script>
+
+</body>
+</html>
