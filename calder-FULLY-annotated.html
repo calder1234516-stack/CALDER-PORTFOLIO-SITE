@@ -1462,7 +1462,7 @@ init(); // Run now!
     ">
       <!-- LEFT COLUMN: Year and Discipline -->
       <div>
-        <p style="font-family:'Geist Mono',monospace; font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; color:#999; margin-bottom:12px;">Year</p>
+        <p id="proj-year-label" style="font-family:'Geist Mono',monospace; font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; color:#999; margin-bottom:12px;">Year</p>
         <p id="proj-year" style="font-family:'Geist Mono',monospace; font-size:0.72rem; color:#0000ff; margin-bottom:32px;"></p>
         <!-- JavaScript fills this with the year range -->
         <p id="proj-role-label" style="display:none; font-family:'Geist Mono',monospace; font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; color:#999; margin-bottom:12px;">Practice</p>
@@ -1753,7 +1753,11 @@ function handleRoute() {
     const labelEl   = document.getElementById('proj-discipline-label');
     const roleLabel = document.getElementById('proj-role-label');
     const roleEl    = document.getElementById('proj-role');
+    const yearLabel = document.getElementById('proj-year-label');
+    const yearEl    = document.getElementById('proj-year');
     if (hash === 'about') {
+      yearLabel.style.display = 'none';
+      yearEl.style.display    = 'none';
       roleLabel.style.display = 'block';
       roleEl.style.display    = 'block';
       roleEl.textContent      = 'artist, designer, publisher';
@@ -1763,6 +1767,8 @@ function handleRoute() {
         '<a href="https://www.instagram.com/calder.a/" target="_blank" rel="noopener" style="color:#0000ff;text-decoration:none;">instagram</a><br>' +
         '<a href="https://www.linkedin.com/in/calder-anderson-28631626a" target="_blank" rel="noopener" style="color:#0000ff;text-decoration:none;">linkedin</a>';
     } else {
+      yearLabel.style.display = '';
+      yearEl.style.display    = '';
       roleLabel.style.display = 'none';
       roleEl.style.display    = 'none';
       labelEl.textContent     = 'Discipline';
