@@ -592,6 +592,9 @@
   /* ── MOBILE ── */
   @media (max-width: 767px) {
 
+    /* global box-sizing so padding never adds to 100% widths */
+    *, *::before, *::after { box-sizing: border-box !important; }
+
     /* kill body checkerboard and let page fill screen edge to edge */
     html, body        { width: 100% !important; overflow-x: hidden !important; background-image: none !important; background-color: #ffffff !important; }
     #page             { width: 100% !important; max-width: 100% !important; margin: 0 !important; border-left: none !important; border-right: none !important; }
@@ -609,8 +612,8 @@
     /* case study table: stack columns */
     table.two-col,
     table.two-col tbody,
-    table.two-col tr    { display: block; width: 100%; }
-    table.two-col td    { display: block; width: 100% !important; padding: 8px 10px; }
+    table.two-col tr    { display: block; width: 100%; box-sizing: border-box; }
+    table.two-col td    { display: block; width: 100% !important; padding: 8px 10px; box-sizing: border-box; }
 
     /* ad banners: shrink to fit */
     .ad-banner          { width: 100%; max-width: 100%; font-size: 11px; box-sizing: border-box; }
@@ -637,7 +640,7 @@
 // Apply mobile overrides via JS so they beat any CSS specificity issues
 (function() {
   if (window.innerWidth < 768) {
-    document.documentElement.style.overflow = 'hidden';
+    document.documentElement.style.overflowX = 'hidden';
     var b = document.body;
     b.style.backgroundImage = 'none';
     b.style.backgroundColor = '#ffffff';

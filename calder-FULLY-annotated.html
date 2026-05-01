@@ -755,13 +755,14 @@ html, body {
 
 <div id="meta">
   <span class="meta-desktop">calder anderson, 2026</span>
-  <a class="meta-mobile" href="https://mail.google.com/mail/?view=cm&fs=1&to=calder1234516@gmail.com" target="_blank" rel="noopener">calder1234516@gmail.com</a>
+  <a class="meta-mobile" href="https://mail.google.com/mail/?view=cm&fs=1&to=me@calder-anderson.com" target="_blank" rel="noopener">me@calder-anderson.com</a>
 </div>
 <!-- ✏️  Bottom-left. Desktop shows "calder anderson, 2026"; mobile shows email link. -->
 
 <div id="contact-footer">
-  <a href="https://mail.google.com/mail/?view=cm&fs=1&to=calder1234516@gmail.com" target="_blank" rel="noopener">calder1234516@gmail.com</a>
+  <a href="https://mail.google.com/mail/?view=cm&fs=1&to=me@calder-anderson.com" target="_blank" rel="noopener">me@calder-anderson.com</a>
   <a href="https://www.instagram.com/calder.a/" target="_blank" rel="noopener">instagram</a>
+  <a href="https://www.linkedin.com/in/calder-anderson-28631626a" target="_blank" rel="noopener">linkedin</a>
 </div>
 
 <div id="net-explainer">
@@ -1402,6 +1403,7 @@ init(); // Run now!
   z-index:500;              /* Above everything */
   display:none;             /* Hidden by default */
   overflow-y:auto;          /* Scrollable for long projects */
+  overflow-x:hidden;        /* No horizontal scroll on mobile */
   font-family:'Geist','Helvetica Neue',Arial,sans-serif;
 ">
 
@@ -1749,7 +1751,7 @@ function handleRoute() {
     const labelEl   = document.getElementById('proj-discipline-label');
     if (hash === 'about') {
       labelEl.textContent = 'Contact';
-      tag2El.innerHTML = '<a href="https://mail.google.com/mail/?view=cm&fs=1&to=calder1234516@gmail.com" target="_blank" rel="noopener" style="color:#0000ff;text-decoration:none;">calder1234516@gmail.com</a>';
+      tag2El.innerHTML = '<a href="https://mail.google.com/mail/?view=cm&fs=1&to=me@calder-anderson.com" target="_blank" rel="noopener" style="color:#0000ff;text-decoration:none;">me@calder-anderson.com</a>';
     } else {
       labelEl.textContent = 'Discipline';
       tag2El.textContent  = d.tag;
