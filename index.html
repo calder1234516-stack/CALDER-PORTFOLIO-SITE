@@ -1465,8 +1465,10 @@ init(); // Run now!
         <p style="font-family:'Geist Mono',monospace; font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; color:#999; margin-bottom:12px;">Year</p>
         <p id="proj-year" style="font-family:'Geist Mono',monospace; font-size:0.72rem; color:#0000ff; margin-bottom:32px;"></p>
         <!-- JavaScript fills this with the year range -->
+        <p id="proj-role-label" style="display:none; font-family:'Geist Mono',monospace; font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; color:#999; margin-bottom:12px;">Practice</p>
+        <p id="proj-role" style="display:none; font-family:'Geist Mono',monospace; font-size:0.72rem; color:#000; margin-bottom:32px;"></p>
         <p id="proj-discipline-label" style="font-family:'Geist Mono',monospace; font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; color:#999; margin-bottom:12px;">Discipline</p>
-        <p id="proj-tag2" style="font-family:'Geist Mono',monospace; font-size:0.72rem; color:#0000ff;"></p>
+        <p id="proj-tag2" style="font-family:'Geist Mono',monospace; font-size:0.72rem; color:#0000ff; line-height:1.8;"></p>
         <!-- JavaScript fills this with the discipline tag or email link -->
       </div>
       <!-- RIGHT COLUMN: Description text + optional side image -->
@@ -1749,12 +1751,22 @@ function handleRoute() {
     document.getElementById('proj-year').textContent  = d.year;
     const tag2El    = document.getElementById('proj-tag2');
     const labelEl   = document.getElementById('proj-discipline-label');
+    const roleLabel = document.getElementById('proj-role-label');
+    const roleEl    = document.getElementById('proj-role');
     if (hash === 'about') {
-      labelEl.textContent = 'Contact';
-      tag2El.innerHTML = '<a href="https://mail.google.com/mail/?view=cm&fs=1&to=me@calder-anderson.com" target="_blank" rel="noopener" style="color:#0000ff;text-decoration:none;">me@calder-anderson.com</a>';
+      roleLabel.style.display = 'block';
+      roleEl.style.display    = 'block';
+      roleEl.textContent      = 'artist, designer, publisher';
+      labelEl.textContent     = 'Contact';
+      tag2El.innerHTML =
+        '<a href="https://mail.google.com/mail/?view=cm&fs=1&to=me@calder-anderson.com" target="_blank" rel="noopener" style="color:#0000ff;text-decoration:none;">me@calder-anderson.com</a><br>' +
+        '<a href="https://www.instagram.com/calder.a/" target="_blank" rel="noopener" style="color:#0000ff;text-decoration:none;">instagram</a><br>' +
+        '<a href="https://www.linkedin.com/in/calder-anderson-28631626a" target="_blank" rel="noopener" style="color:#0000ff;text-decoration:none;">linkedin</a>';
     } else {
-      labelEl.textContent = 'Discipline';
-      tag2El.textContent  = d.tag;
+      roleLabel.style.display = 'none';
+      roleEl.style.display    = 'none';
+      labelEl.textContent     = 'Discipline';
+      tag2El.textContent      = d.tag;
     }
     const descCol = document.getElementById('proj-desc-col');
     const descEl  = document.getElementById('proj-desc');
