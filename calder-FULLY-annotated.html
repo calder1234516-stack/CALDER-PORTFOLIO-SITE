@@ -840,6 +840,7 @@ const PROJECTS = [
   { id:6, label:'Are You Coming to The Party?',    tag:'print · ephemera',     url:'are_you_coming_to_the_party_web/html/aycttp.html',           r:10, group:'print',  year:'2024' },
   { id:8, label:'About',                           tag:'context · contact',    url:'#about',                                                     r:10, group:'info',   year:'—'    },
   { id:9, label:'As Above So Below',               tag:'zine · video',         url:'as%20above%20so%20below/as-above-so-below.html',             r:11, group:'image',  year:'2023' },
+  { id:10, label:'Meltdown',                       tag:'installation · AI',    url:'meltdown/meltdown.html',                                     r:12, group:'image',  year:'2026' },
 ];
 
 
@@ -868,8 +869,11 @@ const EDGES = [
   // AYCTTP (3) connects to: About(4), AASB(5)
   [3,4], [3,5],
 
-  // About (4) connects to: AASB(5)
-  [4,5],
+  // About (4) connects to: AASB(5), Meltdown(6)
+  [4,5], [4,6],
+
+  // Meltdown (6) connects to: Login(0), ULTRANET(2), AASB(5)
+  [0,6], [2,6], [5,6],
 
   // Music Production — commented out
   // [was 3,5], [was 3,6],

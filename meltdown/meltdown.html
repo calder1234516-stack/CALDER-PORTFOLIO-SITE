@@ -1,0 +1,2023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meltdown — Calder Anderson</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;700&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" crossorigin="anonymous"></script>
+<style>
+:root {
+  --bg:    #fff;
+  --fg:    #000;
+  --blue:  #0000FF;
+  --mid:   #666;
+  --rule:  #000;
+  --font:  'Geist', 'Helvetica Neue', Arial, sans-serif;
+  --mono:  'Geist Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  font-weight: 300;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── page shell ── */
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 12px 120px;
+}
+
+/* ── nav ── */
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--fg);
+  margin-bottom: 32px;
+}
+nav a {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  color: var(--fg);
+  text-transform: uppercase;
+}
+nav a:hover { color: var(--blue); }
+
+/* ── hero ── */
+.hero {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 72px;
+  padding: 20px 0 24px;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: -16px;
+  background: url('PROJECT IMAGES/Calder_Anderson_03.jpg') center/cover no-repeat;
+  filter: blur(14px);
+  opacity: 0.55;
+  z-index: 0;
+}
+
+.hero > * { position: relative; z-index: 1; }
+
+
+.hero-title {
+  font-size: clamp(72px, 11vw, 140px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  text-transform: uppercase;
+  margin-bottom: 40px;
+  color: var(--blue);
+  white-space: nowrap;
+}
+
+.hero-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 40px;
+  border-top: 1px solid var(--fg);
+  padding-top: 20px;
+}
+.meta-col { display: flex; flex-direction: column; gap: 4px; }
+.meta-row {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mid);
+  line-height: 1.8;
+}
+.meta-row b { color: var(--fg); font-weight: 400; }
+
+/* ── canvas ── */
+.canvas-section {
+  height: calc(100vh - 85px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 72px;
+}
+
+.canvas-wrap {
+  width: min(calc(100vh - 170px), 100%);
+  aspect-ratio: 1/1;
+  background: #000;
+  position: relative;
+  overflow: hidden;
+}
+
+.canvas-wrap:-webkit-full-screen {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.canvas-wrap:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.canvas-wrap:-webkit-full-screen #meltdown-canvas {
+  width: min(100vw, 100vh) !important;
+  height: min(100vw, 100vh) !important;
+  max-width: 100% !important;
+  aspect-ratio: 1/1;
+}
+.canvas-wrap:fullscreen #meltdown-canvas {
+  width: min(100vw, 100vh) !important;
+  height: min(100vw, 100vh) !important;
+  max-width: 100% !important;
+  aspect-ratio: 1/1;
+}
+
+#fs-btn {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 26px; height: 26px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.3);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  transition: border-color 0.2s, color 0.2s;
+  z-index: 20;
+}
+#fs-btn:hover { border-color: rgba(255,255,255,0.55); color: #fff; }
+#meltdown-canvas { display: block; width: 100%; height: 100%; }
+
+.canvas-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  pointer-events: none;
+}
+.pl-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+}
+.pl-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.1);
+}
+
+
+.feed-instructions {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mid);
+  margin-top: 8px;
+  text-align: center;
+}
+
+.cam-status {
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mid);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--mid);
+  flex-shrink: 0;
+}
+.cam-status.live .dot { background: var(--blue); animation: blink 1.4s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+/* ── sections ── */
+.section {
+  border-top: 1px solid var(--fg);
+  padding-top: 20px;
+  margin-bottom: 56px;
+}
+.section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mid);
+  margin-bottom: 24px;
+}
+
+/* thesis question — large pull quote */
+.thesis-q {
+  font-size: clamp(22px, 3.5vw, 34px);
+  font-weight: 300;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  max-width: 660px;
+  margin-bottom: 32px;
+  color: var(--blue);
+}
+
+.body-text {
+  font-size: 15px;
+  line-height: 1.8;
+  max-width: 660px;
+  margin-bottom: 16px;
+}
+.body-text:last-child { margin-bottom: 0; }
+
+/* insight callout */
+.insight {
+  border-left: 2px solid var(--blue);
+  padding-left: 20px;
+  margin: 28px 0;
+}
+.insight p {
+  font-family: var(--font);
+  font-size: clamp(20px, 2vw, 26px);
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--blue);
+}
+
+/* ── category grid ── */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border: 1px solid var(--fg);
+  background: var(--fg);
+  gap: 1px;
+  margin-top: 24px;
+}
+.cat-cell {
+  background: var(--bg);
+  padding: 20px 16px;
+}
+.cat-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--mid);
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+  display: block;
+}
+.cat-name {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--blue);
+  display: block;
+  margin-bottom: 10px;
+}
+.cat-desc {
+  font-size: 11px;
+  line-height: 1.65;
+  color: var(--mid);
+}
+
+/* ── process timeline ── */
+.process-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 24px;
+  border-top: 1px solid var(--fg);
+}
+.process-item {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 24px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.process-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mid);
+  padding-top: 2px;
+}
+.process-body p {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--fg);
+}
+
+/* ── tech stack ── */
+.tech-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--fg);
+  background: var(--fg);
+  gap: 1px;
+  margin-top: 24px;
+}
+.tech-item {
+  background: var(--bg);
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+.tech-name {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.tech-role {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--mid);
+  letter-spacing: 0.04em;
+  text-align: right;
+}
+
+/* ── overview background ── */
+.section--img-bg {
+  position: relative;
+  overflow: hidden;
+}
+.section--img-bg > * { position: relative; z-index: 1; }
+.section-bg-img {
+  position: absolute;
+  inset: -20px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.5;
+  z-index: 0;
+}
+
+/* ── overview layout ── */
+.overview-layout {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 40px;
+  align-items: start;
+}
+.overview-text { min-width: 0; }
+.overview-text .body-text { max-width: none; }
+.overview-img-wrap {
+  position: sticky;
+  top: 20px;
+}
+.overview-img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+/* ── framework layout ── */
+.framework-layout {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 48px;
+  align-items: start;
+}
+.framework-text { min-width: 0; }
+.framework-text .body-text { max-width: none; }
+.framework-cats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: sticky;
+  top: 20px;
+}
+.fw-cat {
+  font-size: clamp(22px, 2.8vw, 38px);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-transform: uppercase;
+  color: #ccc;
+  transition: color 0.4s ease;
+  cursor: default;
+  user-select: none;
+}
+.fw-cat.active { color: var(--blue); }
+.fw-cat--you { margin-top: 12px; }
+.fw-cat--you.active { color: var(--fg); }
+
+/* ── overview concepts ── */
+.overview-head {
+  font-family: var(--font);
+  font-size: clamp(16px, 1.6vw, 20px);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg);
+  margin-top: 40px;
+  margin-bottom: 8px;
+}
+.overview-result {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mid);
+  margin-top: 20px;
+  margin-bottom: 6px;
+}
+.overview-emphasis {
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--blue);
+  margin-bottom: 32px;
+}
+
+/* ── encounter block ── */
+.encounter-text {
+  font-size: clamp(18px, 2.5vw, 24px);
+  font-weight: 300;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  max-width: 660px;
+  margin-bottom: 28px;
+  color: var(--blue);
+}
+.encounter-sub {
+  font-size: 15px;
+  line-height: 1.8;
+  max-width: 660px;
+  color: var(--fg);
+}
+
+/* ── bibliography ── */
+.bib-list {
+  list-style: none;
+  margin-top: 20px;
+}
+.bib-list li {
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.75;
+  letter-spacing: 0.02em;
+  padding: 11px 0;
+  border-bottom: 1px solid #e0e0e0;
+  color: var(--mid);
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 8px;
+}
+.bib-list li b { color: var(--fg); font-weight: 400; }
+.bib-n {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  padding-top: 1px;
+}
+
+/* ── credits ── */
+.credits-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  margin-top: 24px;
+}
+.credit-block p {
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 2;
+  letter-spacing: 0.04em;
+  color: var(--mid);
+}
+.credit-head {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg);
+  display: block;
+  margin-bottom: 6px;
+  margin-top: 20px;
+}
+.credit-block .credit-head:first-child { margin-top: 0; }
+
+/* ── thesis image layout ── */
+.t-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  align-items: start;
+  margin-bottom: 3px;
+}
+.t-row--text-wide  { grid-template-columns: 2fr 1fr; }
+.t-row--text-xwide { grid-template-columns: 3fr 1fr; }
+.t-row--img-wide   { grid-template-columns: 1fr 2fr; }
+.t-text { min-width: 0; }
+.t-text .body-text,
+.t-text .insight  { max-width: none; }
+.t-text .insight  { margin: 0; }
+.t-imgs {
+  display: grid;
+  gap: 3px;
+  align-content: start;
+}
+.t-imgs--2col { grid-template-columns: repeat(2, 1fr); }
+.t-imgs--3col { grid-template-columns: repeat(3, 1fr); }
+.thesis-img-cell {
+  aspect-ratio: 1 / 1;
+  background: #0a0a0a;
+  overflow: hidden;
+  position: relative;
+}
+.thesis-img-cell img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.thesis-strip {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 3px;
+  margin-bottom: 3px;
+}
+.thesis-img-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 3px;
+  margin-top: 28px;
+}
+.thesis-2col {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 24px;
+  align-items: start;
+}
+.thesis-2col-text { min-width: 0; }
+.thesis-2col-text .body-text,
+.thesis-2col-text .thesis-q,
+.thesis-2col-text .insight { max-width: none; }
+.thesis-2col-imgs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+  align-content: start;
+  position: sticky;
+  top: 20px;
+}
+/* ═══════════════════════════════════════════
+   MOBILE — ≤ 768px
+═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* page shell */
+  .page { padding: 0 20px 80px; }
+
+  /* hero */
+  .hero { margin-bottom: 48px; }
+  .hero-title {
+    font-size: clamp(42px, 13vw, 72px);
+    white-space: normal;
+    word-break: break-word;
+    margin-bottom: 24px;
+  }
+  .hero-meta { grid-template-columns: 1fr; }
+
+  /* canvas */
+  .canvas-section { height: auto; padding: 32px 0; margin-bottom: 48px; }
+  .canvas-wrap { width: 100%; }
+
+  /* overview */
+  .overview-layout { grid-template-columns: 1fr; gap: 24px; }
+  .overview-img-wrap { position: static; }
+
+  /* framework */
+  .framework-layout { grid-template-columns: 1fr; gap: 24px; }
+  .framework-cats { position: static; }
+  .fw-cat { font-size: clamp(20px, 5.5vw, 32px); }
+
+  /* encounter — handled in its own breakpoint below */
+
+  /* category grid — 2 cols, last cell fills row */
+  .cat-grid { grid-template-columns: repeat(2, 1fr); }
+  .cat-cell:last-child { grid-column: span 2; }
+
+  /* tech grid — single col */
+  .tech-grid { grid-template-columns: 1fr; }
+  .tech-item { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .tech-role { text-align: left; }
+
+  /* diagrams — stack */
+  .diagrams-pair { grid-template-columns: 1fr; gap: 32px; }
+  .diag-card { padding: 0; }
+  .diag-card + .diag-card {
+    padding: 24px 0 0;
+    border-left: none;
+    border-top: 1px solid var(--fg);
+  }
+
+  /* credits */
+  .credits-grid { grid-template-columns: 1fr; gap: 28px; }
+
+  /* thesis layouts */
+  .t-row,
+  .t-row--text-wide,
+  .t-row--text-xwide,
+  .t-row--img-wide { grid-template-columns: 1fr; }
+  .thesis-2col { grid-template-columns: 1fr; gap: 24px; }
+  .thesis-2col-imgs { position: static; grid-template-columns: repeat(3, 1fr); }
+  .thesis-strip { grid-template-columns: repeat(5, 1fr); }
+  .thesis-img-grid { grid-template-columns: repeat(5, 1fr); }
+
+  /* footer */
+  footer { flex-direction: column; gap: 6px; }
+}
+
+
+/* ── diagrams section ── */
+.diagrams-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  margin-bottom: 3px;
+}
+.diag-card {
+  padding: 0 24px 0 0;
+  display: flex;
+  flex-direction: column;
+}
+.diag-card + .diag-card {
+  padding: 0 0 0 24px;
+  border-left: 1px solid var(--fg);
+}
+.diag-title {
+  font-family: var(--font);
+  font-size: clamp(22px, 3vw, 38px);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--blue);
+  margin-bottom: 28px;
+}
+.diag-svg-wrap { flex: 1; display: flex; align-items: center; }
+.diag-img { width: 100%; height: auto; display: block; }
+.cave-reveal-wrap {
+  overflow: hidden;
+  clip-path: inset(0 0 100% 0);
+}
+.cave-reveal-img { width: 100%; display: block; }
+[data-d] {
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+#diag-section.diag-assembled [data-d] { opacity: 1; }
+
+/* ── footer ── */
+footer {
+  border-top: 1px solid var(--fg);
+  padding-top: 20px;
+  margin-top: 80px;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+footer a { color: var(--mid); text-decoration: none; }
+footer a:hover { color: var(--blue); }
+
+/* ══════════════════════════════════════════════════════
+   SCROLL ANIMATIONS — entrance, stagger, parallax
+══════════════════════════════════════════════════════ */
+
+/* Animated section border replaces static border-top */
+.section { border-top: none; padding-top: 0; }
+.section::before {
+  content: '';
+  display: block;
+  position: relative;
+  z-index: 1;
+  height: 1px;
+  background: var(--fg);
+  margin-bottom: 20px;
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.section.s-in::before { transform: scaleX(1); }
+
+/* Page-load entrances */
+@keyframes s-drop {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes s-rise {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: none; }
+}
+nav         { animation: s-drop 0.65s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.hero-title { animation: s-rise 1.1s  cubic-bezier(0.16, 1, 0.3, 1) 0.12s both; }
+.hero-meta  { animation: s-rise 1.0s  cubic-bezier(0.16, 1, 0.3, 1) 0.32s both; }
+
+/* Generic scroll reveals */
+.s-rv {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1) var(--sd, 0s),
+              transform 0.85s cubic-bezier(0.16, 1, 0.3, 1) var(--sd, 0s);
+}
+.s-rv.s-in { opacity: 1; transform: none; }
+
+.s-rv-l {
+  opacity: 0;
+  transform: translateX(-28px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1) var(--sd, 0s),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1) var(--sd, 0s);
+}
+.s-rv-l.s-in { opacity: 1; transform: none; }
+
+.s-rv-sc {
+  opacity: 0;
+  transform: scale(0.93) translateY(24px);
+  transition: opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1) var(--sd, 0s),
+              transform 1.1s cubic-bezier(0.16, 1, 0.3, 1) var(--sd, 0s);
+}
+.s-rv-sc.s-in { opacity: 1; transform: none; }
+
+/* Insight — block fades and slides in; border already present in opacity */
+.insight {
+  opacity: 0;
+  transform: translateX(-14px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.insight.s-in { opacity: 1; transform: none; }
+
+/* Overview big emphasis text */
+.overview-emphasis {
+  opacity: 0;
+  transform: translateY(22px) scale(0.96);
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.overview-emphasis.s-in { opacity: 1; transform: none; }
+
+/* Parallax performance hint */
+.hero-bg, .section-bg-img { will-change: transform; }
+
+/* ── contact sheet ── */
+.contact-sheet-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 24px;
+}
+.contact-sheet-caption {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mid);
+  margin-top: 10px;
+}
+
+/* ── encounter layout ── */
+.encounter-layout {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 48px;
+  align-items: start;
+}
+.encounter-col { min-width: 0; }
+.encounter-col .body-text,
+.encounter-col .encounter-text,
+.encounter-col .encounter-sub { max-width: none; }
+.encounter-slideshow-wrap {
+  position: sticky;
+  top: 20px;
+}
+.encounter-slideshow {
+  width: 100%;
+  background: #0a0a0a;
+}
+.encounter-slide-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: opacity 0.5s ease;
+}
+.encounter-kicker {
+  font-family: var(--mono);
+  font-size: clamp(13px, 1.4vw, 17px);
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: 0.03em;
+  color: var(--fg);
+  margin-bottom: 28px;
+  border-left: 2px solid var(--fg);
+  padding-left: 16px;
+}
+
+/* ── category slideshows ── */
+.cat-slideshow {
+  margin-top: 12px;
+  position: relative;
+  aspect-ratio: 4/3;
+  background: #0a0a0a;
+  overflow: hidden;
+}
+.cat-slide-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.6s ease;
+}
+
+/* ≤960px overrides — must be last to win the cascade */
+@media (max-width: 960px) {
+  /* encounter — full-width block stack */
+  .encounter-layout {
+    display: block !important;
+  }
+  .encounter-slideshow-wrap {
+    position: static;
+    width: 100%;
+    margin-bottom: 32px;
+  }
+  .encounter-col {
+    display: block;
+    width: 100%;
+  }
+
+  /* hero — even spacing, smaller meta */
+  nav { margin-bottom: 20px; }
+  .hero { padding: 20px 0 20px; margin-bottom: 48px; }
+  .hero-title { margin-bottom: 20px; }
+  .meta-row { font-size: 9px; line-height: 1.6; letter-spacing: 0.05em; }
+  .hero-meta { grid-template-columns: 1fr 1fr; }
+
+  /* framework — categories float above body copy */
+  .framework-layout {
+    display: flex !important;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .framework-cats {
+    order: -1;
+    position: static;
+  }
+  .fw-cat {
+    font-size: clamp(32px, 8vw, 56px);
+    line-height: 1.1;
+  }
+
+  /* diagrams — stack vertically, remove side border */
+  .diagrams-pair {
+    grid-template-columns: 1fr !important;
+    gap: 40px;
+  }
+  .diag-card {
+    padding: 0 !important;
+    border-left: none !important;
+  }
+  .diag-card + .diag-card {
+    padding-top: 28px !important;
+    border-top: 1px solid var(--fg);
+    border-left: none !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- nav -->
+  <nav>
+    <a href="/">Calder Anderson</a>
+    <a href="/">← Back</a>
+  </nav>
+
+  <!-- hero -->
+  <header class="hero">
+    <div class="hero-bg"></div>
+    <h1 class="hero-title">Meltdown</h1>
+    <div class="hero-meta">
+      <div class="meta-col">
+        <span class="meta-row"><b>Year</b> — 2026</span>
+        <span class="meta-row"><b>Type</b> — Five-Channel Installation</span>
+        <span class="meta-row"><b>With</b> — Riley Daggs</span>
+      </div>
+      <div class="meta-col">
+        <span class="meta-row"><b>Venue</b> — Parsons School of Design</span>
+        <span class="meta-row"><b>Program</b> — BFA Integrated Design, Parsons</span>
+        <span class="meta-row"><b>Status</b> — Exhibited April 2026</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================================================================
+       INSTALLATION CANVAS
+       Edit CONFIG block to connect assets.
+       ================================================================ -->
+  <div class="canvas-section">
+    <div class="canvas-wrap">
+      <canvas id="meltdown-canvas"></canvas>
+      <button id="fs-btn" onclick="toggleFullscreen()">[ ]</button>
+      <div class="canvas-placeholder" id="placeholder">
+        <span class="pl-label">Meltdown — Live Installation</span>
+        <span class="pl-sub">Connect asset folders to activate</span>
+      </div>
+    </div>
+    <div class="cam-status" id="cam-status">
+      <span class="dot"></span>Camera inactive — motion tracking disabled
+    </div>
+    <p class="feed-instructions">Move to accelerate the feed — sustained movement shifts category and alters the appearance of the stream.</p>
+  </div>
+
+  <!-- thesis question -->
+  <section class="section">
+    <p class="section-label">Thesis Question</p>
+
+    <div class="thesis-2col">
+
+      <div class="thesis-2col-text">
+        <p class="thesis-q" style="max-width: none;">
+          How do we recognize authenticity and meaning when visual culture becomes
+          endless, frictionless derivatives generated by machines?
+        </p>
+
+        <p class="body-text">
+          Every day, we are bombarded with images; they hit our brains at a thousand miles an hour,
+          a thousand times a day. It can be hard to keep up with the sheer volume of content thrust
+          at us at any given moment.
+        </p>
+
+        <div class="insight">
+          <p>Images have become hollow, stripped of meaning.</p>
+        </div>
+
+        <p class="body-text">
+          As "Big AI" companies continue their rapid growth and cyclical funding, they reinvest the
+          wealth initially built on ad revenue and the commodification of our data into endless streams
+          of AI-generated images and videos. Each new wave of investment fuels this feedback loop,
+          accelerating the flood of synthetic visuals and further eroding authenticity. Meaning erodes
+          not only because the volume of images multiplies, but because the systems that generate and
+          circulate them prioritize scale and profit over fact. As these systems produce infinite streams
+          of synthetic content, they not only erode the authenticity of what we see but also transfer
+          creative power from individuals to algorithms and corporate infrastructures. This shift marks
+          a unique moment in history: one where art, truth, and humanity are increasingly mediated
+          through the machine.
+        </p>
+
+        <p class="body-text">
+          This landscape forces us to question not just what it means to be human, but also what it
+          means to know what is real in a world full of endless derivative replication.
+        </p>
+
+        <p class="body-text">
+          AI Generated Content is created by large language models that work by producing outputs based
+          on millions upon millions of images and pieces of data in training sets. These images might
+          include anything from thousands of photos of bird species to thousands of historical artworks;
+          the list goes on. These models absorb, reinterpret, and remix massive archives of human-made
+          images, or UGC.
+        </p>
+
+        <p class="body-text">
+          The large language models are trained on billions of examples, learning patterns so deeply
+          that their outputs feel new while being structurally dependent on everything that came before them.
+        </p>
+
+        <div class="insight">
+          <p>This moves the means of production out of the user's hands and into the pockets of modern-day factory owners: tech conglomerates.</p>
+        </div>
+
+        <p class="body-text">
+          AI embodies the extreme version of artistic "stealing": not copying a single artist but
+          internalizing all of them at once, creating derivative media that blurs authorship,
+          originality, and ownership.
+        </p>
+      </div>
+
+      <!-- 4-col image grid — 4×6 = 24 cells -->
+      <div class="thesis-2col-imgs">
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+        <div class="thesis-img-cell"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- overview -->
+  <section class="section">
+    <p class="section-label">Overview</p>
+    <div class="overview-layout">
+
+      <div class="overview-text">
+        <p class="body-text">
+          Meltdown is a five-channel interactive installation that generates and sequences AI-diffused images
+          across five ontological categories — Substrate, Machine, Circulation, Representation, and Control —
+          in real time. A MediaPipe body-tracking camera detects viewer movement in the gallery:
+          stillness slows the image sequence; movement accelerates it.
+        </p>
+        <p class="body-text">
+          Meltdown is an invitation to consider your position within the systems that shape contemporary
+          visual culture. The viewer is not an audience — they are input, substrate, raw material for AI systems.
+        </p>
+
+        <p class="section-label" style="margin-top: 40px;">Insights</p>
+
+        <p class="overview-head" style="margin-top: 16px;">Bodies as Data</p>
+        <p class="body-text">
+          The viewer is not an audience; they are input, substrate, raw material for AI systems.
+          Every movement, every hesitation, every glance becomes a signal — absorbed, logged, fed back.
+        </p>
+
+        <p class="overview-head">AI Flattens Culture</p>
+        <p class="body-text">
+          Memes, intimacy, desire, grief — the full texture of human experience becomes
+          the data that informs AI systems. Nothing is exempt from the pipeline.
+        </p>
+
+        <p class="overview-result">Resulting in</p>
+        <p class="overview-emphasis">Cultural Meltdown</p>
+
+        <div class="insight">
+          <p>What does your digital footprint produce, and for whom?</p>
+        </div>
+      </div>
+
+      <div class="overview-img-wrap">
+        <img src="PROJECT IMAGES/cald3r_httpss.mj.runkOgtsI0PJPs_httpss.mj.runeOsmzPeAonE_bodi_7f4dfb2b-290d-4c98-9d9f-357440626dad_3.png" alt="" class="overview-img">
+      </div>
+
+    </div>
+  </section>
+
+  <!-- inspiration / framework -->
+  <section class="section">
+    <p class="section-label">Framework</p>
+    <div class="framework-layout">
+
+      <div class="framework-text">
+        <p class="body-text">
+          Nick Land's <em>Meltdown</em> gave the project its name: technocapital's runaway acceleration
+          eating through human substrate. Mark Fisher diagnosed the flatline of cultural time.
+          Hito Steyerl's <em>In Defense of the Poor Image</em> articulated how degraded, circulating
+          images carry more truth than high-resolution artifacts. Zuboff traced surveillance capitalism's
+          extraction of human experience as raw material. Each pointed to the same rupture: the moment
+          digital systems stop serving human needs and start metabolizing them.
+        </p>
+        <p class="body-text">
+          Plato's Cave structures Meltdown's
+          organization. Each of the five thematic
+          folders maps onto a layer of the allegory,
+          beginning with the material substrate
+          (the cave wall itself, the screen), moving
+          through the apparatus that produces
+          images (the machine, the fire), tracking
+          how those images circulate and multiply
+          (the circulation of shadows), examining
+          what gets represented and how we mistake representation for reality, and
+          finally confronting the systems of control
+          that determine which images appear
+          and who gets to look. The folders aren't
+          arbitrary categories, they're stages in a
+          process of gradual disillusionment, where
+          each layer reveals another mechanism
+          by which our experience online is
+          constructed, mediated, and captured.
+          The cave's prisoners watch shadows;
+          we watch feeds. The structure is the
+          same, just iterated through surveillance
+          capitalism's infrastructure.
+        </p>
+      </div>
+
+      <div class="framework-cats" id="fw-cats">
+        <span class="fw-cat">Substrate</span>
+        <span class="fw-cat">Machine</span>
+        <span class="fw-cat">Circulation</span>
+        <span class="fw-cat">Representation</span>
+        <span class="fw-cat">Control</span>
+        <span class="fw-cat fw-cat--you">You</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- cybernetic + cave diagrams -->
+  <section class="section" id="diag-section">
+    <p class="section-label">Diagrams</p>
+    <div class="diagrams-pair">
+
+      <!-- card 1: cybernetic feedback loop -->
+      <div class="diag-card">
+        <p class="diag-title">Cybernetic<br>feedback loop</p>
+        <div class="diag-svg-wrap">
+          <img data-d="1" src="PROJECT IMAGES/diagrams2.png" alt="Cybernetic feedback loop" class="diag-img">
+        </div>
+      </div>
+
+      <!-- card 2: allegory of the cave -->
+      <div class="diag-card">
+        <p class="diag-title">Allegory of<br>the cave</p>
+        <div class="diag-svg-wrap">
+          <img data-d="2" src="PROJECT IMAGES/diagrams.png" alt="Allegory of the cave" class="diag-img">
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- categories -->
+  <section class="section">
+    <p class="section-label">Category System</p>
+    <p class="body-text">
+      The five folders aren't arbitrary categories — they're stages in a process of gradual
+      disillusionment, where each layer reveals another mechanism by which experience online
+      is constructed, mediated, and captured.
+    </p>
+    <div class="cat-grid">
+      <div class="cat-cell" data-catkey="substrate">
+        <span class="cat-num">01</span>
+        <span class="cat-name">Substrate</span>
+        <p class="cat-desc">War, climate disaster, natural environments — the physical world and its consequences.</p>
+      </div>
+      <div class="cat-cell" data-catkey="machine">
+        <span class="cat-num">02</span>
+        <span class="cat-name">Machine</span>
+        <p class="cat-desc">AI, algorithms, data centers, robots, sci-fi imagery, cyber systems — internet infrastructure and tech imagery.</p>
+      </div>
+      <div class="cat-cell" data-catkey="circulation">
+        <span class="cat-num">03</span>
+        <span class="cat-name">Circulation</span>
+        <p class="cat-desc">Feeds, memes, internet culture, virality, aesthetics, trends. The residue. Social media loops.</p>
+      </div>
+      <div class="cat-cell" data-catkey="representation">
+        <span class="cat-num">04</span>
+        <span class="cat-name">Representation</span>
+        <p class="cat-desc">Deepfakes, AI-generated images, bootlegs, poor images, dataset images. Hyperreality and copies.</p>
+      </div>
+      <div class="cat-cell" data-catkey="control">
+        <span class="cat-num">05</span>
+        <span class="cat-name">Control</span>
+        <p class="cat-desc">The people, systems, and governance that control these conditions.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- encounter -->
+  <section class="section">
+    <p class="section-label">The Installation Experience</p>
+    <div class="encounter-layout">
+
+      <div class="encounter-col">
+        <p class="encounter-kicker">Custom Python pipeline using Stable Diffusion — generates fluid AI image transitions, frame by frame.</p>
+
+        <p class="body-text">
+          The code was written with the intention of creating a seemingly endless stream of media
+          representative of modern online media consumption. Riley and I developed a pipeline that
+          takes one image and creates a sequence of generations in transition to another image.
+          We utilized the Stable Diffusion Turbo model to create PNG sequences in order to preserve
+          16,000 image generations. The code then decodes them and plays them in a sequence based on
+          the behavior of the viewer, whose motion data is being captured by MediaPipe, a motion
+          tracking software. This was done to create an active feedback loop between the user and
+          the media, where both control each other in an endless loop.
+        </p>
+
+        <p class="encounter-text">
+          When you stand in front of Meltdown, the system doesn't show you images.
+          It shows you being imaged.
+        </p>
+
+        <p class="body-text">
+          Your body becomes input. Motion triggers category switches across the five folders.
+          The faster you move, the more the sequence churns through substrate, machine, circulation,
+          representation, control.
+        </p>
+
+        <p class="body-text">
+          The installation makes explicit what platforms do constantly: convert presence into data,
+          metabolize attention into content, extract gestures as raw material for algorithmic
+          production. You recognize yourself not as audience but as training data. The feedback loop
+          isn't hidden in server farms — it's here, immediate, visible. You are not viewing the system.
+          You are inside it.
+        </p>
+      </div>
+
+      <div class="encounter-slideshow-wrap">
+        <div class="encounter-slideshow" id="encounter-slideshow"></div>
+      </div>
+
+    </div>
+
+    <img src="PROJECT IMAGES/contact_sheet.png" alt="16,000 generated images" class="contact-sheet-img">
+    <p class="contact-sheet-caption">16,000 images — generated for Meltdown</p>
+  </section>
+
+  <!-- tech -->
+  <section class="section">
+    <p class="section-label">Technology</p>
+    <div class="tech-grid">
+      <div class="tech-item">
+        <span class="tech-name">Python 3.10</span>
+        <span class="tech-role">Image pipeline</span>
+      </div>
+      <div class="tech-item">
+        <span class="tech-name">Stable Diffusion Turbo</span>
+        <span class="tech-role">Latent diffusion model</span>
+      </div>
+      <div class="tech-item">
+        <span class="tech-name">torch.lerp()</span>
+        <span class="tech-role">Latent interpolation</span>
+      </div>
+      <div class="tech-item">
+        <span class="tech-name">TouchDesigner</span>
+        <span class="tech-role">Five-channel playback</span>
+      </div>
+      <div class="tech-item">
+        <span class="tech-name">MediaPipe</span>
+        <span class="tech-role">Body tracking</span>
+      </div>
+      <div class="tech-item">
+        <span class="tech-name">HTML5 Canvas / JS</span>
+        <span class="tech-role">Web port</span>
+      </div>
+      <div class="tech-item">
+        <span class="tech-name">GLSL</span>
+        <span class="tech-role">Shader compositing</span>
+      </div>
+      <div class="tech-item">
+        <span class="tech-name">16,000 PNG frames</span>
+        <span class="tech-role">5 category sequences</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- bibliography -->
+  <section class="section">
+    <p class="section-label">Bibliography</p>
+    <ol class="bib-list">
+      <li><span class="bib-n">1</span><span><b>Anderson, Calder.</b> LOGIN Magazine: Issue 1 — The .exe Issue. New York: Self-published, 2025.</span></li>
+      <li><span class="bib-n">2</span><span><b>Baudrillard, Jean.</b> Simulacra and Simulation. Trans. Sheila Faria Glaser. Ann Arbor: University of Michigan Press, 1994.</span></li>
+      <li><span class="bib-n">3</span><span><b>Borges, Jorge Luis.</b> Ficciones. New York: Grove Press, 1962.</span></li>
+      <li><span class="bib-n">4</span><span><b>Bratton, Benjamin H.</b> The Stack: On Software and Sovereignty. Cambridge: MIT Press, 2015.</span></li>
+      <li><span class="bib-n">5</span><span><b>Cronenberg, David, dir.</b> Videodrome. 1983.</span></li>
+      <li><span class="bib-n">6</span><span><b>Deleuze, Gilles, and Félix Guattari.</b> A Thousand Plateaus: Capitalism and Schizophrenia. Trans. Brian Massumi. Minneapolis: University of Minnesota Press, 1987.</span></li>
+      <li><span class="bib-n">7</span><span><b>Dewey, John.</b> Art as Experience. New York: Minton, Balch & Company, 1934.</span></li>
+      <li><span class="bib-n">8</span><span><b>deWaard, Andrew.</b> Derivative Media. Oakland: University of California Press, 2022.</span></li>
+      <li><span class="bib-n">9</span><span><b>Felstead, Daniel, and Jenn Leung.</b> Welcome to Jankspace, Babes. Video essay. DIS.art, 2025.</span></li>
+      <li><span class="bib-n">10</span><span><b>Fisher, Mark.</b> Capitalist Realism: Is There No Alternative? Winchester: Zero Books, 2009.</span></li>
+      <li><span class="bib-n">11</span><span><b>Fisher, Mark.</b> "Flatline Constructs: Gothic Materialism and Cybernetic Theory-Fiction." PhD diss., University of Warwick, 1999.</span></li>
+      <li><span class="bib-n">12</span><span><b>Gilbert, J., H. Thorington, M. Walczak, H. Eager, and M. Wattenberg.</b> ADRIFT. Net art installation, 1998.</span></li>
+      <li><span class="bib-n">13</span><span><b>Kosinski, Joseph, dir.</b> Tron: Legacy. 2010.</span></li>
+      <li><span class="bib-n">14</span><span><b>Land, Nick.</b> Meltdown. 1994. Reprinted in Fanged Noumena. Falmouth: Urbanomic, 2011.</span></li>
+      <li><span class="bib-n">15</span><span><b>Leckey, Mark, dir.</b> In the Long Tail. 2009–2011.</span></li>
+      <li><span class="bib-n">16</span><span><b>Steyerl, Hito.</b> "In Defense of the Poor Image." e-flux Journal 10, November 2009.</span></li>
+      <li><span class="bib-n">17</span><span><b>Walsh, Joanna.</b> Amateurs!: How We Built Internet Culture and Why It Matters. London: Verso, 2024.</span></li>
+      <li><span class="bib-n">18</span><span><b>Zuboff, Shoshana.</b> The Age of Surveillance Capitalism. New York: PublicAffairs, 2019.</span></li>
+    </ol>
+  </section>
+
+  <!-- credits -->
+  <section class="section">
+    <p class="section-label">Credits</p>
+    <div class="credits-grid">
+      <div class="credit-block">
+        <span class="credit-head">Concept & Design</span>
+        <p>Calder Anderson</p>
+        <span class="credit-head">Code & Pipeline</span>
+        <p>Riley Daggs<br>Calder Anderson</p>
+        <span class="credit-head">Venue</span>
+        <p>Parsons School of Design</p>
+      </div>
+      <div class="credit-block">
+        <span class="credit-head">Program</span>
+        <p>BFA Integrated Design<br>Parsons School of Design, 2026</p>
+        <span class="credit-head">Special Thanks</span>
+        <p>
+          Parsons Integrated Design Faculty<br>
+          Login Magazine contributors and readers<br>
+          Fisher, Land, Zuboff, Steyerl, Bratton<br>
+          Everyone who stood in front of the installation
+          and let their body become data —
+          this work doesn't exist without you.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Calder Anderson — 2026</span>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+
+// ── FULLSCREEN ────────────────────────────────────────────────────────────────
+window.toggleFullscreen = function () {
+  const wrap = document.querySelector('.canvas-wrap');
+  if (!document.fullscreenElement) wrap.requestFullscreen();
+  else document.exitFullscreen();
+};
+
+// ── CONFIG ───────────────────────────────────────────────────────────────────
+const CONFIG = {
+  framePadding:         4,
+  groupNames:           ['Substrate','Machine','Circulation','Representation','Control'],
+  baseInterval:         200,
+  minInterval:          33,
+  preloadAhead:         60,
+  releaseTrail:         20,
+  motionSpikeThreshold: 0.65,
+  motionSpikeDurationMs: 8000,
+  motionSwitchCooldownMs: 60000,
+  motionIdleTimeoutMs:  120000,
+  crossfadeDuration:    5000,
+  motionFloor:          0.4,
+  motionCeil:           6.0,
+  motionRise:           0.4,
+  motionDecay:          0.08,
+};
+
+const GROUP_DEFS = [
+  { manifest: 'outputs/manifest.json',  base: 'outputs/dir'  },
+  { manifest: 'outputs/manifest2.json', base: 'outputs/dir2' },
+  { manifest: 'outputs/manifest3.json', base: 'outputs/dir3' },
+  { manifest: 'outputs/manifest4.json', base: 'outputs/dir4' },
+  { manifest: 'outputs/manifest5.json', base: 'outputs/dir5' },
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let sequence    = [];
+let groupStarts = [];
+let groupEnds   = [];
+let cache       = {};
+let groupHeads  = [];
+let currentGroup = 0;
+let crossfade    = null;
+let motionEnergy  = 0;
+let lastFrameTime = 0;
+let running       = false;
+let motionHighSince   = null;
+let lastSwitchTime    = -Infinity;
+let motionLastActiveAt = null;
+let prevPixels = null;
+
+// ── DOM ───────────────────────────────────────────────────────────────────────
+const canvas    = document.getElementById('meltdown-canvas');
+const ctx       = canvas.getContext('2d');
+const placeholder = document.getElementById('placeholder');
+const camStatus = document.getElementById('cam-status');
+
+const webcam = document.createElement('video');
+webcam.autoplay = true; webcam.muted = true; webcam.playsInline = true;
+webcam.width = 320; webcam.height = 240;
+webcam.style.cssText = 'position:absolute;top:-9999px;left:-9999px;';
+document.body.appendChild(webcam);
+
+const diffCanvas = document.createElement('canvas');
+diffCanvas.width = 160; diffCanvas.height = 120;
+diffCanvas.style.cssText = 'position:absolute;top:-9999px;left:-9999px;';
+document.body.appendChild(diffCanvas);
+const diffCtx = diffCanvas.getContext('2d', { willReadFrequently: true });
+
+// ── RESIZE ────────────────────────────────────────────────────────────────────
+function resizeCanvas() {
+  const wrap = canvas.parentElement;
+  if (document.fullscreenElement) {
+    const size = Math.min(wrap.clientWidth, wrap.clientHeight);
+    canvas.width  = size;
+    canvas.height = size;
+  } else {
+    canvas.width  = wrap.clientWidth;
+    canvas.height = wrap.clientHeight;
+  }
+}
+window.addEventListener('resize', resizeCanvas);
+document.addEventListener('fullscreenchange', resizeCanvas);
+resizeCanvas();
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function pad(n) { return n.toString().padStart(CONFIG.framePadding, '0'); }
+
+function loadImg(idx) {
+  if (idx < 0 || idx >= sequence.length || cache[idx]) return;
+  const img = new Image();
+  img.src = `${sequence[idx].base}/${sequence[idx].dir}/${sequence[idx].file}`;
+  cache[idx] = img;
+}
+
+// ── MANIFEST ──────────────────────────────────────────────────────────────────
+async function loadManifest() {
+  for (let g = 0; g < GROUP_DEFS.length; g++) {
+    groupStarts.push(sequence.length);
+    const manifest = await fetch(GROUP_DEFS[g].manifest).then(r => r.json());
+    const base = GROUP_DEFS[g].base;
+    for (const e of manifest) {
+      for (let f = 1; f <= e.frames; f++) {
+        sequence.push({ base, dir: e.dir, file: pad(f) + '.png' });
+      }
+    }
+  }
+  groupEnds  = [...groupStarts.slice(1), sequence.length];
+  groupHeads = groupStarts.map(s => s);
+}
+
+// ── PRELOADER ─────────────────────────────────────────────────────────────────
+function preloadWindow() {
+  const heads = crossfade ? [crossfade.fromIdx, crossfade.toIdx] : [groupHeads[currentGroup]];
+  for (const h of heads) {
+    for (let i = h; i < Math.min(h + CONFIG.preloadAhead, sequence.length); i++) loadImg(i);
+  }
+  const minHead = Math.min(...heads);
+  for (const k of Object.keys(cache)) {
+    if (+k < minHead - CONFIG.releaseTrail) delete cache[+k];
+  }
+}
+
+async function preloadInitial() {
+  const plSub = placeholder.querySelector('.pl-sub');
+  const n = Math.min(CONFIG.preloadAhead, sequence.length);
+  let done = 0;
+  await new Promise(resolve => {
+    for (let i = 0; i < n; i++) {
+      const img = new Image();
+      img.onload = img.onerror = () => {
+        done++;
+        if (plSub) plSub.textContent = `Buffering ${done} / ${n}`;
+        if (done === n) resolve();
+      };
+      img.src = `${sequence[i].base}/${sequence[i].dir}/${sequence[i].file}`;
+      cache[i] = img;
+    }
+  });
+}
+
+// ── MOTION ────────────────────────────────────────────────────────────────────
+function sampleMotion() {
+  if (webcam.readyState < 2) return;
+  diffCtx.drawImage(webcam, 0, 0, 160, 120);
+  const pixels = diffCtx.getImageData(0, 0, 160, 120).data;
+  if (prevPixels) {
+    let total = 0;
+    for (let i = 0; i < pixels.length; i += 16) total += Math.abs(pixels[i] - prevPixels[i]);
+    const rawDiff = total / (pixels.length / 16);
+    const norm    = Math.min(Math.max((rawDiff - CONFIG.motionFloor) /
+                      (CONFIG.motionCeil - CONFIG.motionFloor), 0), 1);
+    const factor  = norm > motionEnergy ? CONFIG.motionRise : CONFIG.motionDecay;
+    motionEnergy  = motionEnergy * (1 - factor) + norm * factor;
+  }
+  prevPixels = new Uint8ClampedArray(pixels);
+}
+
+async function startCamera() {
+  try {
+    const cam = new Camera(webcam, {
+      onFrame: async () => { if (running) sampleMotion(); },
+      width: 320, height: 240,
+    });
+    cam.start();
+    camStatus.className = 'cam-status live';
+    camStatus.innerHTML = '<span class="dot"></span>Camera active — motion tracking enabled';
+  } catch (e) {
+    camStatus.innerHTML = '<span class="dot"></span>Camera inactive — passive playback';
+  }
+}
+
+// ── INTERVAL ──────────────────────────────────────────────────────────────────
+function computeInterval() {
+  return CONFIG.baseInterval - (CONFIG.baseInterval - CONFIG.minInterval) * Math.pow(motionEnergy, 0.6);
+}
+
+// ── DRAW ──────────────────────────────────────────────────────────────────────
+function drawCoverFit(idx, alpha) {
+  const img = cache[idx];
+  if (!img || !img.complete || !img.naturalWidth) return;
+  ctx.globalAlpha = alpha;
+  const s  = Math.max(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
+  const dw = img.naturalWidth  * s;
+  const dh = img.naturalHeight * s;
+  ctx.drawImage(img, (canvas.width - dw) / 2, (canvas.height - dh) / 2, dw, dh);
+  ctx.globalAlpha = 1;
+}
+
+// ── FOLDER SWITCH ─────────────────────────────────────────────────────────────
+function triggerSwitch() {
+  lastSwitchTime     = performance.now();
+  motionLastActiveAt = performance.now();
+  const next  = (currentGroup + 1) % CONFIG.groupNames.length;
+  const toIdx = groupHeads[next];
+  crossfade = {
+    startTime: performance.now(),
+    duration:  CONFIG.crossfadeDuration,
+    fromIdx:   groupHeads[currentGroup],
+    toIdx,
+    fromGroup: currentGroup,
+    toGroup:   next,
+  };
+  currentGroup = next;
+  for (let i = toIdx; i < Math.min(toIdx + CONFIG.preloadAhead, sequence.length); i++) loadImg(i);
+}
+
+// ── LOOP ──────────────────────────────────────────────────────────────────────
+function drawFrame() {
+  if (!running) return;
+  const now      = performance.now();
+  const interval = computeInterval();
+
+  if (motionEnergy > 0.05) motionLastActiveAt = now;
+
+  if (motionLastActiveAt !== null &&
+      now - motionLastActiveAt >= CONFIG.motionIdleTimeoutMs &&
+      !crossfade && now - lastSwitchTime >= CONFIG.motionSwitchCooldownMs) {
+    triggerSwitch();
+  }
+
+  if (motionEnergy >= CONFIG.motionSpikeThreshold) {
+    if (motionHighSince === null) motionHighSince = now;
+    if (!crossfade &&
+        now - motionHighSince  >= CONFIG.motionSpikeDurationMs &&
+        now - lastSwitchTime   >= CONFIG.motionSwitchCooldownMs) {
+      motionHighSince = null;
+      triggerSwitch();
+    }
+  } else {
+    motionHighSince = null;
+  }
+
+  if (now - lastFrameTime >= interval) {
+    lastFrameTime = now;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (crossfade) {
+      const t = Math.min((now - crossfade.startTime) / crossfade.duration, 1);
+      drawCoverFit(crossfade.fromIdx, 1 - t);
+      drawCoverFit(crossfade.toIdx,   t);
+      crossfade.fromIdx++;
+      if (crossfade.fromIdx >= groupEnds[crossfade.fromGroup])
+        crossfade.fromIdx = groupStarts[crossfade.fromGroup];
+      crossfade.toIdx++;
+      if (crossfade.toIdx >= groupEnds[crossfade.toGroup])
+        crossfade.toIdx = groupStarts[crossfade.toGroup];
+      if (t >= 1) {
+        groupHeads[crossfade.fromGroup] = crossfade.fromIdx;
+        groupHeads[crossfade.toGroup]   = crossfade.toIdx;
+        crossfade = null;
+      }
+      if (crossfade) preloadWindow();
+    } else {
+      drawCoverFit(groupHeads[currentGroup], 1);
+      groupHeads[currentGroup]++;
+      if (groupHeads[currentGroup] >= groupEnds[currentGroup])
+        groupHeads[currentGroup] = groupStarts[currentGroup];
+      if (groupHeads[currentGroup] % 15 === 0) preloadWindow();
+    }
+
+  }
+
+  requestAnimationFrame(drawFrame);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+(async () => {
+  const plSub = placeholder.querySelector('.pl-sub');
+  if (plSub) plSub.textContent = 'Loading sequences...';
+  await loadManifest();
+  await startCamera();
+  await preloadInitial();
+  placeholder.style.display = 'none';
+  running = true;
+  motionLastActiveAt = performance.now();
+  requestAnimationFrame(drawFrame);
+})();
+
+})();
+</script>
+
+<script>
+(function () {
+  const DEFS = [
+    { manifest: 'outputs/manifest.json',  base: 'outputs/dir'  },
+    { manifest: 'outputs/manifest2.json', base: 'outputs/dir2' },
+    { manifest: 'outputs/manifest3.json', base: 'outputs/dir3' },
+    { manifest: 'outputs/manifest4.json', base: 'outputs/dir4' },
+    { manifest: 'outputs/manifest5.json', base: 'outputs/dir5' },
+  ];
+
+  const urls  = [];  // candidate paths
+  const ready = [];  // Image objects confirmed loaded
+
+  async function buildPool() {
+    for (const def of DEFS) {
+      try {
+        const manifest = await fetch(def.manifest).then(r => r.json());
+        for (const e of manifest) {
+          // sample up to 8 frames spread evenly across each sequence
+          const step = Math.max(1, Math.floor(e.frames / 8));
+          for (let f = 1; f <= e.frames; f += step) {
+            urls.push(`${def.base}/${e.dir}/${f.toString().padStart(4, '0')}.png`);
+          }
+        }
+      } catch { /* manifest not present */ }
+    }
+    if (!urls.length) return;
+    // shuffle so cells get variety from all categories
+    for (let i = urls.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [urls[i], urls[j]] = [urls[j], urls[i]];
+    }
+    preloadBatch();
+  }
+
+  let cyclingStarted = false;
+
+  function preloadBatch() {
+    const n = Math.min(urls.length, 120);
+    urls.slice(0, n).forEach(src => {
+      const img = new Image();
+      img.onload = () => {
+        ready.push(img);
+        if (!cyclingStarted && ready.length >= 12) {
+          cyclingStarted = true;
+          startCycling();
+        }
+      };
+      img.src = src;
+    });
+  }
+
+  function pickReady() {
+    return ready.length ? ready[Math.floor(Math.random() * ready.length)] : null;
+  }
+
+  function cycleCell(cell) {
+    const img = cell.querySelector('img');
+    const next = pickReady();
+    if (!img || !next) return;
+    img.src = next.src;
+  }
+
+  var isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+
+  function initCell(cell, delay) {
+    const img = document.createElement('img');
+    cell.appendChild(img);
+    setTimeout(() => {
+      cycleCell(cell);
+      if (isTouchDevice) {
+        var offset = Math.floor(Math.random() * 3000);
+        setInterval(() => cycleCell(cell), 2000 + offset);
+      } else {
+        cell.addEventListener('mouseover', () => cycleCell(cell));
+      }
+    }, delay);
+  }
+
+  function startCycling() {
+    document.querySelectorAll('.thesis-img-cell').forEach((cell, i) => {
+      initCell(cell, i * 80);
+    });
+  }
+
+  buildPool();
+})();
+</script>
+
+
+<script>
+/* ── DIAGRAM ASSEMBLY + CAVE REVEAL ─────────────────────────────────────── */
+(function () {
+  const diagSect = document.getElementById('diag-section');
+  if (diagSect) {
+    diagSect.querySelectorAll('[data-d]').forEach(el => {
+      const order = parseInt(el.getAttribute('data-d'), 10);
+      el.style.transitionDelay = `${order * 0.11}s`;
+    });
+    const obs = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        diagSect.classList.add('diag-assembled');
+        obs.disconnect();
+      }
+    }, { threshold: 0.1 });
+    obs.observe(diagSect);
+  }
+
+  const caveReveal = document.querySelector('.cave-reveal-wrap');
+  if (caveReveal) {
+    function updateReveal() {
+      const rect = caveReveal.getBoundingClientRect();
+      const vh   = window.innerHeight;
+      const prog = Math.max(0, Math.min(1, (vh - rect.top) / (vh * 0.72)));
+      caveReveal.style.clipPath = `inset(0 0 ${Math.round((1 - prog) * 100)}% 0)`;
+    }
+    window.addEventListener('scroll', updateReveal, { passive: true });
+    updateReveal();
+  }
+})();
+</script>
+
+<script>
+/* ── SCROLL ANIMATION CONTROLLER ────────────────────────────────────────── */
+(function () {
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      e.target.classList.add('s-in');
+      io.unobserve(e.target);
+    });
+  }, { threshold: 0.06, rootMargin: '0px 0px -52px 0px' });
+
+  const tag = (el, cls, delay) => {
+    el.classList.add(cls);
+    if (delay) el.style.setProperty('--sd', delay);
+    io.observe(el);
+  };
+
+  /* Section animated borders */
+  document.querySelectorAll('.section').forEach(el => io.observe(el));
+
+  /* Section labels */
+  document.querySelectorAll('.section-label').forEach(el => tag(el, 's-rv'));
+
+  /* Big thesis / encounter pull quotes — scale reveal */
+  document.querySelectorAll('.thesis-q, .encounter-text').forEach(el => tag(el, 's-rv-sc'));
+
+  /* Body text — stagger siblings within same parent */
+  document.querySelectorAll('.body-text').forEach(el => {
+    const idx = Array.from(el.parentElement.querySelectorAll('.body-text')).indexOf(el);
+    tag(el, 's-rv', `${idx * 0.1}s`);
+  });
+
+  /* Insight callouts */
+  document.querySelectorAll('.insight').forEach(el => io.observe(el));
+
+  /* Overview headings + result label */
+  document.querySelectorAll('.overview-head, .overview-result').forEach(el => tag(el, 's-rv'));
+
+  /* Overview big emphasis */
+  document.querySelectorAll('.overview-emphasis').forEach(el => io.observe(el));
+
+  /* Encounter sub-paragraph */
+  document.querySelectorAll('.encounter-sub').forEach(el => tag(el, 's-rv', '0.18s'));
+
+  /* Category grid — stagger cells */
+  document.querySelectorAll('.cat-cell').forEach((el, i) => tag(el, 's-rv', `${i * 0.08}s`));
+
+  /* Process items — slide from left, stagger */
+  document.querySelectorAll('.process-item').forEach((el, i) => tag(el, 's-rv-l', `${i * 0.11}s`));
+
+  /* Tech grid — stagger */
+  document.querySelectorAll('.tech-item').forEach((el, i) => tag(el, 's-rv', `${i * 0.05}s`));
+
+  /* Bibliography — slide from left, stagger (capped) */
+  document.querySelectorAll('.bib-list li').forEach((el, i) =>
+    tag(el, 's-rv-l', `${Math.min(i * 0.04, 0.48)}s`)
+  );
+
+  /* Credits */
+  document.querySelectorAll('.credit-block').forEach((el, i) => tag(el, 's-rv', `${i * 0.15}s`));
+
+  /* Thesis sticky image grid — stagger cells */
+  document.querySelectorAll('.thesis-2col-imgs .thesis-img-cell').forEach((el, i) =>
+    tag(el, 's-rv', `${Math.min(i * 0.04, 0.64)}s`)
+  );
+
+  /* Footer */
+  const footer = document.querySelector('footer');
+  if (footer) tag(footer, 's-rv');
+
+  /* ── PARALLAX ─────────────────────────────────────────────────────────── */
+  const heroBg  = document.querySelector('.hero-bg');
+  const heroEl  = document.querySelector('.hero');
+  const ovBg    = document.querySelector('.section-bg-img');
+  const ovSect  = ovBg ? ovBg.closest('section') : null;
+
+  let pending = false;
+
+  function tick() {
+    const y = window.scrollY;
+
+    /* Hero background drifts slower than content */
+    if (heroBg && heroEl) {
+      const bottom = heroEl.offsetTop + heroEl.offsetHeight;
+      if (y < bottom * 1.4) {
+        heroBg.style.transform = `translateY(${y * 0.28}px)`;
+      }
+    }
+
+    /* Overview section background slow drift */
+    if (ovBg && ovSect) {
+      const r = ovSect.getBoundingClientRect();
+      const mid = r.top + r.height / 2 - window.innerHeight / 2;
+      ovBg.style.transform = `translateY(${mid * 0.12}px)`;
+    }
+
+    pending = false;
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!pending) { pending = true; requestAnimationFrame(tick); }
+  }, { passive: true });
+
+  tick();
+})();
+</script>
+
+<script>
+(function () {
+  const cats = document.querySelectorAll('#fw-cats .fw-cat');
+  if (!cats.length) return;
+  let current = 0;
+
+  function step() {
+    cats.forEach(c => c.classList.remove('active'));
+    cats[current].classList.add('active');
+    current = (current + 1) % cats.length;
+  }
+
+  step();
+  setInterval(step, 1400);
+})();
+</script>
+
+<script>
+/* ── EXHIBITION SLIDESHOW ────────────────────────────────────────────────── */
+(function () {
+  var wrap = document.getElementById('encounter-slideshow');
+  if (!wrap) return;
+
+  var files = [
+    'exhibition%20images/576A6464.jpg',
+    'exhibition%20images/576A6465.jpg',
+    'exhibition%20images/576A6468.jpg',
+    'exhibition%20images/576A6469.jpg',
+    'exhibition%20images/576A6473.jpg',
+    'exhibition%20images/576A6476.jpg'
+  ];
+
+  var img = document.createElement('img');
+  img.className = 'encounter-slide-img';
+  img.style.opacity = '0';
+  wrap.appendChild(img);
+
+  var idx = 0;
+  img.onload = function () { img.style.opacity = '1'; };
+  img.src = files[idx];
+  idx = 1;
+
+  setInterval(function () {
+    img.style.opacity = '0';
+    setTimeout(function () {
+      img.onload = function () { img.style.opacity = '1'; };
+      img.src = files[idx];
+      if (img.complete) img.style.opacity = '1';
+      idx = (idx + 1) % files.length;
+    }, 520);
+  }, 3000);
+})();
+</script>
+
+<script>
+/* ── CATEGORY SLIDESHOWS ─────────────────────────────────────────────────── */
+(function () {
+  var BASE = 'stack/';
+
+  var CATS = {
+    substrate: {
+      folder: 'SUBSTRATE%20%20MATERIAL%20WORLD',
+      files: ["0001.jpg","0002.jpg","0003.jpg","0004.jpg","0005.png","0007.webp","0008.jpg","0009.webp","0010.webp","0011.png","0013.jpg","0014.png","0015.jpg","0016.jpg","0017.webp","0018.jpg","0019.jpg","0020.jpg","0022.jpg","0023.png","0024.png","0025.jpg","0026.jpg","0027.jpeg","0028.jpeg","0029.jpeg","0030.jpeg","0031.jpeg","0032.jpeg","0033.jpeg","0034.jpeg","0035.webp","0036.jpg","0037.webp","0038.jpg","0039.webp","0040.webp","0041.webp","0042.webp","0043.png","0044.png","0045.png","0046.png","0047.jpg","0049.webp","0050.webp","0051.jpg","0052.jpg","0054.jpg","0055.jpg","0056.webp","0057.jpg","0058.jpg","0059.jpg","0085.webp","0086.webp","0087.jpg","0088.png","0089.jpg","0090.jpg","0091.jpg","0092.jpg","0094.jpg","0095.jpg","0096.jpg","0097.jpg","0098.jpg","0099.jpg","0100.jpg","0101.jpg","0102.jpg","0104.jpg","0105.png","0106.jpg","0107.png","0108.jpg","0109.png","0110.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI0MzI0NjQ5OC9vcmlnaW5hbF83YjdmMzEzODczZDFlY2IzMTJiMmM3NjI1YjE5NGRmMy5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI0NzY2Mzc5L29yaWdpbmFsX2RjZTBlYzdlZWYwYWM5ZmY0ZjY0YjQ0ZWY2OTdjNGRjLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI1MDI0MDExL29yaWdpbmFsXzY4NTZiZmIyYjVjMzllYTU1Y2FlOTkxZWEzYmJiNDQyLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI1NTI2MTcvb3JpZ2luYWxfOGI1MjJhZGEyODA4ODQ5ZWFiMzI1MWIwZjQzMWQwMjcuanBnIiwiZWRpdHMiOnsicmVzaXplIjp7IndpZHRoIjo2MDAsImhlaWdodCI6NjAwLCJmaXQiOiJpbnNpZGUiLCJ3aXRo.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI2NTE1NjUvb3JpZ2luYWxfMzM4N2ZmZDkwNzEzZDc4ZThjOWI1NjRjOWI0OTYzOGIuanBnIiwiZWRpdHMiOnsicmVzaXplIjp7IndpZHRoIjo2MDAsImhlaWdodCI6NjAwLCJmaXQiOiJpbnNpZGUiLCJ3aXRo.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI2NzM5NDQ2L29yaWdpbmFsXzYzMTkzNjk4N2MyZTk5OWFlN2FiOTRkYzI0ZGE5Y2JiLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI3NzE2MTM0L29yaWdpbmFsX2EwZTRkY2Q5ZTM3M2QwMmUwZDQ2N2RiMDE1MjFlNGJmLnBuZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI4MDYwNzE5L29yaWdpbmFsX2ZhZDllZjYzNzg2NjU4NDZiOWZkYzA2MTU4ZDQ2ZDFjLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI4MzM3NDEyL29yaWdpbmFsX2Y3MWQ2OGZkYzA3N2NmNzdlMDEyNTZmYjc1YTczYmFlLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxMjcyMDgvb3JpZ2luYWxfNjVlZDdhZDRkOTcxMGM4ZDk5ZWM3ODJhOTllYzg2ZWYuanBnIiwiZWRpdHMiOnsicmVzaXplIjp7IndpZHRoIjo2MDAsImhlaWdodCI6NjAwLCJmaXQiOiJpbnNpZGUiLCJ3aXRo.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxMTMwNjAyL29yaWdpbmFsXzUxNmY3YmMzMjEyZDVmYWI0ZTg2MDIwYjVhNTNhNzViIiwiZWRpdHMiOnsicmVzaXplIjp7IndpZHRoIjo2MDAsImhlaWdodCI6NjAwLCJmaXQiOiJpbnNpZGUiLCJ3aXRob3V0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxMzY5OTcxL29yaWdpbmFsXzRlMjNjNmViZmVlOGM0ZmEwZjQ4MGM2MWVkZDRmMmYzLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxNDA2MzU4MC9vcmlnaW5hbF9hMDY4M2FmYzAzMTA1YTUyZWExZjZmN2E2M2RkNGRmNy5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxNzU1MDEvb3JpZ2luYWxfZWFkYWQ5YmZlNjg1ZGE4ZGY2YWQxNGI4MGY4ZjAzYzQuanBnIiwiZWRpdHMiOnsicmVzaXplIjp7IndpZHRoIjo2MDAsImhlaWdodCI6NjAwLCJmaXQiOiJpbnNpZGUiLCJ3aXRo.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxODk4NDQvb3JpZ2luYWxfMDRlNDg0YzBhOTVjZmQyMTY0MjNmOGVjNTNkNjk2YjAiLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndpdGhvdXRF.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyMDM3NDUwOS9vcmlnaW5hbF84ZmFkYTkwYTg4MTAxMjIxNzA1NTExNzQ4NTVkNDMyNi5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyMjE3MjE3MC9vcmlnaW5hbF80N2VkMGNhNzRiZDlhNWJiMDlmMmExMDkxOThmOGUyMS5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyNDAxMDMwL29yaWdpbmFsXzk2OTRjMmE5MWQzY2FkMWUwYjYxZjQzZDZjYWU0YjQ0LmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyODI1ODgwMy9vcmlnaW5hbF82MmY4M2Y3NjViZmM0OTRmZTE5NDM3ZGZmNjNjM2Q1ZC5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzMDc3OTExOC9vcmlnaW5hbF84M2FmN2NiOTgwMzVmMGEzZTY0N2Q2OWNlYmJkZjdlMC5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzMjkzNjkyNC9vcmlnaW5hbF85NmE5ZmM4ZDQ5ZWI2NGVhOTQxMDE1MzQ5MzY2Yjg3NS5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzMzUzNjcwMy9vcmlnaW5hbF9iMWI4NDMwYTk1YmYwOGFkNDhjNTY4MjBjMmViNWE5OS5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzNjU5OTY5L29yaWdpbmFsXzAxYTMyYzMxYzIyNTNjZGFkZDhjNWY3OGQwMjBmMmIwLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzNTU0NzU0NC9vcmlnaW5hbF9hNTBiNTRlMzc0ZDA0OTBjOWNiNjQ3ZjljOTY1NGQ2ZS5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzOTQ4ODA4L29yaWdpbmFsXzM2MTdkNmExNjRlZTAzYjFlMTc4ZjM1YWIyYWI0OTI3LmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","original_00e78b17cadc48ae1ca4e94c18233b3f.png","original_01eb4f26acee22345aca24632d827be7.jpg","original_0403282abe7ccc054b11056fc7224a72.jpg","original_0fa4e0e63ac7687714b99e1876fc1839.jpg","original_1772c094be5f5975e8b08e8e03d115c2.png","original_181430460352e0bf9728f6d3392c1f05.jpg","original_1c414bec8aacf8b368d680a57e41b62a.jpg","original_1c9a62a808ee64db170c9b08ff1c7c99.jpg","original_1da0613a6d3e6fc6775c4d8188e47d82.jpg","original_29d1b95d5d5ccb69e2dcf1079ca8fbe6.jpg","original_32b1b3ecbe51e9cac4a09a1145ddd274.jpg","original_3adc7ff74d2635c4a07b9ed16253da04.webp","original_40609dd7cd0aef234953666bfbad7592.jpg","original_499a5d0d70b196e2adb51ca16c815bf5.jpg","original_4f70b2ac38c09d2497c4e59375524707.jpg","original_5173d1b287250efa92c272924af14f90.jpg","original_5208647f50c7661c46fd6a0baf25a642.jpg","original_53155465ef2153e3435a3db0459fe6ef.jpg","original_69516429fa273ffc83660a6ffe1e5e0b.png","original_6e71361019990603aa2b14a2db65a43b.jpg","original_6f52ec9848f023d5302bec448caee405.jpg","original_7006dd0aecc10386883aa26815849e05.jpg","original_7f9a9cbf49402fc9af1a4d3e5c9a9b80.jpg","original_7ff1319cbb1174ce0d729cea85118cf9.jpg","original_8ed289a9219ad17704430de9866a63a7.jpg","original_9404bbbd19feaef91c9505c1f77764b5.webp","original_979f8858b990ed7eef2db20d56f2aeb6.png","original_98c21359a68ad0a6c0956b3bb35b7c99.png","original_997d9dd39eb891ecbb77bb4a6393138d.jpg","original_adfd20882eda6b8c50c4e011d89c8f64.png","original_b820ac76d693a0c874de40297900fdf7.jpg","original_b94887474b327e5ebbdb48b01b682c76.jpeg","original_cab7abfdf4712f7c9a6fef2981122540.webp","original_d14d6d1d09439180243082b901622d89.png","original_ed8739a4941b6815784f39d09a8eb3ab.jpg","original_edc70e79cdb70b9a2629d8b0a32ef15d.png","original_f2830686e6c193af9ca738a920824621.jpg","the-2020s-in-20-pictures-so-far-v0-4x6tiny1x59e1.webp","what-pop-culture-phenomenon-has-defined-the-2020s-so-far-v0-bmos73ief4kf1.webp"]
+    },
+    machine: {
+      folder: 'MACHINE',
+      files: ["02-banner.jpg","16_image-png.png","1779e49ea2c7d795a012b49c0aa48f18.jpg","1_akUnCwk5zaTeu63Tz07Ayw.gif","1_vpht6yGL-gEWQGYN6n3eqQ.png","58_101467_0017-jpg.jpg","60_tumblr_mh0im3ggas1qzt15co1_1280-jpg.jpg","68deaac296518346392248eb_blogimages (34).png","68_c-for-a-cloudy-forecast.jpg","69_e-for-ethernet.png","7053ff827e26f98c19355a6b8dcddef9.jpg","70_i-for-information-superhighway.jpg","99ce8c7b9bae32d9493ea9f31c096f6c.jpg","9fbb102532c0e954d2873f1544240512.jpg","AdobeStock_177795515.jpeg","AdobeStock_178722252.jpeg","AdobeStock_188454354.jpeg","AdobeStock_73614658.jpeg","Atlas-Robot.jpg","b3a4f99740b3f2b46d2c997cfeda99f5.jpg","Boston-Dynamics.jpg","cald3r_Massive_abandoned_server_facility_endless_rows_of_humm_3e28d2a2-a07b-4139-aaa8-3fc0cf37a351_1.png","close-look-at-server-aisles-at-the-new-albany-data-center-campus-in-central-ohio.jpg","CMuXIl0_vRUdz.webp","datacenter-growth-ai-demands.jpg","download (2).jpg","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI0MDQzMzk1NC9vcmlnaW5hbF81YWRiYTliYzc2YjZmMTkwODhhNTgyN2Q4YjZjNDk2MS5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI0MzUxNzg2L29yaWdpbmFsXzJiMzZlM2I0NmY2ZDBhYzVlODljMjU4YTVlYWJiYTNiLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI0NjcwNDExL29yaWdpbmFsX2Y5OTcyMGM3MTU3ZTcxMTRkZWM2NmU3MDk0NDBhYzcyLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI2MDU5OTcyL29yaWdpbmFsX2M4NDU2MzMyOThmZGE1N2IyZWZhOTU3NTU3YjA0Y2UzLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI2MDUzNDgvb3JpZ2luYWxfMmQ3YzYzZTQzMGNlYmU3MTgzNWI1ODA2ZTQxMDI4YjguanBnIiwiZWRpdHMiOnsicmVzaXplIjp7IndpZHRoIjo2MDAsImhlaWdodCI6NjAwLCJmaXQiOiJpbnNpZGUiLCJ3aXRo.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI2MTgxMjMvb3JpZ2luYWxfYzlmY2RiZmM1OWJmZjI0YjcwNTBhZTk1Y2FjOGQ0OGUuanBlZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI3NzYwMzEwL29yaWdpbmFsXzdiYTkzYzgwMWQxZmM0MzM4YTQ5ODE0NjU4ODM2NzE3LmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxMzMyNjI3Mi9vcmlnaW5hbF84N2E4ZWE3ZmZjODEzOTA1NzViOTlkODNkODBlMDRjYy5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxNjExNDEwNi9vcmlnaW5hbF9jN2Y5YjIzM2ZlMWMyNmQ5OTBjNGIxNmViNjExMWQzYi5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxNjI3OTg3MC9vcmlnaW5hbF8wYjlkMjY2YjZlZjYxYTU2M2Q4N2ExM2Y4YzdkNjUwYy5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxNzM1MDU5My9vcmlnaW5hbF9hZmY5MWM1YTUxOTRmMWE5YWRiNGU4ZjM1NjM5MzM0ZCIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0aG91.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxOTMxODY2L29yaWdpbmFsXzQ2ZTAxMTIyMTMxMzg3MzMyZjBmNmI0NzNiOWEyZjNiLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyMDM2NjQxL29yaWdpbmFsXzgzOTFiNzY4ODA3NTdkNWI3MDk1Mzg2Y2YwMzNkZTUxIiwiZWRpdHMiOnsicmVzaXplIjp7IndpZHRoIjo2MDAsImhlaWdodCI6NjAwLCJmaXQiOiJpbnNpZGUiLCJ3aXRob3V0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyMjc2MzAzNC9vcmlnaW5hbF8xNGRkNTc1YmE2MzRmZjAzOGFiMGIzMTZhZTk4ZDMzNi5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyMTg3Nzk2MC9vcmlnaW5hbF85MmJkZmZiNTliNWQ1M2MyZTRjNTkxODgyNDI0ODYyMS5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyMzI0NTYzL29yaWdpbmFsX2NkZWYxZDhjZWQ5MjhlMDI0ZWI5OTQxNWJlOGMxMmY0LmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyNDM3NzUxNy9vcmlnaW5hbF8zYWI4ODVjNGJmYjM0NGQzZDAyNDE5NjNkZDRkYmVlMi5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyNTk3NTk0Ny9vcmlnaW5hbF85NmI1YzEzYzUxMTc5MDQ5OTg1NjkwMmNjNzU3ZjcxNS5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyNzkyMTUxOC9vcmlnaW5hbF82N2U0NThlOWE0YmZmZmY3MTNiOWMyMjQyOWY1MGVhZS5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzMDI4NDAvb3JpZ2luYWxfM2ZkZDU4ZTFlZDFkOTdmZWU5NDg1Y2YwZjMzOGY5ZmQuanBnIiwiZWRpdHMiOnsicmVzaXplIjp7IndpZHRoIjo2MDAsImhlaWdodCI6NjAwLCJmaXQiOiJpbnNpZGUiLCJ3aXRo.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzMzY0NDQ4MS9vcmlnaW5hbF83MTYzZTM3MjA2NWY5ZDFmZGIyZmI5MDQ5NDE0YTQyNi5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzNzcxNTc3L29yaWdpbmFsX2VmNDYyNmJkZWZkMGI3NTcwNjNlNzQxMDE4ZTU2YmUwLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","Factories_and_corporate_buildings_fill_the_landscape__appearing_realistic__As_more_factories_emerge_.mp4.gif","Featured_1190px_DataCenters_iStock-1809660148.jpg","GB200_rack-cluster_zoom.jpg","Google-DeepMind-launches-offline-version-of-Gemini-Robotics-AI-for-robots-1068x601.jpg.webp","HeikoHellwig_1.webp","keanu-matrix-1038x576.png","Microsoft-datacenter-cold-aisle-server-racks-for-the-AMD-MI300X.jpg","ojCJPGS9jpMt3.webp","original_024e0e43ef6d1fee2e8d3d5c18b6518c.jpg","original_1030c316f7c014ef5f21a961f95f31c1.jpg","original_1f906fdaf63bf3890a19905385bf12cb.jpg","original_1fdd04479882f9fb5f7334a1ff2f36e8.jpg","original_2216af0d605664620b9247f96fa89b93.jpg","original_256aa05deb13e0969773ed9429a7245f.jpg","original_26837987cbfa733f7f9d52e675ff8c90.jpg","original_2c2c27921c351bf411757bd5393133a7.jpg","original_2d7c63e430cebe71835b5806e41028b8.jpg","original_2d7ea70ee1beb6eef19f65a3258f013a.jpg","original_3310189da27c023b0ddc32804375ee7c.jpg","original_3a52900e23c3091574c78a7b2d9a0740.jpg","original_3f97be74bf6daa2b6826e90e66f05d85.png","original_4666daace76137601ec9538c6ad75cbe.jpg","original_50af3ec55436867c9a7e7f1d4f1e3907.png","original_5e59938c8e52e3cf12021ecad635375d.jpg","original_6d08884ad6a63dacce72ef71f1e7413e.jpg","original_7003d396ebe2afb12d694c9f06202dc6.jpg","original_79d299216e24ca981a180c51e85a74cf.jpg","original_7c7b4d1fd7a9d0317147b11a0a5d3808.jpg","original_99d38c4b8646574f332352a7aa9e5dd9.jpg","original_9e86134d2d293f15d34cd050caa79027.jpg","original_ae113d9a6714e51b7f5b0d8e716a8ef0.jpg","original_b4929f62aabec3deff9d95a924de6dd3.png","original_b8306e366264bf7585f0b48fae601e0d.jpg","original_c8136f5ff76f296e4e988ac91b13b120.webp","original_ce4b3d009bf8e342147727374223606c.jpg","original_d34d01ab6d8df4450b037dae51c4b433.jpg","original_ee4308be125fa17f8e593cb587954bc9.jpg","original_f790ec68b934cca7700b9b0358b34961.jpg","panorama_D5915BDC_9315_C896_41C2_EB781C124B71_t.jpg","pngfind.com-old-telephone-png-5106659.png","pngfind.com-technology-png-984758.png","Screenshot 2026-01-06 153123.png","Screenshot 2026-01-06 153730.png","Screenshot 2026-01-06 160029.png","shutterstock_495697993-1920x1080 (1).jpg","shutterstock_495697993-1920x1080.jpg","Superconducting-Quantum-Computer.jpg","The-Terminator-Endoskeleton-1984.jpg"]
+    },
+    circulation: {
+      folder: 'CIRCULATION',
+      files: ["0374de6fefffbfda6c98c0e189b75bdb.jpg","1dbbf1c23f7d6ba11f88b5e3040d84fd.jpg","1W8x6ZJh2fAZG.webp","21_image-png.png","23ST-LOUVRE-DAPPER-FRENCH-MAN-pkmb-mediumSquareAt3X.jpg","33_image-png.png","3d1dd746ed1a2212366c956f91eb6fe1.jpg","449845721_860060342834580_5680899768624535938_n-1352x900.webp","64d0b448a332fc9442ece9b48369bef6.jpg","663db954b386b68b7392c281496b6598.jpg","71_h-for-hyperobjects.png","74_image-png.png","761d155cc260a5b7fe50a5684e9a56b0.jpg","7c030385f78f3bd7b5bfbe1f7c8e0233.jpg","8dadab433935be93e3422117decad7a7.jpg","90728e963e36b3ce10776f71154d5180.jpg","9DxpAxncBVsrr.webp","AdobeStock_35042130-[Converted].jpg","AdobeStock_66806807.jpeg","AdobeStock_68765723.jpeg","ae337170b97b71ae9ece6d0363b948aa.jpg","aHOhiRDbMM2TL_sm.webp","Animecore_glitch.webp","b55235e4924ecee8c1dd91ea8149d7ab.jpg","ce8d9ec31c2360124f07ce1030a2dc77.jpg","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI0MDg3OTY5Mi9vcmlnaW5hbF9lOGRmOTEyODFhYTI2NThiYWZiOWVhMTUzOTNiOTE0NS5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI0MTg2Nzk4Ny9vcmlnaW5hbF83NDAyYzk4OTE2MWQ4ZTAxMmVlYWE1NDRkMjgxOWZiMy5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI0MTgzODcxMi9vcmlnaW5hbF9hZDg4YTc5MDJlZTMwZDA5NmRkZDM1OTBiZmUwMTU1Yi5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI0MzgwMTk0Ni9vcmlnaW5hbF9mNDdmNmZjYWNjYjA2YmU4YmZkZjE3NzVlMzliOTI5MC5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI0MzkwMDIyOC9vcmlnaW5hbF83ZTNmMmI2ZmIwZGYzZjE4M2VhOWFkNzhjNWE5NjIyMS5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI2Mzc1ODgyL29yaWdpbmFsXzY2ODM2YWM2NDhjMTcwMjBmZWY3ZTJhOWY2NDcyOWViLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI2Njc4ODQvb3JpZ2luYWxfZTM1ZTM3NTRkN2U5NGIwMDJmMzMwZjk1NWE4OGQwODguanBnIiwiZWRpdHMiOnsicmVzaXplIjp7IndpZHRoIjo2MDAsImhlaWdodCI6NjAwLCJmaXQiOiJpbnNpZGUiLCJ3aXRo.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI4NDY5NTI4L29yaWdpbmFsXzI1YTRkMTZjZjE5MDY4MGQwNDkxZTgyOWI4MGIyMjRkLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI5NDAxODg1L29yaWdpbmFsXzJmNDc4Y2YwNWYzZjY2NjMyMTdlMmQxMmZlYjY3MGYwLnBuZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI5NzExMTUxL29yaWdpbmFsXzVhNjBhNDUxYjAyYmU2YzNiYTM0ZjkwN2M3MTYyMGY2LnBuZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxMjg3MDMwOC9vcmlnaW5hbF80ZjQ4ZjQ1NWFhNGFjNDc5YTg3ODMwZGIyMmZhNmFjZS5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxMTQ2MjcxMy9vcmlnaW5hbF9jOWFjZmM3ZDJkOWQxYTI1ZmRkYjQxODE1NjEwMjhiOC5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxNDk3NjY2L29yaWdpbmFsX2M4ODU2ZmZmOWQyMTFiMjNmZDUwNmNlMGY4NjA4NDViIiwiZWRpdHMiOnsicmVzaXplIjp7IndpZHRoIjo2MDAsImhlaWdodCI6NjAwLCJmaXQiOiJpbnNpZGUiLCJ3aXRob3V0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxNDU4OTQxMS9vcmlnaW5hbF9iNzUwNGJmODUwMzE5Mjk0MWEyNGY4NzNiZWIzN2ZmMC5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxOTIxNTE5MC9vcmlnaW5hbF9jM2I4ODY0YjJiMDE4NWRhMmZlZTU4ZTY2MzEyN2YwOS5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyMTUzNTI0MC9vcmlnaW5hbF85ZTI2MzBmOWQwZGRjZWFmYjY1NTFiOTdiNDQ0OTA4Yy5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyNDE5NjQ0MS9vcmlnaW5hbF9jNjc1YTE4ZmVlMmRjMjUxOWE5NDk3OTdlYWU5OTMxYy5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyNjA5MzUzNi9vcmlnaW5hbF85YzlhNTBlNjY4MWFiNDA5N2NhZTJkODdjYjY0MmNkYy5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyODQ0NjcyOS9vcmlnaW5hbF8wMDFmYmE5NWY3N2Q3ZTU3NmI2NDBlMzk2MjUxNjQ4OS5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyOTE0NzkyNy9vcmlnaW5hbF82ZmFlYWIyNWY5ZjJhNDgzYTliMWJjNzU2MzU2MmM4OS5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyOTI2ODY5Ni9vcmlnaW5hbF82OWJlNmEzOGZmY2I0NWFkYzBhZTc1OWFiZGQ2OWNkYi5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzMDc3MTI5MS9vcmlnaW5hbF8wMTMyZDVlNTg5MTdiNjdiMzI3ODViNzM1OTgxZjU0Zi5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzNDU1MjE5NC9vcmlnaW5hbF9iNmIwNzVjYmE5NGI1MDkwMzM2YTA3Njg0ZWRhNTdiYS5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzNTcyMzkzNS9vcmlnaW5hbF8yYjBlZDI4OTUyNDNhZWIwNzgxYzQzOGRhODQ1N2YzOS5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzNTk5MTQzNi9vcmlnaW5hbF9jNzY3MmY4MGFkOTQwMGEwZTlkZWE3YmI3ZjBjNDBkMS5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzNzk2ODc1L29yaWdpbmFsXzU5ZmUwMjhjNGNkY2E4ZTUxNTRhOThlM2ViMjYxMDBkLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzNzY2MTAzMC9vcmlnaW5hbF83OGUzY2Q3OWQyNjRjM2Y5MjlkNTZlYzZiZjEzYWM1Zi5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzODAyMjI5OC9vcmlnaW5hbF8zMTI4YTliMjJmOGM1ZTFhNGZhZWQ2OTY0OTI2MjI4My5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzOTI1MTU2MS9vcmlnaW5hbF9lMGI2MzQ1NzBkYzgyZGU3NzhhMmFiMTM5ZGMxOGY2MC5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","images (1).jpg","original_054f1cbfeb0c4370ac7fc14939f73de3.jpg","original_128d78659d19337a5be3ea4501e13d97.jpg","original_1a788cf524e91166bcb66e35cdba3e4d.jpg","original_1e48f470dd288010918c9d09d26c5a73.png","original_1f85ab8234c46fba41d7a35b0dafaa8d.jpg","original_2466bf171daf994786c65becd1dd350f.jpg","original_2f9f174de0205ac909b57559037f0a30.jpg","original_30724c5884e2419d911f4db184e48bcc.webp","original_61009f308616dc27c0a2dbaef4133ff2.jpg","original_66fe62555cfb7fc18c0dabbac8a1d3ce.jpg","original_725de6ebca9b0af74c9d1f79edacd24b.png","original_a7f78d316062a3b5b52eeb39bdd2291a.jpg","original_ba0443291933f809d16069b54d322deb.jpg","original_cb7a06b82116f264b42c5462a72dba3f.jpg","original_e31f01abeada2dac7560c9ff13038cce.jpg","original_ed7aecea66e19e9608fcf544738daa34.webp","original_f3053d22180e4f9a6af011c70be2d799.jpg","pngfind.com-interesting-png-3847921.png","Screen-Shot-2024-09-04-at-11.17.09-AM.webp","Screenshot 2026-03-01 123330.png","Screenshot 2026-03-01 135505.png","Screenshot 2026-04-06 202656.png","ST-CLAVICULAR-01-bpkt-articleLarge.webp","t7uogzn5yvya1.jpg","the-2020s-in-20-pictures-so-far-v0-m04xcx1v069e1.webp","what-pop-culture-phenomenon-has-defined-the-2020s-so-far-v0-a7b351vrd0kf1.webp"]
+    },
+    representation: {
+      folder: 'REPRESENTATION',
+      files: ["0d2c2311053049ccc0d1ebd623245b52.jpg","0x0.webp","0_qOVNYnupXcn6DjXL.jpg","101f738e60a306038efcacc65ffc159c.jpg","1718737918166.png","19956f5817979244b077a3b6ce8c018d.jpg","1W8x6ZJh2fAZG.webp","1_K0pmwc-hHVSse1pWKxbaJw.jpg","267348535a39b265cd32476d9357338b.jpg","2879.avif","3a2a64b0-88cf-11f0-b391-6936825093bd.png","46_domain-names-jpg.jpg","48f19e2c0db494cbd21b212b6b50ebea.jpg","48_screenshot-2021-11-29-at-22-03-26-png.png","5000.avif","540px-Timmy_Burgerini.webp","5cqqg8cg_iran-legi_625x300_10_March_26.webp","6860f90c7a407c60993494b5_67f78345452852e7a3c91e1f_Image-4-AI-visual-hallucination.webp","70061ace8868c5ddde261b89c97e80c7.jpg","71_h-for-hyperobjects.png","807dd6eea6aa3ac2fe38323f1469c78e.jpg","84c3b314077c5ab73949b08cd6d2be97.jpg","87_untitled.jpg","919090bb-c55a-4067-8cbc-a9f2526b36e6.webp","9fbfaa3bec4078b48d33c320d8af352c.jpg","a8e1fa1fd6dd3652287b77128f2343f6.jpg","ai-fails-1-20241004.jpg","ai-generated-image-main.png","AI-generated_Donald_Trump_wading_through_floodwaters.jpg","Albert-Einstein-generated-by-AI-1024x683.webp","asegar_two_men_shaking_hands_final_landscape.jpg","Brr_brr_patapim_without_text.jpeg.jpeg","Cappucino_assasino.webp.png","cb5b76d3461b7f10e26010ce80252c38.jpg","Chimpanzini_Bananino.webp","dabe4523bc98d1f2ca2ba8f9aad2fdc9.jpg","dbcc0fd9a4af3e438e141a4292d79875.jpg","DeepDream.jpg","e209f1f87baea10446fefc2943ee3b7b.jpg","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI0Mzk0MzkwOS9vcmlnaW5hbF82NjhiMThmN2JlNmRmODc2M2FhODExNGM0NjU1NWJmMS5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxMTMwNzQ5Ny9vcmlnaW5hbF82ZDg2ZDk1NTY0M2E5MmEyM2I2MjZjZWJiZjRhN2Q3OS5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxNjU5MTM5Mi9vcmlnaW5hbF8zOWNmMDNmZWI2NzI0OTk5YzRkMDI1MzAyMzg0N2E5YS5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyMjQyMDk1Ni9vcmlnaW5hbF82NjA3OTNiNDg3NWNhZjhjNmUzZDQyZTc0MGRiOTY2MC5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyMzY1NDg2L29yaWdpbmFsXzgzZDEzYTY2YjRhOGFlNDhkNDMyNTAzOWUzMDMzMGMyLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzMDk3ODg0OC9vcmlnaW5hbF81ZjY5ZjY5NzM4MDFiNTU0NjkxM2FkYWJjODA4ZTg5YS5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzMDUxNjM0My9vcmlnaW5hbF85YTQ3MmVhMmY1MmQ3ZTI1MDNkNjE5YzlmMDJjYmE1ZC53ZWJwIiwiZWRpdHMiOnsicmVzaXplIjp7IndpZHRoIjo2MDAsImhlaWdodCI6NjAwLCJmaXQiOiJpbnNpZGUiLCJ3.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzNzE4ODg3OC9vcmlnaW5hbF9lMzI0YWY0NjUwMDExM2RmYWZjNGE1NDY5ZmIxM2M4Zi5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzNzY2MTAzMC9vcmlnaW5hbF83OGUzY2Q3OWQyNjRjM2Y5MjlkNTZlYzZiZjEzYWM1Zi5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","fca8d03191e93c5c61fdca52e4a151a4.jpg","file-20251219-66-vklc4z.jpg","fufhzv5tkbo91.png","hans-kolb-01.jpg","How-to-avoid-AI-Slop-that-is-polluting-the-web-1024x538.webp","John_Pork.webp","lNaZZMYAMiN8D_sm.webp","maxresdefault.jpg","original_20e760a5c72f559fc024e697f2f005b8.jpg","original_237b8faeeb00d295cc8e27efd4b6735f.png","original_3221a3930ad116955c9264b077e39366.jpg","original_34d88e5f8b5da15c351ce3172db8d7f1.png","original_35776e9e8bee20939c2fe8425b23da5c.jpg","original_39e4bb14c4e2f36c20d28680262d1a58.jpg","original_3f1a3caac145d98693b386f89ac49778.jpg","original_4549103d1ee3d7d7c4f2fae95bfa8f65.png","original_522faf78cfecf10a78c996542ede045e.png","original_5904f532b79bb7455f6c7c660c663ca0.jpg","original_734e1aab7cade4c72c818ffaceac5c19.jpg","original_73ec66378164a6c02eea6b33cafceed8.jpg","original_88e8c1b1073c250813a0f3cec24017a2.jpg","original_944cd3a22260101491388daae7c2fe0a.png","original_99fdbe6308f1b88df2ebb9eeb4c2132f.jpg","original_b84045105cc3777f43b3a291741ce2d4.jpg","original_c95ea5f7f4f54235effb5f83e9692821.png","original_ce71a61905b341bc88451baad9d7daaa.jpg","Screen-Shot-2024-09-04-at-11.17.09-AM.webp","Screen-Shot-2024-10-07-at-9.01.51-PM.png","Screenshot 2026-01-06 154057.png","Screenshot 2026-01-06 161909.png","Screenshot 2026-02-18 170505.png","Screenshot-2025-06-06-at-3.29.28-PM.webp","Screenshot_1743206173571_29.webp","Shrimp_Jesus_example.jpg","trump-ai.webp","Tung_tung_tung_sahur.webp","ufo_disclosure_trump_un_website_optimized.webp","Wqy6i4sz_RUPP.webp"]
+    },
+    control: {
+      folder: 'CONTROL',
+      files: ["2048px-Gaming-Wall-Street_BTS_Prodigium-266.webp","20ufo-film-02-mzpv-videoSixteenByNineJumbo1600.jpg","20_image-png.png","268674c3059e4bc87f4c0cfe1ac52332.jpg","2c5c1c6bbd5ea5aefa60ba1debaa0e02.jpg","2e5c2001a3bd704bbb3e05c85ca0c1ad.jpg","400fb88b068fdd1680d218f18f040c44.jpg","6AjLpvlVVvlP2_sm.webp","7df665f54d05027ef0594ca4731cd443.jpg","7e1d624d9014bedfb7d9ded713954f07.jpg","85190390007-20190710-t-000000-z-1148698327-rc-120-e-92-f-070-rtrmadp-3-peoplejeffreyepstein.jpg","86_image-png.png","87732817007-house-oversight-083563-copy.jpg","AdobeStock_144922037.jpeg","AdobeStock_665824573.jpeg","Caspian-Kang-GettyImages-2194353986.webp","d4746000-4278-11ef-9e1c-3b4a473456a6.jpg","DALL·E 2025-03-30 18.42.03 - A hyper-realistic image of a group of people smiling while wearing suits. Their expressions are natural but subtly eerie, with an uncanny level of det.webp","DALL·E 2025-03-30 18.42.44 - A hyper-realistic image of a group of people wearing suits, but with CCTV cameras seamlessly melding into their faces and bodies. The cameras emerge f.webp","download (2).jpg","download (3).jpg","e9466227-cc58-4f4e-bba8-76f0d4fa3ce2-AP24339777255955.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI0MDcwMDQxNC9vcmlnaW5hbF8wYjYxYjcyYzJjZTFiNWVmOTA4MDBjYzA0MzU0ZDFkMC5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI0ODE4Njkvb3JpZ2luYWxfNTUzNDVjMDkxY2RkZTlhZTljNzdkZjk0YmVjMjliNmIuanBnIiwiZWRpdHMiOnsicmVzaXplIjp7IndpZHRoIjo2MDAsImhlaWdodCI6NjAwLCJmaXQiOiJpbnNpZGUiLCJ3aXRo.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI3MzA2MTU5L29yaWdpbmFsXzliNWNjYWQ1NWQ0ZDJhYzM5ZmUyZDY3MWI4M2EzZjEwLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiI3NDg1NTYwL29yaWdpbmFsXzM3MTdhZDMyODE2ZDUwMDZiODE0ZjNlMjE1MTI3YWJmLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIxNjYzMjU1L29yaWdpbmFsX2UyNTE1MGU2ZTNhYTM2NGQ4OWZmYmNkN2ExN2MwMTcxLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyMDM3NDUyL29yaWdpbmFsX2VhY2QzY2Q3MmFjMjA4OWQyOWE5MjZjNTJlMmI4Mzk1LmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyMjg0NTAxOC9vcmlnaW5hbF85ODVmZmNkZWVmYTlkZDA1MDg0ZmI4YzkxZDg4MTE3My5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyNjY5MzA3Ni9vcmlnaW5hbF8wMTJjNzhkYTE5ZjRlZGU0ZDUwOTdlOTFhODM3MTg4ZS5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyNTQ5OTIwL29yaWdpbmFsX2VmYTY0NGFmYTczODA2YzMxMjgxNTliMDgxMjQyNTZiLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyODIwNjQ1My9vcmlnaW5hbF8yOTg5ZTEyOTMyYjQ0ZTc5MGM0ODFhOTdiNzYwNTE1Ni5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIyOTg2MzI3OC9vcmlnaW5hbF9kY2ZhYzBjMzEyMjhkNDFiNmY2MjFiYmY4Njc1NDBiNC5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzMDgwNTEyL29yaWdpbmFsXzJmMzEwYjA4NDY3ODU0ODg4MDk4NjY2OWY2MjgxZTM5LmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzMTg0NTMyL29yaWdpbmFsXzc3MTgwOGI4NWUyZjZjZWNiMzE0MmQ0ZmM3MDhmZGMwLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzMTk1OTcxL29yaWdpbmFsX2IyODU2ZTE2Yzc5NzA0YTVhY2E4NTU1MmI1MjYyMGZhLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6NjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiaW5zaWRlIiwid2l0.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzMzg0NzgxNy9vcmlnaW5hbF80YjViYjY4ODFlYmVkNDZjYTVkODI1MzZjNDdiOWE5OC5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzNDg5Mzc4Ni9vcmlnaW5hbF9iMDM3Y2Q1NTk2YWIwMjBkYmE0MDhhMmYzZmQ4ZmI3ZC5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","eyJidWNrZXQiOiJhcmVuYV9pbWFnZXMiLCJrZXkiOiIzOTUzMDMzMC9vcmlnaW5hbF84OGY5OTM3ZTM1YjM5NzEzNDVhMDJkYzhlODZlOGZiMy5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjYwMCwiaGVpZ2h0Ijo2MDAsImZpdCI6Imluc2lkZSIsIndp.webp","f70849b2c18b9a3ffc808ec8d9fee06a.jpg","G20-Summit-of-World-Leaders-to-convene-in-Johannesburg-South-Africa-in-2025-1.jpg","Gemini_Generated_Image_8gn46m8gn46m8gn4.png","getty_578544652_101865.webp","HOUSE_OVERSIGHT_083516_Redacted2-Copy-1024x813.jpg","large_com2.jpg","maxresdefault.jpg","Military-Parade-2025-Trump.jpg","Mission_control_center-scaled.jpg","National-Guard-suvivors-New-Orleans-Hurricane-Katrina-August-2005.webp","new-york-stock-exchange-trading-floor-wall-street-nyc_12.jpg","original.avif","original_01f0b93e1b2b3a35f33975593f86d713.jpg","original_0a4487f4dc04fa8d85657496ce4eb773.jpg","original_1c2a0455f62036272ee3f44c6751e62c.jpg","original_1dfa3819c0ee69d205f5c5c722d36543.webp","original_30a65ddc302fe2d3b4865bac5ab8a979.jpg","original_3c6b6d53137f1583792e9118256a82c9.webp","original_4e8b2c95fbb1d060ec1216fc16af0127.webp","original_55320130df3a84e7845891010d6229b6.jpg","original_5a432b78245afa78421fb88509e4d554.jpg","original_604aa3c6c13952203b3de623f850793f.png","original_7961142d52068c4728a3e6dfe35675c7.jpg","original_804b2aa9d1fe7711d5b0745fa9ccb2b3.jpg","original_8a1bccc1363dffa2eb16304d87aef5ab.jpg","original_8b4744b38293c9596c6ec88d556487d3.jpg","original_931122e21153672c9f3772ca15aa3fdf.png","original_966670bef950a9b92308e3e99878a003.jpg","original_99368256397fa9c67567932b4b4e6fc1.jpg","original_9b17014655f966385539f377650a524e.png","original_b2b60801c0d31407c21b499458aef7f0.jpg","original_b97e75c3e8fa2ac946f95acaca4f8eed.jpg","original_c1a8cc71982fed2907965a0a9630256b.jpg","original_c280ff8879659c9ed5dfa055641ef9cd.png","original_d049ecb7ddb91a50017fbfcdb391ab61.jpg","original_d1f7da2e1a15159751578cb7edf3a0eb.jpg","original_d9a6d82b7702813d4ffc70d462ecfd12.jpg","original_dc5d6b7962dfdefa57f1238cb12cf17f.png","original_e4439113b49ad8aaa44b57c87ef90bd8.jpg","original_e6a23d51aa3922f11f7fa617813e7506.png","original_e731361102d8c119e9c526d448ab5629.jpg","original_e9fb501e1908c2ec4d93feacc0c7f331.jpg","original_f262b4c86945a834e78030153c43c294.jpg","original_f375450c8177871e199c47be5e1b4009.jpg","original_f86fd854bf0aeb22c86fd47af05910c9.jpg","original_fa71edaa8eddf014f3452976199a8de5.jpg","original_fe62f8a9bf4a066e330695eda4ced4e2.jpg","original_wallpaper-855801.jpg","PIX-1-1920-blade-runner-los-angeles.jpg","pngfind.com-png-stocks-3157378.png","pngfind.com-praying-hands-png-1013375.png","pngtree-mens-suit-shirt-tie-formal-certificate-photo-png-image_4046397.png","Screenshot 2026-01-06 153249.png","Screenshot 2026-01-06 153816.png","Screenshot 2026-03-01 122832.png","Screenshot 2026-03-01 122909.png","Screenshot 2026-03-01 123039.png","Screenshot 2026-03-01 123148.png","Screenshot 2026-03-01 123348.png","Screenshot 2026-03-01 123724.png","Screenshot 2026-03-01 140849.png","the-2020s-in-20-pictures-so-far-v0-c63oq7s5x59e1.webp","tNGEcp-mL-exC_sm.webp","trump-palm-beach-2025.jpg","ufo-qanda_feat-crop-1600x1200.jpg","UKORLD6SZBAMTMCEA4BGRSSLGU.avif","VE1Kf7lrjZ1Wl.webp","Westminster-council-CCTV-cameras-in-London-to-be-axed.jpg"]
+    }
+  };
+
+  document.querySelectorAll('.cat-cell[data-catkey]').forEach(function (cell) {
+    var key = cell.dataset.catkey;
+    var cat = CATS[key];
+    if (!cat) return;
+
+    // Shuffle for variety
+    var files = cat.files.slice().sort(function () { return Math.random() - 0.5; });
+    var idx = 0;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'cat-slideshow';
+
+    var imgA = document.createElement('img');
+    var imgB = document.createElement('img');
+    imgA.className = 'cat-slide-img';
+    imgB.className = 'cat-slide-img';
+    imgA.style.opacity = '0';
+    imgA.style.zIndex = '2';
+    imgB.style.opacity = '0';
+    imgB.style.zIndex = '1';
+    wrap.appendChild(imgA);
+    wrap.appendChild(imgB);
+    cell.appendChild(wrap);
+
+    var cur = imgA, nxt = imgB;
+
+    function nextSrc() {
+      var f = files[idx];
+      idx = (idx + 1) % files.length;
+      return BASE + cat.folder + '/' + encodeURIComponent(f);
+    }
+
+    cur.onload = function () { cur.style.opacity = '1'; };
+    cur.onerror = function () { cur.src = nextSrc(); };
+    cur.src = nextSrc();
+
+    setInterval(function () {
+      var src = nextSrc();
+      nxt.onerror = function () { nxt.src = nextSrc(); };
+      nxt.onload = function () {
+        nxt.style.zIndex = '2';
+        cur.style.zIndex = '1';
+        nxt.style.opacity = '1';
+        cur.style.opacity = '0';
+        var tmp = cur; cur = nxt; nxt = tmp;
+      };
+      nxt.src = src;
+    }, 3000);
+  });
+})();
+</script>
+</body>
+</html>

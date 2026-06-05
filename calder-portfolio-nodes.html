@@ -159,6 +159,7 @@ const PROJECTS = [
   { id:7, label:'Internet Culture',   tag:'theory · research',     url:'#research',       r:7,  group:'theory'  },
   { id:8, label:'Collaborations',     tag:'ryka ali · others',     url:'#collabs',        r:8,  group:'collab'  },
   { id:9, label:'About',              tag:'context · contact',     url:'#about',          r:6,  group:'info'    },
+  { id:10, label:'Meltdown',         tag:'installation · AI',     url:'meltdown/meltdown.html', r:12, group:'image' },
 ];
 
 const EDGES = [
@@ -169,6 +170,7 @@ const EDGES = [
   [4,7],[4,8],
   [5,8],[5,6],
   [6,7],[7,9],[8,9],[0,9],
+  [10,0],[10,3],[10,9],
 ];
 
 // ─────────────────────────────────────────────
