@@ -54,6 +54,18 @@ nav a {
   text-transform: uppercase;
 }
 nav a:hover { color: var(--blue); }
+.nav-process-btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  padding: 5px 12px;
+  transition: background 0.2s, color 0.2s;
+}
+.nav-process-btn:hover { background: var(--blue); color: #fff; }
 
 /* ── hero ── */
 .hero {
@@ -931,7 +943,10 @@ nav         { animation: s-drop 0.65s cubic-bezier(0.16, 1, 0.3, 1) both; }
   <!-- nav -->
   <nav>
     <a href="/">Calder Anderson</a>
-    <a href="/">← Back</a>
+    <div style="display:flex;align-items:center;gap:20px;">
+      <a href="process-book.html" class="nav-process-btn">Process Book ↗</a>
+      <a href="/">← Back</a>
+    </div>
   </nav>
 
   <!-- hero -->

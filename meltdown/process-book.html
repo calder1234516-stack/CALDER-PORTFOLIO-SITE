@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Process Book — Meltdown</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: #0a0a0a;
+  color: #fff;
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* nav */
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 28px;
+  border-bottom: 1px solid #222;
+  flex-shrink: 0;
+  height: 52px;
+}
+.nav-title {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #555;
+}
+.nav-back {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #555;
+  text-decoration: none;
+}
+.nav-back:hover { color: #fff; }
+
+/* loading */
+#zine-loading {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#zine-progress {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #444;
+}
+
+/* viewer */
+#viewer {
+  flex: 1;
+  display: none;
+  position: relative;
+  overflow: hidden;
+  perspective: 2400px;
+}
+
+/* click zones */
+#zone-prev, #zone-next {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 30%;
+  z-index: 10;
+  cursor: pointer;
+}
+#zone-prev { left: 0; }
+#zone-next { right: 0; }
+
+/* spread images */
+.spread {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.spread img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.7);
+}
+
+/* flip animation states */
+.spread { transform-style: preserve-3d; }
+.spread.hidden   { display: none; }
+.spread.current  { transform: rotateY(0deg); transition: none; }
+.spread.flip-out { transform: rotateY(-90deg); transition: transform 0.25s ease-in; pointer-events: none; }
+.spread.flip-in  { transform: rotateY(90deg);  transition: none; }
+.spread.flip-end { transform: rotateY(0deg);   transition: transform 0.25s ease-out; }
+
+/* flip backwards */
+.spread.flip-out-back { transform: rotateY(90deg);  transition: transform 0.25s ease-in; pointer-events: none; }
+.spread.flip-in-back  { transform: rotateY(-90deg); transition: none; }
+.spread.flip-end-back { transform: rotateY(0deg);   transition: transform 0.25s ease-out; }
+
+/* bottom bar */
+#zine-nav {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 12px 28px;
+  border-top: 1px solid #222;
+  flex-shrink: 0;
+  height: 48px;
+}
+.zb-btn {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #555;
+  background: none;
+  border: 1px solid #2a2a2a;
+  padding: 5px 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.zb-btn:hover { border-color: #888; color: #fff; }
+#zb-counter {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #444;
+  min-width: 160px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-title">Meltdown — Process Book</span>
+  <a href="meltdown.html" class="nav-back">← Back</a>
+</nav>
+
+<div id="zine-loading">
+  <p id="zine-progress">Loading…</p>
+</div>
+
+<div id="viewer">
+  <div id="zone-prev"></div>
+  <div id="zone-next"></div>
+  <div class="spread hidden" id="spread-a"></div>
+  <div class="spread hidden" id="spread-b"></div>
+</div>
+
+<div id="zine-nav">
+  <button class="zb-btn" id="zb-prev">← Prev</button>
+  <span id="zb-counter"></span>
+  <button class="zb-btn" id="zb-next">Next →</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  const PDF_PATH   = 'process%20book/meltdown%20process%20book%20web.pdf';
+  const BATCH_SIZE = 4;
+
+  let pages   = [];   // array of dataURL strings
+  let current = 0;
+  let flipping = false;
+
+  const loading  = document.getElementById('zine-loading');
+  const prog     = document.getElementById('zine-progress');
+  const viewer   = document.getElementById('viewer');
+  const navEl    = document.getElementById('zine-nav');
+  const counter  = document.getElementById('zb-counter');
+  const spreadA  = document.getElementById('spread-a');
+  const spreadB  = document.getElementById('spread-b');
+
+  // ── render PDF ──────────────────────────────────────────────────────────────
+  async function loadPDF() {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const pdfDoc   = await pdfjsLib.getDocument(PDF_PATH).promise;
+    const numPages = pdfDoc.numPages;
+
+    const firstPage = await pdfDoc.getPage(1);
+    const vp0 = firstPage.getViewport({ scale: 1 });
+
+    // Target: fill the viewer area (between the two nav bars)
+    const availW = window.innerWidth;
+    const availH = window.innerHeight - 52 - 48; // top nav + bottom nav
+    const aspect = vp0.height / vp0.width;
+    let renderW;
+    if (availW * aspect <= availH) {
+      renderW = availW;
+    } else {
+      renderW = Math.floor(availH / aspect);
+    }
+    const scale = renderW / vp0.width;
+
+    pages = new Array(numPages);
+
+    async function renderOne(i) {
+      prog.textContent = 'Loading ' + (i + 1) + ' / ' + numPages;
+      const page   = await pdfDoc.getPage(i + 1);
+      const vp     = page.getViewport({ scale });
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.round(vp.width);
+      canvas.height = Math.round(vp.height);
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+      pages[i] = canvas.toDataURL('image/jpeg', 0.92);
+    }
+
+    for (let s = 0; s < numPages; s += BATCH_SIZE) {
+      const batch = [];
+      for (let i = s; i < Math.min(s + BATCH_SIZE, numPages); i++) batch.push(renderOne(i));
+      await Promise.all(batch);
+    }
+
+    loading.style.display = 'none';
+    viewer.style.display  = 'block';
+    navEl.style.display   = 'flex';
+
+    showPage(0);
+  }
+
+  // ── display helpers ──────────────────────────────────────────────────────────
+  function imgFor(spread, idx) {
+    let img = spread.querySelector('img');
+    if (!img) { img = document.createElement('img'); spread.appendChild(img); }
+    img.src = pages[idx] || '';
+    return img;
+  }
+
+  function showPage(idx) {
+    current = idx;
+    spreadA.className = 'spread current';
+    spreadB.className = 'spread hidden';
+    imgFor(spreadA, idx);
+    counter.textContent = 'Spread ' + (idx + 1) + ' / ' + pages.length;
+  }
+
+  // ── flip animation ───────────────────────────────────────────────────────────
+  function flip(direction) {
+    if (flipping) return;
+    const next = current + direction;
+    if (next < 0 || next >= pages.length) return;
+    flipping = true;
+
+    const outClass = direction > 0 ? 'flip-out'      : 'flip-out-back';
+    const inClass  = direction > 0 ? 'flip-in'       : 'flip-in-back';
+    const endClass = direction > 0 ? 'flip-end'      : 'flip-end-back';
+
+    // Preload next page into B
+    spreadB.className = 'spread hidden';
+    imgFor(spreadB, next);
+
+    // Phase 1: current page flips out
+    spreadA.className = 'spread ' + outClass;
+
+    spreadA.addEventListener('transitionend', function onOut() {
+      spreadA.removeEventListener('transitionend', onOut);
+
+      // Phase 2: swap — B becomes visible (snapped to side), A hides
+      spreadA.className  = 'spread hidden';
+      spreadB.className  = 'spread ' + inClass;
+
+      // Force reflow so the transition on B actually fires
+      spreadB.getBoundingClientRect();
+      spreadB.className = 'spread ' + endClass;
+
+      spreadB.addEventListener('transitionend', function onIn() {
+        spreadB.removeEventListener('transitionend', onIn);
+
+        // Phase 3: promote B → A for next flip
+        imgFor(spreadA, next);
+        spreadA.className = 'spread current';
+        spreadB.className = 'spread hidden';
+        current   = next;
+        flipping  = false;
+        counter.textContent = 'Spread ' + (current + 1) + ' / ' + pages.length;
+      });
+    });
+  }
+
+  // ── controls ─────────────────────────────────────────────────────────────────
+  document.getElementById('zb-prev').onclick     = () => flip(-1);
+  document.getElementById('zb-next').onclick     = () => flip(1);
+  document.getElementById('zone-prev').onclick   = () => flip(-1);
+  document.getElementById('zone-next').onclick   = () => flip(1);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') flip(1);
+    if (e.key === 'ArrowLeft')  flip(-1);
+  });
+
+  window.addEventListener('load', loadPDF);
+</script>
+</body>
+</html>
