@@ -4,8 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Are You Coming to the Party?</title>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
+/* =====================================================
+   LABEL TYPOGRAPHY (SHARED) — accessibility pass
+   =====================================================
+   Small uppercase labels across this page. Kept in one place.
+   weight 500   — small grey text disappears at 400.
+   tabular-nums — digits stay in fixed-width columns (counters, years),
+                  which is the one useful thing the old monospace did.
+   Sizes were floored at 12px and heavy letter-spacing was reduced:
+   wide tracking on uppercase destroys the word shapes people read by.
+*/
+#counter, #scroll-cue, #content .meta, .case-col h2, .skills-label, .back-link {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -138,8 +153,8 @@ body {
   left: 50%;
   transform: translateX(-50%);
   font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 0.6rem;
-  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
   color: rgba(255,255,255,0.3);
   pointer-events: none;
   z-index: 100;
@@ -152,8 +167,8 @@ body {
   left: 50%;
   transform: translateX(-50%);
   font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 0.55rem;
-  letter-spacing: 0.25em;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(255,255,255,0.2);
   pointer-events: none;
@@ -214,8 +229,8 @@ body {
 
 #content .meta {
   font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 0.6rem;
-  letter-spacing: 0.22em;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(255,255,255,0.45);
   line-height: 2.2;
@@ -231,9 +246,9 @@ body {
 
 .case-col h2 {
   font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 400;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #c0392b;
   margin-bottom: 20px;
@@ -251,9 +266,9 @@ body {
 
 .skills-label {
   font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   color: rgba(255,255,255,0.85);
   margin-top: 24px;
   margin-bottom: 10px;
@@ -274,7 +289,7 @@ body {
 
 .collaborator {
   font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: rgba(255,255,255,0.55);
   margin-top: 8px;
 }
@@ -296,8 +311,8 @@ body {
   display: inline-block;
   margin-top: 72px;
   font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 0.6rem;
-  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(255,255,255,0.3);
   text-decoration: none;
@@ -348,7 +363,7 @@ body {
   /* Counter */
   #counter {
     bottom: 24px;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
   }
 
   /* Scroll cue: hide since viewer is no longer full-screen */
@@ -465,7 +480,7 @@ body {
 
     </div>
 
-    <a href="../../calder-FULLY-annotated.html" class="back-link">← back</a>
+    <a href="../../index.html" class="back-link">← back</a>
   </div>
 </section>
 

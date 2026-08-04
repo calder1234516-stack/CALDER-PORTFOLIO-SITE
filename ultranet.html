@@ -4,16 +4,34 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ULTRANET</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Geist:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 
 :root {
   --bg: #000;
   --fg: #fff;
   --accent: #0000ff;
-  --mono: 'Share Tech Mono', monospace;
+  --label: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  /* Was 'Share Tech Mono'. Swapped to Geist for legibility at small sizes. */
   --body: 'Geist', 'Helvetica Neue', Arial, sans-serif;
 }
+
+/* =====================================================
+   LABEL TYPOGRAPHY (SHARED) — accessibility pass
+   =====================================================
+   Small uppercase labels across this page. Kept in one place.
+   weight 500   — small grey text disappears at 400.
+   tabular-nums — digits stay in fixed-width columns (counters, years),
+                  which is the one useful thing the old monospace did.
+   Sizes were floored at 12px and heavy letter-spacing was reduced:
+   wide tracking on uppercase destroys the word shapes people read by.
+*/
+#music-overlay-btn, #scroll-cue, .back-link,
+.title-block .meta, .case-col h2, .skills-label, .stream-btn {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -132,9 +150,9 @@ body {
   background: #fff;
   border: none;
   color: #000;
-  font-family: var(--mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.18em;
+  font-family: var(--label);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 6px 12px;
   cursor: pointer;
@@ -163,9 +181,9 @@ body {
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
-  font-family: var(--mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.2em;
+  font-family: var(--label);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
   color: rgba(255,255,255,0.35);
   text-transform: uppercase;
   animation: pulse 2.4s ease-in-out infinite;
@@ -209,8 +227,8 @@ body {
 
 .title-block .meta {
   font-family: var(--body);
-  font-size: 0.65rem;
-  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(0,0,0,0.45);
   line-height: 2;
@@ -230,9 +248,9 @@ body {
 
 .case-col h2 {
   font-family: var(--body);
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 400;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #0000ff;
   margin-bottom: 20px;
@@ -251,9 +269,9 @@ body {
 
 .skills-label {
   font-family: var(--body);
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   color: #000;
   margin-top: 24px;
   margin-bottom: 10px;
@@ -274,7 +292,7 @@ body {
 
 .collaborator {
   font-family: var(--body);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: rgba(0,0,0,0.5);
   margin-top: 8px;
 }
@@ -316,7 +334,7 @@ body {
   margin-top: 12px;
   margin-right: 12px;
   font-family: var(--body);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #fff;
@@ -333,9 +351,9 @@ body {
 .back-link {
   display: inline-block;
   margin-top: 80px;
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.18em;
+  font-family: var(--label);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(0,0,0,0.35);
   text-decoration: none;
@@ -408,7 +426,7 @@ body {
 
   /* music button: bigger touch target */
   #music-overlay-btn,
-  #music-btn      { padding: 10px 20px; font-size: 0.65rem; }
+  #music-btn      { padding: 10px 20px; font-size: 0.75rem; }
 
   /* logo */
   .title-block h1 img { max-width: 280px; }
@@ -568,7 +586,7 @@ function startMusic() {
   <a href="https://share.amuse.io/album/calder-anderson-ultranet" target="_blank" class="stream-btn">Stream the soundtrack</a>
   <a href="PDF/ultranet_process_book_web.pdf" target="_blank" class="stream-btn">View process book</a>
 
-  <a href="calder-FULLY-annotated.html" class="back-link">← back</a>
+  <a href="index.html" class="back-link">← back</a>
 
 
 </div><!-- #content -->

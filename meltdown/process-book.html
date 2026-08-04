@@ -5,8 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Process Book — Meltdown</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
+/* =====================================================
+   LABEL TYPOGRAPHY (SHARED) — accessibility pass
+   =====================================================
+   Small uppercase labels across this page. Kept in one place.
+   weight 500   — small grey text disappears at 400.
+   tabular-nums — digits stay in fixed-width columns (counters, years),
+                  which is the one useful thing the old monospace did.
+   Sizes were floored at 12px and heavy letter-spacing was reduced:
+   wide tracking on uppercase destroys the word shapes people read by.
+*/
+.nav-title, .nav-back, #zine-progress, .zb-btn, #zb-counter {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; }
 body {
@@ -29,18 +44,18 @@ nav {
   height: 52px;
 }
 .nav-title {
-  font-family: 'Geist Mono', monospace;
-  font-size: 11px;
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #555;
+  color: #999;
 }
 .nav-back {
-  font-family: 'Geist Mono', monospace;
-  font-size: 11px;
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #555;
+  color: #999;
   text-decoration: none;
 }
 .nav-back:hover { color: #fff; }
@@ -53,11 +68,11 @@ nav {
   justify-content: center;
 }
 #zine-progress {
-  font-family: 'Geist Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.1em;
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #444;
+  color: #999;
 }
 
 /* viewer */
@@ -121,11 +136,11 @@ nav {
   height: 48px;
 }
 .zb-btn {
-  font-family: 'Geist Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.1em;
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #555;
+  color: #999;
   background: none;
   border: 1px solid #2a2a2a;
   padding: 5px 16px;
@@ -134,11 +149,11 @@ nav {
 }
 .zb-btn:hover { border-color: #888; color: #fff; }
 #zb-counter {
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.12em;
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #444;
+  color: #999;
   min-width: 160px;
   text-align: center;
 }

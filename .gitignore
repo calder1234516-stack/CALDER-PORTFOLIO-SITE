@@ -8,6 +8,24 @@ audio/
 files.zip
 files 2.zip
 
+# Meltdown render output — 11 GB of generated frames. The two scripts that
+# make them are kept; everything they produce is regenerable.
+meltdown/outputs/*
+!meltdown/outputs/*.py
+
+# Hero source photographs — 69 MB of full-size originals. The site serves the
+# resized copies in index_media/ instead.
+HERO IMAGES/
+
+# Regenerable previews from about/make_ascii_portrait.py
+about/preview-*.png
+__pycache__/
+
+# Local tooling config, not part of the site
+.claude/
+.agents/
+skills-lock.json
+
 # OS clutter
 .DS_Store
 Thumbs.db

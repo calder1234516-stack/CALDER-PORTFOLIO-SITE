@@ -38,6 +38,21 @@
 <!-- Makes the site look right on phones. Don't change. -->
 
 <title>Calder Anderson</title>
+
+<!-- =====================================================
+     SITE ICON (the little logo in the browser tab, bookmarks and search bar)
+     =====================================================
+     Generated from "logo icon/calder logo.jpg".
+     favicon.ico is multi-resolution (16 → 256) and sits in the site root,
+     which is where browsers look for it even without a tag — so it works in
+     contexts that never read this HTML, like a bookmark or a search result.
+
+     ✏️  TO CHANGE THE ICON: replace logo icon/calder logo.jpg, then re-generate
+         favicon.ico and the PNGs beside it at 32 / 180 / 512 px. -->
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="logo%20icon/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="logo%20icon/apple-touch-icon.png">
+<meta name="theme-color" content="#0000FF">
 <!-- ✏️  EDIT: This text appears in the browser tab and in bookmarks.
      Change "Calder Anderson" to whatever you want. -->
 
@@ -45,9 +60,13 @@
 <!-- =====================================================
      SECTION A — FONTS
      =====================================================
-     Loads two fonts from Google Fonts (free service).
-     Geist      = clean modern sans-serif. Used for all main text.
-     Geist Mono = typewriter-style monospace. Used for tags and labels.
+     Loads one font family from Google Fonts (free service).
+     Geist = clean modern sans-serif. Used for EVERYTHING — body copy and
+     the small uppercase labels alike. Weight 500 is loaded specifically so
+     the small labels stay legible; 300/400 cover headings and body text.
+
+     (Geist Mono was dropped: monospace at 9-10px in light grey was hard to
+     read. One less font file to download, too.)
 
      ✏️  TO CHANGE FONTS:
      1. Go to fonts.google.com
@@ -61,7 +80,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <!-- Pre-connects to Google for faster loading. Don't change. -->
 
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
 <!-- Actually loads the fonts. If you change fonts, replace this whole line. -->
 
 
@@ -92,11 +111,16 @@
          Change this ONE value to retheme the whole site's accent colour.
          Try: #ff2200 (red), #009900 (green), #aa00ff (purple) */
 
-  --mid: #999;
-  /* ✏️  Medium grey. Used for subtitle, tags, metadata labels. */
+  --mid: #6b6b6b;
+  /* ✏️  Medium grey. Used for subtitle, tags, metadata labels.
+         ⚠️  DON'T LIGHTEN THIS. At #999 it was 2.85:1 against white, which
+         fails the WCAG AA minimum of 4.5:1 — genuinely hard to read for
+         anyone with low vision, or for you outdoors. #6b6b6b is 5.3:1.
+         If you want it lighter, #767676 is the absolute limit (4.5:1). */
 
   --light: #ddd;
-  /* ✏️  Very light grey. Used for the subtle hint text in the corner. */
+  /* ✏️  Very light grey. BORDERS AND RULES ONLY — never text.
+         It is 1.4:1 against white, which is invisible to a lot of people. */
 
   --font: 'Geist','Helvetica Neue',Arial,sans-serif;
   /* ✏️  The main typeface. If you changed the font in Section A,
@@ -104,9 +128,43 @@
          The other fonts (Helvetica Neue, Arial) are fallbacks
          if Google Fonts fails to load. Leave those as-is. */
 
-  --mono: 'Geist Mono',monospace;
-  /* ✏️  The monospace typeface for tags and labels.
-         Update 'Geist Mono' if you changed that font in Section A. */
+  --label: 'Geist','Helvetica Neue',Arial,sans-serif;
+  /* ✏️  The typeface for small uppercase labels, tags and metadata.
+         Same family as --font by design — hierarchy comes from size, weight,
+         case and colour instead of from a second typeface.
+         This is the ONE place to change if you ever want labels to use a
+         different face again. (Was 'Geist Mono' — swapped out for legibility.) */
+
+  --ease: cubic-bezier(0.76, 0, 0.24, 1);
+  /* ✏️  THE SIGNATURE MOTION CURVE — sharp in, sharp out.
+         Used by the index row rule, the entrance animation and the CTA arrow. */
+}
+
+
+/* =====================================================
+   SECTION B2 — LABEL TYPOGRAPHY (SHARED)
+   =====================================================
+   Every small uppercase label on the site. Grouped here so the readability
+   settings live in ONE place instead of being repeated in 16 rules.
+
+   weight 500          — small light-grey text disappears at 400.
+   tabular-nums        — keeps digits in a fixed-width column, so "01 / 05",
+                         the years and the image counters stay aligned. This
+                         is the one genuinely useful thing the old monospace
+                         font did, kept without the monospace look.
+   Each rule below still sets its own font-family/size/spacing.
+*/
+#header span, #toggle button, #hint, #meta, #contact-footer,
+#net-explainer h4, #net-explainer p, #tt-tag, .c-tip-tag,
+.index-head, .index-meta, .index-tag, .index-cta, .index-colophon,
+.index-count, .slideshow-counter {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Readers who ask their OS for higher contrast get near-black labels. */
+@media (prefers-contrast: more) {
+  :root { --mid: #444; --light: #999; }
 }
 
 
@@ -148,6 +206,16 @@ html, body {
 #header {
   pointer-events: none;
 }
+/* The name is a link home. pointer-events has to be switched back on because
+   #topbar and #header both turn it off so the canvas stays draggable. */
+#home-link {
+  color: inherit;
+  text-decoration: none;
+  pointer-events: auto;
+  transition: color 0.15s;
+}
+#home-link:hover,
+#home-link:focus-visible { color: var(--hover); outline: none; }
 #header h1 {
   /* Styles your name (the <h1> tag inside the header div) */
   font-size: 3.5rem;  /* ✏️  Name text size. 1rem = 16px. Try 1rem or 1.2rem. */
@@ -160,8 +228,8 @@ html, body {
 }
 #header span {
   /* Styles your subtitle/tagline (the <span> tag inside the header div) */
-  font-family: var(--mono); /* Monospace font */
-  font-size: 0.68rem;       /* ✏️  Subtitle text size */
+  font-family: var(--label); /* Monospace font */
+  font-size: 0.78rem;       /* ✏️  Subtitle text size */
   color: var(--mid);        /* Grey colour from Section B */
   display: block;
   text-align: left;
@@ -188,8 +256,8 @@ html, body {
   border: none;
   cursor: pointer;    /* Hand cursor on hover */
   padding: 6px 16px;  /* ✏️  6px top/bottom, 16px left/right. Adjust to resize buttons. */
-  font-family: var(--mono);
-  font-size: 0.6rem;  /* ✏️  Button text size */
+  font-family: var(--label);
+  font-size: 0.72rem; /* ✏️  Button text size */
   letter-spacing: 0.12em;
   text-transform: uppercase; /* Automatically ALL CAPS */
   color: var(--mid);  /* Grey when inactive */
@@ -220,8 +288,8 @@ html, body {
   bottom: 26px;       /* ✏️  Pixels from bottom edge */
   right: 34px;        /* ✏️  Pixels from right edge */
   z-index: 200;
-  font-family: var(--mono);
-  font-size: 0.58rem; /* ✏️  Size of hint text */
+  font-family: var(--label);
+  font-size: 0.72rem; /* ✏️  Size of hint text */
   color: #000;
   pointer-events: none;
 }
@@ -230,9 +298,9 @@ html, body {
   bottom: 26px;       /* ✏️  Same height as hint */
   left: 34px;         /* ✏️  Pixels from left edge */
   z-index: 200;
-  font-family: var(--mono);
-  font-size: 0.58rem; /* ✏️  Size of year text */
-  color: var(--light);
+  font-family: var(--label);
+  font-size: 0.72rem; /* ✏️  Size of year text */
+  color: var(--mid);
   pointer-events: none;
 }
 #contact-footer {
@@ -241,8 +309,8 @@ html, body {
   left: 50%;
   transform: translateX(-50%);
   z-index: 200;
-  font-family: var(--mono);
-  font-size: 0.58rem;
+  font-family: var(--label);
+  font-size: 0.72rem;
   color: #000;
   display: flex;
   gap: 24px;
@@ -282,17 +350,17 @@ html, body {
   pointer-events: none;
 }
 #net-explainer h4 {
-  font-family: var(--mono);
-  font-size: 0.56rem;
+  font-family: var(--label);
+  font-size: 0.7rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #999;
+  color: var(--mid);
   margin: 0 0 10px;
   font-weight: 400;
 }
 #net-explainer p {
-  font-family: var(--mono);
-  font-size: 0.6rem;
+  font-family: var(--label);
+  font-size: 0.72rem;
   line-height: 1.75;
   color: #555;
   margin: 0;
@@ -346,11 +414,11 @@ html, body {
 }
 #tt-tag {
   /* Discipline tag in the tooltip (e.g. "image · documentation") */
-  font-family: var(--mono);
-  font-size: 0.55rem;      /* ✏️  Tooltip tag size — smaller than name */
+  font-family: var(--label);
+  font-size: 0.7rem;       /* ✏️  Tooltip tag size — smaller than name */
   color: var(--hover);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   margin-top: 2px;         /* Small gap between name and tag */
   white-space: nowrap;
 }
@@ -377,11 +445,11 @@ html, body {
   white-space: nowrap;
 }
 .c-tip-tag {
-  font-family: var(--mono);
-  font-size: 0.55rem;
+  font-family: var(--label);
+  font-size: 0.7rem;
   color: var(--hover);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   margin-top: 2px;
   white-space: nowrap;
 }
@@ -402,124 +470,472 @@ html, body {
 
 
 /* =====================================================
-   SECTION I — SCATTER / INDEX VIEW
+   SECTION I — INDEX VIEW (EDITORIAL LIST)
    =====================================================
-   The text-based view when you click "Index".
-   Projects appear as text labels scattered around the screen.
-   Hidden by default — JavaScript shows it when needed.
+   The default landing view. A tall, scrolling, two-column list:
+   text left (~38%), media right (~62%). All media visible on scroll —
+   no hover or click needed to see the work.
 
-   .s-item  = each project link
-   .s-name  = the project title text
-   .s-tag   = the small discipline tag (hidden until hover)
+   ✏️  CONTENT LIVES IN "INDEX_CONTENT" IN THE JAVASCRIPT BELOW.
+       Search for: INDEX CONTENT — DROP YOUR TEXT AND IMAGES HERE
+
+   NOTE: this container is a BLOCK, not a flex box. It used to be
+   display:flex + align-items:center, which silently makes the top of
+   a long list impossible to scroll to. Do not put flex back.
 */
 #scatter-view {
+  /* ── PADDING AS VARIABLES ──
+     The gutter used to be a plain `padding: 150px 120px 120px`. It is split
+     into three custom properties because the hero plate (SECTION I-HERO) has
+     to know two of them: it cancels the side gutter with a negative margin to
+     go edge-to-edge, and subtracts the top gutter from 100svh so it fills
+     exactly the screen left under the fixed top bar.
+     ✏️  Every breakpoint below now re-declares these THREE values and nothing
+         else — the `padding` line here is the only one in the file. */
+  --sv-pt: 150px;               /* top — clears #topbar */
+  --sv-px: 120px;               /* left + right gutter */
+  --sv-pb: 120px;               /* bottom */
   position: fixed;
   inset: 0;
   z-index: 10;
-  display: none;
+  display: block;               /* landing view — setView('network') sets none */
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
   box-sizing: border-box;
   background: #fff;
-  align-items: center;
-  justify-content: center;
-  padding: 100px 120px;
+  padding: var(--sv-pt) var(--sv-px) var(--sv-pb);
 }
 
-/* ── INDEX LIST ── */
-.index-list {
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-.index-list-title {
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  color: var(--mid);
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  padding: 0 24px 12px;
-  border-bottom: 1px solid #000;
-  display: flex;
-  gap: 0;
-}
-.index-list-title .col-year  { width: 72px; flex-shrink: 0; }
-.index-list-title .col-name  { flex: 1; }
-.index-list-title .col-tag   { width: 240px; flex-shrink: 0; text-align: right; }
+/* ── LIST WRAPPER ── */
+.index-list { width: 100%; max-width: 1280px; margin: 0 auto; }
 
+/* ── MASTHEAD ── */
+.index-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 24px;
+  font-family: var(--label); font-size: 0.75rem; color: var(--mid);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding-bottom: 14px; border-bottom: 1px solid #000;
+}
+.index-head .ih-right { color: var(--fg); }
+
+/* ── ROW ── */
 .index-row {
   position: relative;
-  display: flex;
-  align-items: baseline;
-  gap: 0;
-  padding: 28px 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 38fr) minmax(0, 62fr);  /* ✏️  text / media */
+  gap: 56px;
+  align-items: start;
+  padding: 64px 0;
   border-bottom: 1px solid #e8e8e8;
-  text-decoration: none;
   color: #000;
-  perspective: 900px;
+  opacity: 0; transform: translateY(18px);                 /* JS adds .is-in */
+  transition: opacity 0.7s ease, transform 0.7s var(--ease);
+}
+.index-row.is-in { opacity: 1; transform: none; }
+
+/* blue hairline that draws left→right on hover.
+   This REPLACES the old full-row blue wipe: a scaleY fill behind a 62%-wide
+   photograph either covers the work or only fills the text half. Same gesture,
+   same curve, hairline scale. */
+.index-row::before {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+  background: var(--hover);
+  transform: scaleX(0); transform-origin: left center;
+  transition: transform 0.45s var(--ease);
+  z-index: 2;
+}
+.index-row:hover::before,
+.index-row:focus-within::before { transform: scaleX(1); }
+
+/* ── TEXT COLUMN ──
+   IMPORTANT: do NOT give .index-text position:relative/sticky. The full-row
+   click overlay is .index-open::after with inset:0, which resolves against its
+   nearest POSITIONED ancestor — positioning .index-text silently shrinks the
+   click target to the text column. Only .index-row is positioned. */
+.index-text { display: flex; flex-direction: column; align-items: flex-start; }
+
+.index-meta {
+  display: flex; align-items: baseline; gap: 14px;
+  font-family: var(--label); font-size: 0.75rem;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--mid); margin-bottom: 18px;
+}
+.index-num { color: var(--fg); transition: color 0.3s ease; }
+.index-row:hover .index-num,
+.index-row:focus-within .index-num { color: var(--hover); }
+
+.index-name {
+  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+  font-weight: 300; line-height: 1.05; letter-spacing: -0.015em;
+  margin: 0 0 16px;
+}
+.index-name a { color: inherit; text-decoration: none; transition: color 0.3s ease; }
+.index-row:hover .index-name a,
+.index-row:focus-within .index-name a { color: var(--hover); }
+
+/* full-row click target without nesting interactive elements inside an <a> */
+.index-open::after { content: ''; position: absolute; inset: 0; z-index: 4; }
+.index-open:focus-visible { outline: 2px solid var(--hover); outline-offset: 3px; }
+.index-row--player .index-open::after { right: 60%; }  /* keep players clickable */
+
+.index-tag {
+  display: inline-block;
+  font-family: var(--label); font-size: 0.72rem;
+  text-transform: uppercase; letter-spacing: 0.07em; color: var(--mid);
+  border: 1px solid var(--light); padding: 5px 9px 4px; margin-bottom: 24px;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
+.index-row:hover .index-tag,
+.index-row:focus-within .index-tag {
+  color: #fff; background: var(--hover); border-color: var(--hover);
+}
+
+.index-desc {
+  font-size: 0.92rem; font-weight: 300; line-height: 1.7; color: #333;
+  margin: 0 0 28px;
+  max-width: 42ch;      /* readable measure */
+  user-select: text;    /* body sets user-select:none for node dragging */
+}
+
+.index-cta {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--label); font-size: 0.72rem;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg);
+  padding-bottom: 3px; border-bottom: 1px solid var(--fg);
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+.index-row:hover .index-cta,
+.index-row:focus-within .index-cta { color: var(--hover); border-color: var(--hover); }
+.index-cta i { font-style: normal; transition: transform 0.3s var(--ease); }
+.index-row:hover .index-cta i { transform: translate(3px, -3px); }
+
+/* ── MEDIA COLUMN ──
+   The #f0f0f0 background IS the placeholder — there is never a broken-image icon.
+   object-fit is CONTAIN, not cover: the whole image must always be visible.
+   The box keeps a fixed aspect (per-row, set inline from data) so the page
+   layout stays stable while cycling; images that don't match that aspect
+   shrink to fit inside it instead of being cropped, and #f0f0f0 shows as a
+   neutral mat around them. */
+.index-media {
+  position: relative;
+  aspect-ratio: 3 / 2;        /* per-row override set inline from data */
+  background: #f0f0f0;
   overflow: hidden;
 }
+.index-media img,
+.index-media video,
+.index-media iframe {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  border: 0; display: block; object-fit: contain;
+}
+/* A/B buffers — both stacked, only .is-on visible.
+   The swap is a CUT, not a crossfade: opacity has no transition. These are
+   object-fit:contain, so images of different proportions do not cover each
+   other, and any overlap in time shows the previous frame in the letterboxing
+   rather than reading as a dissolve. Each image replaces the last outright. */
+.index-media img {
+  opacity: 0; filter: saturate(0.9);
+  transition: filter 0.45s ease;
+}
+.index-media img.is-on { opacity: 1; }
+/* No scale-up on hover here — transform would push the image past its
+   contain-fitted size and overflow:hidden would crop it. Saturate only. */
+.index-row:hover .index-media img { filter: saturate(1.08); }
 
-/* the blue fill that wipes in from top */
-.index-row::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: #0000ff;
-  transform-origin: top center;
-  transform: scaleY(0);
-  transition: transform 0.45s cubic-bezier(0.76, 0, 0.24, 1);
-  z-index: 0;
-}
-.index-row:hover::before {
-  transform: scaleY(1);
-}
-
-/* text layers sit above the blue fill */
-.index-year, .index-name, .index-tag {
-  position: relative;
-  z-index: 1;
-}
-
-/* text fades to white smoothly alongside the fill */
-.index-year  { transition: color 0.3s ease; }
-.index-name  { transition: color 0.3s ease; }
-.index-tag   { transition: color 0.3s ease; }
-.index-row:hover .index-year,
-.index-row:hover .index-name,
-.index-row:hover .index-tag { color: #fff; }
-
-.index-year {
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  color: var(--mid);
-  width: 72px;
-  flex-shrink: 0;
-  padding-top: 2px;
-}
-.index-name {
-  flex: 1;
-  font-size: 1.25rem;
-  font-weight: 300;
-  line-height: 1.2;
-}
-.index-tag {
-  width: 240px;
-  flex-shrink: 0;
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  color: var(--mid);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  text-align: right;
-  padding-top: 4px;
+/* GHOST PLATE — shown only while no image has loaded, so the zero-image state
+   reads as an intentional plate holder rather than an empty box. */
+.index-media[data-empty] { outline: 1px solid #e8e8e8; outline-offset: -1px; }
+.index-media[data-empty]::after {
+  content: attr(data-label);
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 16px;
+  font-family: var(--label); font-size: 0.72rem; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--mid);
 }
 
+/* still counter — signals "there's more in here" */
+.index-count {
+  position: absolute; bottom: 12px; right: 14px; z-index: 3;
+  font-family: var(--label); font-size: 0.7rem; letter-spacing: 0.06em;
+  color: #fff; background: var(--hover); padding: 3px 7px 2px;
+  opacity: 0; transition: opacity 0.2s; pointer-events: none;
+}
+.index-row:hover .index-count { opacity: 1; }
+
+/* ── COLOPHON ──
+   The fixed chrome would float over a scrolling list, so contacts live here
+   at the end instead. "about" is here too: it stays out of the project rows
+   but must not become unreachable. */
+.index-colophon {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 28px;
+  padding: 52px 0 0;
+  font-family: var(--label); font-size: 0.72rem;
+  text-transform: uppercase; letter-spacing: 0.07em; color: var(--mid);
+}
+.index-colophon a { color: var(--fg); text-decoration: none; }
+.index-colophon a:hover { color: var(--hover); }
+.index-colophon .ic-push { flex: 1 1 auto; }
+
+/* ── VIEW CHROME ──
+   Scoped to body.view-scatter deliberately: an opaque #topbar globally would
+   hide network nodes drifting into the top 100px. */
+body.view-scatter #topbar { background: #fff; }
+body.view-scatter #hint,
+body.view-scatter #meta,
+body.view-scatter #contact-footer { display: none !important; }
+
+/* ── MOTION / TOUCH GUARDS ── */
+@media (prefers-reduced-motion: reduce) {
+  .index-row { opacity: 1; transform: none; transition: none; }
+  .index-row::before, .index-media img, .index-cta i { transition: none; }
+  .index-row:hover .index-media img { transform: none; }
+}
+/* Touch: no hover state exists. Same precedent as .slideshow-btn below —
+   force the hover-only affordance always-on; cells auto-cycle in view instead. */
+@media (hover: none) {
+  .index-count { opacity: 1 !important; }
+  .index-media img { filter: none; }
+  .index-row:hover .index-media img { transform: none; }
+}
+
+/* ── RESPONSIVE ──
+   Ordered widest → narrowest so the narrowest wins. The old code had the 600px
+   block BEFORE the 767px block, so 767 won at ≤600 and the 600px padding was
+   dead code. All #scatter-view padding is declared here and nowhere else. */
+@media (max-width: 1100px) {
+  #scatter-view { --sv-pt: 140px; --sv-px: 60px; --sv-pb: 100px; }
+  .index-row { gap: 40px; padding: 52px 0; }
+}
+@media (max-width: 860px) {
+  /* stacks text above media — already the DOM order, no `order` needed */
+  .index-row { grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 44px 0; }
+  .index-desc { max-width: none; }
+  .index-row--player .index-open::after { right: 0; bottom: 55%; }
+}
 @media (max-width: 600px) {
-  #scatter-view { padding: 90px 24px 60px; }
-  .index-tag { display: none; }
-  .index-year { width: 52px; }
-  .index-name { font-size: 1.05rem; }
+  #scatter-view { --sv-pt: 128px; --sv-px: 20px; --sv-pb: 80px; }
+  .index-head { font-size: 0.68rem; letter-spacing: 0.07em; }
+  .index-head .ih-right { display: none; }
+  .index-name { font-size: 1.4rem; }
+  .index-desc { font-size: 0.88rem; }
+  .index-colophon { gap: 18px; padding-top: 40px; }
+  .index-colophon .ic-push { display: none; }
+}
+
+
+/* =====================================================
+   SECTION I-HERO — THE OPENING PLATE (INDEX SLIDESHOW)
+   =====================================================
+   A full-bleed slideshow that fills the screen when the Index opens. Every
+   photograph in INDEX_CONTENT rolls through it — one project, then the next,
+   then back around — and scrolling past it arrives at the list underneath.
+
+   GEOMETRY:
+   the hero is a child of #scatter-view, which is the scroll container and
+   already carries the page gutter as padding — so the picture is held off the
+   screen edges by the same measure as every row below it, and capped at the
+   same 1280px as .index-list so the two are in the same column on any screen.
+   Its height is whatever is left under the fixed top bar (100svh − --sv-pt),
+   which is what makes it fill the screen without sliding under the masthead.
+
+   NOTHING IS CROPPED, AND NOTHING IS MATTED. object-fit is CONTAIN, so every
+   photograph is shown whole; the space around it is the page itself, white,
+   rather than a grey plate. Two things follow from that:
+     · the caption is a BAR BENEATH the picture, never an overlay — an overlay
+       has to assume there is picture underneath it to sit on, and with contain
+       there often isn't;
+     · the frames cannot cross-fade, because they do not cover each other.
+       See the swap note below.
+
+   ✏️  SPEED, AND WHICH PHOTOS APPEAR: SECTION P7b in the JavaScript below.
+*/
+.index-hero {
+  /* ✏️  BREATHING ROOM UNDER THE CAPTION.
+     The hero deliberately stops SHORT of the bottom of the screen. Filling the
+     viewport exactly left the caption sitting on the very edge of the glass,
+     which reads as the page having been cut off rather than as a composition
+     that ends. Subtracting it here lifts the whole block — picture and caption
+     together — rather than only padding the text. Bigger = higher. */
+  --hero-lift: clamp(56px, 9vh, 120px);
+  position: relative;
+  display: flex;
+  flex-direction: column;                  /* picture on top, caption bar under */
+  width: 100%;
+  max-width: 1280px;                       /* same measure as .index-list */
+  margin: 0 auto 72px;                     /* ✏️  gap between here and the list */
+  height: calc(100vh - var(--sv-pt) - var(--hero-lift));   /* no-svh fallback */
+  height: calc(100svh - var(--sv-pt) - var(--hero-lift));  /* ignores the URL bar */
+  min-height: 380px;
+  opacity: 0;                              /* JS adds .is-in once it can be seen */
+  transition: opacity 0.9s ease;
+}
+.index-hero.is-in { opacity: 1; }
+
+/* ── THE PICTURE AREA ──
+   No background: the photograph floats on the page. Takes whatever height the
+   caption bar leaves, and min-height:0 is doing real work — without it a flex
+   child refuses to shrink below its content, the area stays at full image
+   height and the caption bar is pushed off the bottom of the screen. */
+.hero-plate {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-bottom: 22px;   /* ✏️  gap between the photograph and its rule */
+}
+
+/* ── THE TWO FRAMES ──
+   The swap follows the same rule as the list cells, and for the same reason:
+   contain-fitted photographs of different proportions do NOT cover each other,
+   so fading both at once would leave a moment where the page shows through the
+   gap between them and the whole thing dissolves into white. Instead the
+   incoming photo is raised above the outgoing one and faded in; the outgoing
+   one holds at full opacity underneath and is cut away as the fade lands.
+
+   A CSS animation, not a transition — removing .is-on must drop the frame
+   instantly rather than fading it out. That is the whole trick. */
+.hero-frame { position: absolute; inset: 0; opacity: 0; }
+.hero-frame.is-on {
+  opacity: 1;
+  animation: heroIn 0.55s ease both;   /* ⚠️  keep in step with HERO_FADE_MS */
+}
+@keyframes heroIn { from { opacity: 0; } to { opacity: 1; } }
+.hero-frame img {
+  width: 100%; height: 100%;
+  object-fit: contain;   /* ⚠️  never `cover` — see the note at the top */
+  display: block;
+}
+/* No Ken Burns drift here. Any scale above 1 pushes the photograph past its
+   contain-fitted size and overflow:hidden clips the edges — which is a crop,
+   arrived at sideways. Same reasoning as the list cells. */
+
+/* ── THE CAPTION BAR ──
+   Under the picture, on white, in the site's own type. Never over the work. */
+.hero-foot {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 32px;
+  padding: 20px 0 2px;   /* the page gutter is already on #scatter-view */
+}
+
+/* Caption — a real link, and the fastest way into whatever is on screen. */
+.hero-meta {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 9px;
+  max-width: 52ch;
+  color: var(--fg); text-decoration: none;
+}
+.hero-num {
+  font-family: var(--label); font-size: 0.72rem; font-weight: 500;
+  letter-spacing: 0.09em; text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: var(--mid);
+  transition: color 0.3s ease;
+}
+.hero-name {
+  font-size: clamp(1.25rem, 2.4vw, 2rem);
+  font-weight: 300; line-height: 1.05; letter-spacing: -0.018em;
+  transition: color 0.3s ease;
+}
+.hero-name i {                      /* the arrow, on the same line as the title */
+  font-style: normal; font-size: 0.5em;
+  display: inline-block; margin-left: 0.4em; vertical-align: baseline;
+  transition: transform 0.3s var(--ease);
+}
+.hero-tag {
+  font-family: var(--label); font-size: 0.72rem; font-weight: 500;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--mid);
+  transition: color 0.3s ease;
+}
+.hero-meta:hover .hero-num,
+.hero-meta:hover .hero-name,
+.hero-meta:hover .hero-tag,
+.hero-meta:focus-visible .hero-name { color: var(--hover); }
+.hero-meta:hover .hero-name i { transform: translate(3px, -3px); }
+.hero-meta:focus-visible { outline: 2px solid var(--hover); outline-offset: 5px; }
+
+/* The caption is re-typed on every swap; this keeps that from being a jump cut. */
+.hero-meta.is-swap { animation: heroMetaIn 0.5s var(--ease) both; }
+@keyframes heroMetaIn {
+  from { opacity: 0; transform: translateY(9px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── ARROWS ── same geometry as the project-page slideshow buttons ── */
+.hero-nav { display: flex; gap: 8px; flex: 0 0 auto; }
+.hero-btn {
+  width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff;
+  border: 1px solid var(--light);
+  color: var(--fg); font-size: 0.8rem; cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.hero-btn:hover, .hero-btn:focus-visible {
+  background: var(--hover); color: #fff; border-color: var(--hover);
+  outline: none;
+}
+
+/* ── SCROLL PROMPT ──
+   Says what is down there rather than just "scroll" — the whole point of the
+   plate is that the list is still the site, one screen further on. It goes
+   the moment anyone acts on it. */
+.hero-cue {
+  display: flex; align-items: center; gap: 9px;
+  padding: 0 0 10px;
+  background: none; border: 0; cursor: pointer;
+  font-family: var(--label); font-size: 0.7rem; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--mid);
+  transition: opacity 0.35s ease, color 0.15s;
+}
+.hero-cue i { font-style: normal; animation: heroNudge 2.4s ease-in-out infinite; }
+.hero-cue:hover { color: var(--hover); }
+.hero-cue:focus-visible { outline: 2px solid var(--hover); outline-offset: 5px; }
+.index-hero.is-scrolled .hero-cue { opacity: 0; pointer-events: none; }
+@keyframes heroNudge {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(4px); }
+}
+
+/* ── TIMER ──
+   The rule between the picture and its caption, doubling as the clock. Blue,
+   because that is what "live" looks like everywhere else on this site. */
+.hero-bar {
+  position: absolute; left: 0; right: 0; top: 0; height: 1px;
+  background: #e8e8e8;   /* the same hairline the index rows are divided by */
+}
+.hero-bar span { display: block; height: 100%; width: 0; background: var(--hover); }
+.hero-bar span.run { animation: heroBar var(--hero-hold, 4600ms) linear both; }
+@keyframes heroBar { from { width: 0; } to { width: 100%; } }
+
+/* Out of view or in a background tab: freeze the clock where it stopped, so it
+   picks up in step with the JavaScript timer rather than jumping. */
+.index-hero.is-paused .hero-bar span { animation-play-state: paused; }
+
+/* ── MOTION GUARD ── */
+@media (prefers-reduced-motion: reduce) {
+  .index-hero { opacity: 1; transition: none; }
+  .hero-frame.is-on,
+  .hero-bar span.run,
+  .hero-cue i,
+  .hero-meta.is-swap { animation: none !important; }
+  /* Nothing is on a clock under reduced motion — but the rule between the
+     picture and its caption is structure, not motion, so it stays. */
+  .hero-bar span { display: none; }
+}
+
+/* ── RESPONSIVE ── widest → narrowest, same order as Section I ── */
+@media (max-width: 860px) {
+  .index-hero { margin-bottom: 64px; }
+  .hero-cue   { display: none; }   /* caption + arrows already fill the bar */
+  .hero-foot  { padding-top: 16px; gap: 20px; }
+  .hero-meta  { gap: 7px; }
+}
+@media (max-width: 600px) {
+  .index-hero { margin-bottom: 52px; min-height: 360px; }
+  .hero-foot  { padding-top: 14px; }
+  .hero-btn   { width: 34px; height: 34px; }
+  .hero-name  { font-size: 1.35rem; }
 }
 
 
@@ -538,18 +954,15 @@ html, body {
     white-space: nowrap;
   }
   #header span {
-    font-size: 0.6rem;
+    font-size: 0.72rem;
   }
   #toggle {
     align-self: flex-start;
   }
-  #scatter-view {
-    padding: 120px 20px 60px;
-    align-items: flex-start;
-  }
-  .index-list {
-    margin: 0;
-  }
+  /* NOTE: #scatter-view padding and .index-list margin used to be set here.
+     They now live in Section I so all breakpoints are declared in one place,
+     ordered widest → narrowest. Do not re-add them here — this block comes
+     after the 600px block, so it would override it at phone widths. */
 }
 
 
@@ -677,8 +1090,8 @@ html, body {
 .slideshow-counter {
   /* "1 / 4" counter bottom-right */
   position: absolute; bottom: 14px; right: 18px;
-  font-family: 'Geist Mono', monospace;
-  font-size: 0.58rem; letter-spacing: 0.1em;
+  font-family: var(--label);
+  font-size: 0.72rem; letter-spacing: 0.06em;
   color: #fff;
   background: rgba(0,0,0,0.35); /* Semi-transparent dark background */
   padding: 3px 8px;
@@ -700,10 +1113,714 @@ html, body {
 }
 .slideshow-dot.active { background: #fff; } /* Current slide dot = fully white */
 
+
+/* =====================================================
+   SECTION U-CSS — LANDING SCREEN + HEADER BIO
+   =====================================================
+   Two things live here:
+     #landing     — the blue intro plate with the scattered paragraph
+     #header-bio  — where that paragraph ends up: under your name, for good
+
+   This block is LAST in the stylesheet on purpose. The #scatter-view padding
+   override at the bottom has to beat the breakpoints in Section I, and CSS
+   settles ties by source order.
+*/
+
+/* ── THE BLUE PLATE ── */
+#landing {
+  position: fixed;
+  inset: 0;
+  z-index: 900;              /* above the topbar (200) and project pages (500) */
+  background: #0000FF;       /* ✏️  Landing background colour */
+  display: flex;
+  flex-direction: column;
+  align-items: center;       /* paragraph and toggle centred horizontally */
+  justify-content: center;   /* …and as a group, vertically */
+  overflow: hidden;          /* scattered letters never make a scrollbar */
+  touch-action: none;        /* we read the swipe ourselves — see SECTION U */
+  user-select: none;
+  opacity: 1;
+  transition: opacity 0.42s ease;
+}
+#landing.fading {            /* JS adds this at the end of the transition */
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── THE PARAGRAPH ──
+   Width and font-size are set by JavaScript, not here: they are derived from
+   the final size under the header so the two are exactly proportional, which
+   is what lets the shrink land without the lines re-breaking mid-flight. */
+#lb-text {
+  position: relative;
+  color: #fff;               /* ✏️  Landing text colour */
+  font-weight: 300;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+  transform-origin: top left; /* JS animates from here to the header slot */
+}
+#lb-text.flying {
+  transition: transform 0.9s cubic-bezier(0.6, 0.02, 0.2, 1);
+}
+/* Used when there is nowhere to fly to (desktop, and any narrow screen where
+   the settled copy is not a proportional match). The paragraph recedes rather
+   than simply switching off with the plate. */
+#lb-text.settling {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.38s ease;
+  transform: scale(0.955);
+  opacity: 0;
+}
+/* .p  = one entry in BIO, its own block — this is the line break before
+         "Currently working at Fugazi…".
+   .w  = one word, kept unbreakable so letters never split across a line.
+   .ch = one letter, the thing that actually scatters.
+
+   The gap is in `em`, not px, so it scales with the font — which is what keeps
+   the landing text and the settled text proportional, and therefore keeps the
+   flight from re-wrapping halfway. */
+#lb-text .p,  #bio-copy .p  { display: block; }
+#lb-text .p + .p,
+#bio-copy .p + .p           { margin-top: 1.5em; }
+#lb-text .w,  #bio-copy .w  { display: inline-block; white-space: nowrap; }
+#lb-text .ch, #bio-copy .ch { display: inline-block; }
+
+/* ── INDEX / NETWORK CHOICE ──
+   Same geometry as the top-right #toggle, inverted for the blue field. */
+#lb-enter {
+  display: flex;
+  border: 1px solid #fff;
+  margin-top: 56px;          /* ✏️  Gap between paragraph and toggle */
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;      /* unclickable until the text is readable */
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+#landing.ready #lb-enter {   /* JS adds .ready once the scramble hits 100% */
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+#landing.leaving #lb-enter { /* JS adds .leaving the moment you pick a view */
+  opacity: 0;
+  transform: translateY(-6px);
+  transition-duration: 0.25s;
+}
+#lb-enter button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 9px 22px;         /* ✏️  Button size */
+  font-family: var(--label);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  transition: background 0.15s, color 0.15s;
+}
+#lb-enter button + button { border-left: 1px solid #fff; }
+#lb-enter button:hover,
+#lb-enter button:focus-visible {
+  background: #fff;
+  color: #0000FF;
+  outline: none;
+}
+
+/* ── SCROLL PROMPT (bottom centre, desktop only — JS sets the text) ── */
+#lb-cue {
+  position: absolute;
+  bottom: 34px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--label);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  opacity: 0.7;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+#landing.ready #lb-cue { opacity: 0; }
+
+/* ── WHERE THE PARAGRAPH LIVES AFTERWARDS ──
+   Inside #header, directly under the <h1>. margin-top is set by JS to exactly
+   one line-height, which is the "line gap" between the name and the bio. */
+#header-bio {
+  color: #000;               /* ✏️  Settled bio colour */
+  font-weight: 300;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+}
+
+/* Desktop: the description lives on the landing and on the About page, not
+   here. Mobile keeps it — there it is tucked inside the hamburger panel and
+   costs nothing, which is where the intro copy still earns its place. */
+@media (min-width: 768px) {
+  #bio-copy { display: none; }
+}
+
+/* ── OPENING ──
+   Runs once, when the blue plate lifts. On a reload (no landing) there is
+   nothing to open into, so the class is never added and the links simply are. */
+#header-bio.bio-enter #bio-links {
+  animation: linksIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.18s both;
+}
+@keyframes linksIn {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #header-bio.bio-enter #bio-links { animation: none !important; }
+}
+
+/* ── CONTACT + ABOUT ──
+   Directly under the bio, so the ways off this page sit with the sentence that
+   explains it rather than stranded in the bottom corners. Present in BOTH
+   views, which is why the old bottom-centre #contact-footer is now retired —
+   see the rule further down. pointer-events has to be re-enabled because
+   #topbar and #header both switch it off so the canvas stays draggable. */
+#bio-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;                 /* ✏️  Space between links */
+  margin-top: 0;             /* ✏️  Space above links (desktop tucks them close) */
+  pointer-events: auto;
+  font-family: var(--label);
+  font-size: 0.72rem;        /* ✏️  Link size */
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+#bio-links a {
+  color: var(--fg);
+  text-decoration: none;
+  padding-bottom: 2px;
+  border-bottom: 1px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+#bio-links a:hover,
+#bio-links a:focus-visible {
+  color: var(--hover);
+  border-bottom-color: var(--hover);
+  outline: none;
+}
+
+/* The three contact links now live under the bio in both views, so the fixed
+   bottom-centre copy is a duplicate. Kept in the HTML — delete this one rule
+   to bring it back. */
+body.has-bio #contact-footer { display: none !important; }
+
+/* ── KNOCK-ON: THE TOP-RIGHT TOGGLE ──
+   #topbar centres its children. With a one-line subtitle that put the
+   Network/Index switcher level with your name; with a four-line bio it would
+   slide down to the middle of the paragraph. Pin it to the top instead, then
+   nudge it down by half the difference so it still reads as level with the
+   <h1> rather than with the top of the box. */
+body.has-bio #topbar { align-items: flex-start; }
+@media (min-width: 768px) {
+  body.has-bio #toggle { margin-top: 14px; }
+}
+/* The topbar's white plate is what the index list scrolls under. With only a
+   16px bottom padding the rows arrive flush against the last line of the bio,
+   which reads as a collision rather than as layering.
+   Desktop only — on mobile the bio lives in the menu and the closed top bar
+   must stay exactly one line tall. */
+@media (min-width: 768px) {
+  body.has-bio.view-scatter #topbar { padding-bottom: 30px; }
+}
+
+/* ── LEGIBILITY OVER THE NETWORK ──
+   Handled in JavaScript, not here. An earlier version faded a white gradient
+   over the top of the canvas, which washed out any node that drifted under it.
+   Instead netBounds() in SECTION P2 keeps nodes out of the header, the
+   explainer panel and the footer labels altogether, so nothing ever needs
+   covering up and every node stays fully drawn. */
+
+/* ── ROOM FOR IT ──
+   The index list is a fixed scroll container with hard-coded top padding, so
+   a taller header would sit on top of the first row. --bio-h is written by JS
+   and is the bio's full height including its margin.
+
+   Each value below is the SAME number Section I already uses at that
+   breakpoint, plus the bio — so the clearance the list already had is
+   preserved exactly and the bio's height is simply added on top. */
+body.has-bio #scatter-view  { --sv-pt: calc(150px + var(--bio-h, 0px)); }
+@media (max-width: 1100px) {
+  body.has-bio #scatter-view { --sv-pt: calc(140px + var(--bio-h, 0px)); }
+}
+@media (max-width: 600px) {
+  body.has-bio #scatter-view { --sv-pt: calc(128px + var(--bio-h, 0px)); }
+}
+
+/* ── MOTION GUARD ──
+   Scattering 250 letters is exactly the kind of thing that triggers vestibular
+   symptoms. Readers who ask for less motion get the paragraph already assembled
+   and the toggle already showing. */
+@media (prefers-reduced-motion: reduce) {
+  #landing, #lb-text.flying, #lb-enter, #lb-cue { transition: none !important; }
+}
+
+
+/* =====================================================
+   SECTION X — ABOUT PAGE
+   =====================================================
+   Typography first, then the reveal.
+
+   The column is capped at 62ch. The About page is the longest read on the site
+   and an unmeasured line at this width would run past 120 characters, which is
+   roughly twice what anyone tracks comfortably.
+*/
+/* ── THE BLUE PAGE ──
+   Scoped to .is-about so every other project page stays white. Almost
+   everything in the project overlay is inline-styled, which is why these need
+   !important — the alternative was unpicking a dozen style attributes that
+   are fine as they are on the other pages. */
+#project-page.is-about {
+  /* !important because #project-page carries an inline background:#fff, and an
+     inline style beats a stylesheet rule at any specificity. Without it the
+     page stays white and every white letter on it becomes invisible. */
+  background: #0000FF !important; /* ✏️  About page background */
+  color: #fff;
+}
+#project-page.is-about #proj-tag,
+#project-page.is-about #proj-title,
+#project-page.is-about #proj-role,
+#project-page.is-about button { color: #fff !important; }
+#project-page.is-about #proj-discipline-label,
+#project-page.is-about #proj-role-label,
+#project-page.is-about #proj-year-label { color: rgba(255,255,255,0.62) !important; }
+#project-page.is-about #proj-header,
+#project-page.is-about #proj-meta-grid,
+#project-page.is-about .proj-rule,
+#project-page.is-about hr { border-color: rgba(255,255,255,0.32) !important; }
+.about-side-link {
+  color: #fff !important;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,0.35);
+  transition: border-color 0.15s;
+}
+.about-side-link:hover { border-bottom-color: #fff; }
+
+/* ── LAYOUT ──
+   One centred column. The face is the subject of the page, so it is fixed dead
+   centre in the viewport and the copy scrolls through it. The text column is
+   deliberately NARROWER than the face: that difference is what makes the
+   letters travel inward to assemble, rather than sideways. */
+.about-col {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  color: #fff;
+}
+.about-text {
+  position: relative;
+  z-index: 2;                    /* assembled copy reads over the parked face */
+  margin: 0 auto;
+  max-width: 46ch;               /* ✏️  Reading measure — keep under the face */
+  /* Arrive on the intact face. This has to clear the assembly trigger itself
+     (START, 0.90vh in aboutTick) plus the page header, or the first paragraph
+     is already part-assembled at rest and the face never shows whole — which
+     is also what you would see scrolling back to the top. The tail gives the
+     last paragraph room to finish. */
+  padding-top: 96vh;
+  padding-bottom: 24vh;
+}
+
+/* The grid the letters park on. It draws nothing itself — the ASCII art IS the
+   copy, held in place. This box only supplies geometry, and its measured size
+   is what aboutTick() divides into cells. */
+.about-ascii {
+  position: fixed;
+  /* left / top / width / height are all set in pixels by sizeFace() — see the
+     note there for why this cannot be left to vh/vw. */
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── SCROLL PROMPT ──
+   Fixed to the bottom of the window, not the bottom of the document, so it is
+   visible the instant the page opens. */
+.about-cue {
+  position: fixed;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%);
+  z-index: 3;
+  font-family: var(--label);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #fff;
+  opacity: 0.75;
+  pointer-events: none;
+  white-space: nowrap;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.about-cue::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 22px;
+  margin: 8px auto 0;
+  background: rgba(255,255,255,0.7);
+}
+.about-cue.is-gone {
+  opacity: 0;
+  transform: translateX(-50%) translateY(8px);
+}
+
+/* ── THE SIGN-OFF ── */
+.about-signoff {
+  display: flex;
+  align-items: flex-start;   /* photo's top edge lines up with the email's */
+  gap: 22px;
+  margin-top: 4px;
+}
+.about-photo {
+  width: 86px;                   /* ✏️  How big the photograph is */
+  height: auto;
+  flex-shrink: 0;
+  opacity: 0;
+  transform: scale(0.9) translateY(6px);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* Added when the sign-off scrolls into view — the one place the source
+   photograph appears on the whole page. */
+.about-signoff.is-photo .about-photo { opacity: 1; transform: none; }
+
+.about-links {
+  display: flex;
+  gap: 22px;
+  margin-top: 26px;
+  font-family: var(--label);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.about-links a {
+  color: #fff;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,0.35);
+  transition: border-color 0.15s;
+}
+.about-links a:hover { border-bottom-color: #fff; }
+
+/* ── NO META SIDEBAR ──
+   The 200px Year/Practice/Contact column would sit off to one side of a page
+   whose whole composition is centred. Contact moved to the sign-off; Practice
+   is gone. */
+#project-page.is-about #proj-meta-grid {
+  grid-template-columns: 1fr !important;
+  gap: 0 !important;
+  border-top: none !important;
+  padding-top: 0 !important;
+}
+#project-page.is-about #proj-meta-grid > div:first-child { display: none !important; }
+#project-page.is-about #proj-desc-col { display: block !important; }
+/* The face is fixed at the centre of the window and is 70-odd vh tall, so the
+   page title has very little room above it. Compacted rather than left at the
+   project-page size, where it sat straight across the forehead. */
+#project-page.is-about #proj-header { text-align: center; margin-bottom: 0 !important; }
+#project-page.is-about #project-content { padding-top: 34px !important; padding-bottom: 0 !important; }
+#project-page.is-about #proj-tag { font-size: 0.68rem !important; margin-bottom: 6px !important; }
+#project-page.is-about #proj-title { font-size: 1.9rem !important; }
+
+/* ── THE LETTERS ──
+   transform-origin matters: with the default 50% 50% the scale would pull each
+   letter toward its own centre and the grid would not line up. */
+.about-text .w  { display: inline-block; white-space: nowrap; }
+.about-text .ac {
+  display: inline-block;
+  transform-origin: 0 0;
+  /* No will-change here. It would ask the compositor for 875 separate layers,
+     which costs far more in memory than it saves in paint. */
+}
+/* Reduced motion, or no scripting path: plain text, photo already shown. */
+.about-static .about-ascii { display: none; }
+
+/* ── THE LEDE ──
+   Larger, tighter, and the only block that resolves out of focus. */
+.about-lede {
+  font-size: 1.6rem;         /* ✏️  Opening statement size */
+  line-height: 1.4;
+  font-weight: 300;
+  letter-spacing: -0.015em;
+  margin: 0 0 8vh;
+  text-wrap: balance;        /* no orphan word on the last line, where supported */
+}
+
+/* Same hairline as the header and the index, in white on the blue field. */
+.about-rule {
+  height: 0;
+  border-top: 1px solid rgba(255,255,255,0.55);
+  margin: 30px 0 8vh;
+}
+
+.about-p {
+  font-size: 1.02rem;        /* ✏️  Body size */
+  line-height: 1.8;
+  font-weight: 300;
+  /* ✏️  This gap is scroll distance, not decoration — it is how much travel a
+     paragraph gets to assemble in. Too small and paragraphs assemble on top of
+     each other; too large and the page is mostly empty scrolling. */
+  margin: 0 0 9vh;
+}
+.about-p:last-of-type { margin-bottom: 0; }
+
+/* Assembled copy sits over face letters that have not left yet. The blue halo
+   pushes them back far enough to read against without needing a panel. */
+.about-block.is-read {
+  text-shadow: 0 0 14px #0000FF, 0 0 7px #0000FF, 0 0 3px #0000FF;
+}
+
+/* ── GET IN TOUCH ──
+   Set apart by a rule and a colour shift rather than by a box. */
+.about-cta {
+  margin-top: 52px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(255,255,255,0.32);
+}
+.about-cta-head {
+  font-family: var(--label);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.66);
+  margin: 0 0 18px;
+}
+.about-cta-line {
+  font-size: 1.02rem;
+  line-height: 1.75;
+  font-weight: 300;
+  color: rgba(255,255,255,0.78);
+  margin: 0 0 6px;
+}
+.about-cta-last {           /* "Hit me up!" */
+  color: #fff;
+  font-size: 1.15rem;
+  margin-bottom: 20px;
+}
+.about-email {
+  display: inline-block;
+  font-size: 1.35rem;       /* ✏️  Email link size */
+  font-weight: 300;
+  letter-spacing: -0.015em;
+  color: #fff;
+  text-decoration: none;
+  padding-bottom: 4px;
+  background-image: linear-gradient(#fff, #fff);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;  /* underline grows from the left on hover */
+  transition: background-size 0.42s cubic-bezier(0.22, 0.9, 0.24, 1);
+}
+.about-email:hover,
+.about-email:focus-visible { background-size: 100% 1px; outline: none; }
+
+/* ── RESPONSIVE ──
+   The composition does not change shape on a phone: the face stays fixed and
+   centred and the copy still assembles inward through it. Only the numbers
+   move. On a narrow screen the width limit is what caps the face, so the copy
+   has to be pulled in further to keep the letters travelling inward. */
+@media (max-width: 767px) {
+  .about-lede     { font-size: 1.22rem; margin-bottom: 7vh; }
+  .about-rule     { margin: 22px 0 7vh; }
+  .about-p        { font-size: 0.96rem; line-height: 1.75; margin-bottom: 8vh; }
+  .about-text     { max-width: 30ch; padding-top: 92vh; padding-bottom: 18vh; }
+  .about-cta      { margin-top: 44px; padding-top: 26px; }
+  .about-email    { font-size: 1.05rem; }
+  .about-cta-last { font-size: 1.05rem; }
+  .about-photo    { width: 66px; }
+  .about-signoff  { gap: 16px; }
+  /* Face size is handled by sizeFace(), which fits it to the real visible box
+     — nothing to override per breakpoint. */
+  #project-page.is-about #project-content { padding-left: 20px !important; padding-right: 20px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-text .ac {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .about-photo { transition: none; opacity: 1; transform: none; }
+  .about-email { transition: none; }
+}
+
+
+/* =====================================================
+   SECTION V — MOBILE MENU (HAMBURGER)
+   =====================================================
+   Above 767px nothing here applies and the header behaves as before.
+
+   Below it the top bar carries your name and the ☰ only. The Index/Network
+   toggle, the bio and the links are the SAME elements as on desktop — they are
+   simply not rendered until the menu opens. Nothing is duplicated, so there is
+   no second copy of the bio to keep in sync.
+
+   The trick that makes the ordering work is `#header { display: contents }`:
+   it dissolves the #header box on mobile so the <h1> and #header-bio become
+   direct children of #topbar's column, which lets `order` interleave the
+   toggle between them. Without it the toggle could only ever sit after the bio.
+*/
+#menu-btn { display: none; }   /* desktop: no hamburger */
+
+@media (max-width: 767px) {
+
+  #menu-btn {
+    display: block;
+    position: absolute;        /* out of the column flow entirely */
+    top: 14px;
+    right: 16px;
+    width: 40px;               /* 40px box = comfortable tap target */
+    height: 40px;
+    padding: 11px 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    pointer-events: auto;      /* #topbar switches these off */
+    z-index: 3;
+  }
+  #menu-btn span {
+    display: block;
+    height: 1.5px;
+    background: #000;          /* ✏️  Hamburger bar colour */
+    border-radius: 2px;
+    transition: transform 0.28s cubic-bezier(0.2,0.8,0.2,1), opacity 0.18s ease;
+  }
+  #menu-btn span + span { margin-top: 5px; }
+
+  /* Bars fold into an ✕. 6.5px = one bar height + one gap. */
+  body.menu-open #menu-btn span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+  body.menu-open #menu-btn span:nth-child(2) { opacity: 0; }
+  body.menu-open #menu-btn span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+  #topbar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px 20px;
+    gap: 0;
+  }
+  #header { display: contents; }     /* see the note above */
+  #header h1    { order: 0; font-size: 1.9rem; white-space: nowrap; }
+  #toggle       { order: 1; }
+  #header-bio   { order: 2; }
+
+  /* CLOSED: name and ☰ only. display:none (not opacity) so the hidden links
+     cannot be tabbed to and the top bar actually collapses to one line. */
+  body:not(.menu-open) #toggle,
+  body:not(.menu-open) #header-bio { display: none; }
+
+  /* OPEN: an opaque panel. The network view has a transparent topbar by
+     design, so it needs the plate added back or the menu sits over live nodes. */
+  body.menu-open #topbar {
+    background: #fff;
+    padding-bottom: 28px;
+    box-shadow: 0 1px 0 #e8e8e8;
+  }
+  body.menu-open #toggle,
+  body.menu-open #header-bio { animation: menuIn 0.34s cubic-bezier(0.2,0.8,0.2,1) both; }
+  body.menu-open #toggle     { align-self: flex-start; margin-top: 22px; }
+  body.menu-open #header-bio { animation-delay: 0.05s; }
+
+  /* Stack the links instead of wrapping them into ragged rows. */
+  #bio-links { flex-direction: column; gap: 14px; margin-top: 22px; }
+
+  /* The graph gets the screen to itself on phones — the explainer panel was
+     eating a third of the height and pushing the ring off centre. */
+  #net-explainer { display: none !important; }
+
+  /* Top padding no longer follows --bio-h: with the menu closed the bio is not
+     in the flow, so the list only has to clear the name and the ☰. */
+  body.has-bio #scatter-view { --sv-pt: 96px; }
+}
+
+@keyframes menuIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #menu-btn span,
+  body.menu-open #toggle,
+  body.menu-open #header-bio { animation: none !important; transition: none !important; }
+}
+
+
+/* =====================================================
+   SECTION W — ARRIVING AT THE INDEX
+   =====================================================
+   The index rows already fade-and-rise into place (.is-in, Section I). The
+   problem was timing, not the animation: buildScatter() runs while the blue
+   plate is still covering the screen, so the observer woke the top rows and
+   they had finished before anyone could see them — the list was simply THERE
+   the instant the blue lifted.
+
+   idxSetHold()/idxRelease() in SECTION P7 park those rows instead, then deal
+   them in one by one once the plate is gone. Nothing here is new animation;
+   it is the existing entrance, finally visible.
+
+   The network view has no rows to deal in, so it fades up as a whole instead. */
+#net-canvas.net-enter,
+#net-explainer.net-enter { animation: netIn 0.65s ease both; }
+@keyframes netIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #net-canvas.net-enter, #net-explainer.net-enter { animation: none !important; }
+}
+
 </style>
 </head>
 
 <body>
+
+<!-- =====================================================
+     SECTION J0 — LANDING SCREEN (BLUE INTRO)
+     =====================================================
+     Full-bleed #0000FF plate that covers the site on first load.
+     The bio paragraph starts as scattered white letters; scrolling pulls them
+     back into place. At 100% the Index / Network toggle fades in underneath.
+     Choosing one flies the paragraph up under the header and lifts the plate.
+
+     It sits FIRST in the body so it paints blue on the very first frame —
+     the site behind it is never briefly visible.
+
+     ✏️  TEXT lives in "const BIO" in SECTION U (bottom of file).
+     ✏️  TO DISABLE the landing entirely: delete this whole block AND the
+         <script> in SECTION U. Nothing else depends on it. -->
+<div id="landing">
+  <div id="lb-text"></div>
+
+  <!-- Hidden until the paragraph is fully assembled (#landing.ready). -->
+  <div id="lb-enter">
+    <button type="button" onclick="enterSite('scatter')">Index</button>
+    <button type="button" onclick="enterSite('network')">Network</button>
+  </div>
+
+  <div id="lb-cue"></div>
+</div>
+<script>
+/* Runs before the browser paints. Skips the landing when the URL already
+   points somewhere (#about, #index, #network …) or when it has already been
+   shown this session — so back-navigation never replays the intro.
+   ✏️  TO SHOW IT ON EVERY LOAD: delete the sessionStorage clause below. */
+(function () {
+  var seen = false;
+  try { seen = sessionStorage.getItem('ca-landing') === 'seen'; } catch (e) {}
+  var skip = location.hash.replace('#', '').trim() !== '' || seen;
+  if (skip) document.getElementById('landing').style.display = 'none';
+  window.__landingSkip = skip;
+})();
+</script>
 
 
 <!-- =====================================================
@@ -712,13 +1829,17 @@ html, body {
      ✏️  EDIT: Change the text inside the tags below. -->
 <div id="topbar">
 <div id="header">
-  <h1>Calder Anderson</h1>
-  <!-- ✏️  YOUR NAME. Change "Calder Anderson" to your name. -->
+  <h1><a id="home-link" href="#index">Calder Anderson</a></h1>
+  <!-- ✏️  YOUR NAME. Change "Calder Anderson" to your name.
+       It links home, to whichever view was picked on the landing screen —
+       the href is kept in step by syncHomeLink() in SECTION P8c. -->
 
-  <span>artist · designer · publisher · musician — based in new york</span>
-  <!-- ✏️  YOUR SUBTITLE. Change this to describe yourself.
-       · = Option+8 on Mac, or copy-paste it.
-       — = Option+Shift+- on Mac (em dash). -->
+
+  <!-- The old one-line subtitle used to sit here. It has been REPLACED by the
+       landing bio: the paragraph that starts scattered on the blue intro screen
+       and settles into this exact spot (as #header-bio) once a view is chosen.
+       ✏️  TO EDIT THAT TEXT: search for "const BIO =" in SECTION U at the
+       bottom of this file. It is written in one place and used everywhere. -->
 </div>
 
 
@@ -730,16 +1851,28 @@ html, body {
      If so, DELETE this entire block (from <div id="toggle"> to </div>).
      Your buttons must call setView('network') or setView('scatter') on click.
      Example for your button: onclick="setView('network')" -->
+<!-- =====================================================
+     SECTION L0 — HAMBURGER (MOBILE ONLY)
+     =====================================================
+     Hidden above 767px. Below it, this is the only control in the top bar:
+     it reveals #toggle and #header-bio, which are otherwise not rendered on
+     phones. The three spans are the bars; CSS folds them into an ✕ when open. -->
+<button id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="topbar">
+  <span></span><span></span><span></span>
+</button>
+
 <div id="toggle">
-  <button id="btn-net" class="active" onclick="setView('network')">Network</button>
+  <button id="btn-scatter" class="active" onclick="setView('scatter')">Index</button>
+  <!-- class="active" = starts selected (black background), because the Index
+       is now the landing view. If you change currentView back to 'network'
+       in Section P8, move class="active" back to the button below.
+       onclick="setView('scatter')" = switches to the index text view
+       Index = ✏️  the label text. Change if you want. -->
+
+  <button id="btn-net" onclick="setView('network')">Network</button>
   <!-- id="btn-net"   = JavaScript uses this to mark it as active/inactive
-       class="active" = starts selected (black background)
        onclick="..."  = calls setView('network') when clicked
        Network        = ✏️  the label text. Change if you want. -->
-
-  <button id="btn-scatter" onclick="setView('scatter')">Index</button>
-  <!-- onclick="setView('scatter')" = switches to the index text view
-       Index = ✏️  the label text. Change if you want. -->
 </div>
 </div><!-- end #topbar -->
 
@@ -813,8 +1946,8 @@ html, body {
    r       = Dot size in pixels. Bigger = more prominent. ✏️  Change this.
              Login Magazine = 14 (biggest). About = 6 (smallest).
              Try values between 5 and 18.
-   group   = Which cluster in Index view. Must match GROUP_CENTERS (Section P).
-             Options: 'print', 'design', 'image', 'sound', 'fashion', 'theory', 'collab', 'info'
+   group   = Legacy label from the old scattered Index layout. Nothing reads it
+             any more — the Index is a list now. Harmless to leave or remove.
 
    ─────────────────────
    HOW TO ADD A PROJECT:
@@ -842,6 +1975,163 @@ const PROJECTS = [
   { id:9, label:'As Above So Below',               tag:'zine · video',         url:'as%20above%20so%20below/as-above-so-below.html',             r:11, group:'image',  year:'2023' },
   { id:10, label:'Meltdown',                       tag:'installation · AI',    url:'meltdown/meltdown.html',                                     r:12, group:'image',  year:'2026' },
 ];
+
+
+/* =====================================================
+   SECTION N2 — INDEX CONTENT — DROP YOUR TEXT AND IMAGES HERE
+   =====================================================
+   ✏️  THIS IS THE ONLY BLOCK YOU EDIT FOR THE INDEX VIEW.
+
+   The KEY is the project's "id" from PROJECTS above. Do not renumber:
+       0  = Login Magazine          6  = Are You Coming to The Party?
+       1  = Graphic Work            9  = As Above So Below
+       3  = ULTRANET               10  = Meltdown
+       (id 8 = About, id 1 = Graphic Work — both deliberately excluded from
+        the index list below. Graphic Work still shows as a Network node;
+        its content here is left in place, unused, so it's a one-line
+        change in idxSortedProjects() to bring it back.)
+
+   FIELDS (all optional — anything missing degrades cleanly):
+   desc    = 2–3 sentences shown under the title. Plain text.
+   aspect  = shape of the media cell. Media uses object-fit:contain (never
+             cover), so an image that doesn't match this ratio is shrunk to
+             fit inside it whole rather than cropped — pick the ratio that
+             matches most of this row's actual photos, so as little of the
+             box goes to grey letterboxing as possible.
+             '4 / 5' tall · '1 / 1' square · '3 / 2' mid · '16 / 9' wide
+   media   = 1 to 4 blocks. Put your files in an "index_media" folder next to
+             this HTML file.
+
+   MEDIA BLOCK TYPES (same syntax as PAGE_DATA further down):
+   { type:'image', src:'index_media/name-01.jpg' }
+       The FIRST image is always visible. Add 2–4 and they cross-fade on hover
+       (and auto-cycle while on screen on phones).
+   { type:'video', src:'index_media/name.mp4', poster:'index_media/name-01.jpg' }
+       Silent looping video, plays only while on screen. Add controls:true for
+       a real player with sound.
+   { type:'vimeo', id:'123456789' } / { type:'youtube', id:'dQw4w9WgXcQ' }
+       Supported, but use sparingly — each embed is ~1MB of third-party JS and
+       can't cross-fade. One per page at most.
+
+   FILENAME RULES — IMPORTANT:
+   lowercase only, hyphens instead of spaces. The live site runs on Linux,
+   which is case-sensitive: "My Photo.JPG" works on your laptop and 404s live.
+
+   NOTHING HERE IS REQUIRED. With no images at all, every cell shows a neutral
+   plate with the project title ghosted in — the page still looks finished.
+   ────────────────────────────────────────────────────── */
+const INDEX_CONTENT = {
+
+  /* ── 10 · MELTDOWN ── square, not wide: 2 of its 3 photos are square
+     (meltdown-02/03), so 16:9 was letterboxing them down to ~56% of the box.
+     1:1 fits those two nearly edge-to-edge and still fits the landscape one. */
+  10: {
+    aspect: '1 / 1',
+    desc: 'A five-channel interactive installation that generates and sequences '
+        + 'AI-diffused images across five ontological categories — Substrate, Machine, '
+        + 'Circulation, Representation, Control — in real time. A MediaPipe body-tracking '
+        + 'camera reads movement in the gallery: stillness slows the sequence, motion '
+        + 'accelerates it. The work asks how we recognise authenticity when visual '
+        + 'culture becomes an endless, frictionless machine derivative.',
+    media: [
+      { type: 'image', src: 'index_media/meltdown-01.jpg' },
+      { type: 'image', src: 'index_media/meltdown-02.jpg' },
+      { type: 'image', src: 'index_media/meltdown-03.jpg' },
+      // { type:'video', src:'index_media/meltdown.mp4',
+      //   poster:'index_media/meltdown-01.jpg' },   // ← uncomment for motion
+    ],
+  },
+
+  /* ── 0 · LOGIN MAGAZINE ──
+     aspect is 3/2 (landscape) rather than the usual tall shape — the hero
+     images are photographed magazine spreads, which are landscape by nature.
+     A tall crop would have chopped most of each spread's width off. */
+  0: {
+    aspect: '3 / 2',
+    desc: 'A 134-page independent print publication documenting digital life, art and '
+        + 'culture — seven original interviews with the artists, designers and '
+        + 'technologists whose practice is shaped by the contemporary internet. I built '
+        + 'every layer alone: editorial vision, InDesign layout, branding, print '
+        + 'production, PR and fulfilment. The pre-order campaign funded the print run '
+        + 'in full and the first release turned a profit.',
+    media: [
+      { type: 'image', src: 'index_media/login-01.jpg' },
+      { type: 'image', src: 'index_media/login-02.jpg' },
+      { type: 'image', src: 'index_media/login-03.jpg' },
+    ],
+  },
+
+  /* ── 3 · ULTRANET ── */
+  3: {
+    aspect: '3 / 2',
+    desc: 'A multi-channel audiovisual installation co-created with Ryka Ali, '
+        + 'translating the architecture of doomscrolling into a physical gallery '
+        + 'environment. Fifty video collages cut from 200+ found-footage clips, '
+        + 'synchronised to an original hour-long score through a live TouchDesigner '
+        + 'audio-reactive pipeline across ten ceiling projectors. Free to attend by '
+        + 'design — hundreds of people over four hours.',
+    media: [
+      { type: 'image', src: 'index_media/ultranet-01.jpg' },
+      { type: 'image', src: 'index_media/ultranet-02.jpg' },
+      { type: 'image', src: 'index_media/ultranet-03.jpg' },
+    ],
+  },
+
+  /* ── 1 · GRAPHIC WORK ── currently excluded from the index list
+     (see idxSortedProjects) — kept here so it's a one-line change to bring
+     it back. Still visible as a Network node. ── */
+  1: {
+    aspect: '1 / 1',
+    desc: 'An ongoing archive of graphic work — commissions, one-off projects, personal '
+        + 'experiments and unused work. Posters, identities, record sleeves, type, and '
+        + 'everything in between.',
+    media: [
+      { type: 'image', src: 'index_media/graphic-01.jpg' },
+      { type: 'image', src: 'index_media/graphic-02.jpg' },
+      { type: 'image', src: 'index_media/graphic-03.jpg' },
+    ],
+  },
+
+  /* ── 6 · ARE YOU COMING TO THE PARTY? ── landscape, not tall: only the
+     cover (aycttp-01) is portrait — the other two are 3:2 spreads, which a
+     4:5 box was shrinking to ~52% of the box. 3:2 fits those two nearly
+     edge-to-edge; the cover gets more letterboxing in exchange, but it's
+     the minority image (1 of 3) so this is the better average trade. */
+  6: {
+    aspect: '3 / 2',
+    desc: "A 156-page documentary publication co-created with Ryka Ali on New York's "
+        + 'underground nightlife — its promoters, DJs, bottle girls and the '
+        + 'self-organised spaces that define the city after dark. Subjects were chosen '
+        + "to cover a party's whole labour ecosystem, not just its visible performers, "
+        + 'built from 25 years of archival research alongside parallel field work. It '
+        + 'became the production blueprint for LOGIN.',
+    media: [
+      { type: 'image', src: 'index_media/aycttp-01.jpg' },
+      { type: 'image', src: 'index_media/aycttp-02.jpg' },
+      { type: 'image', src: 'index_media/aycttp-03.jpg' },
+    ],
+  },
+
+  /* ── 9 · AS ABOVE SO BELOW ── */
+  9: {
+    aspect: '16 / 9',
+    desc: 'A dual-output research project — a video collage and an accompanying zine — '
+        + 'on the structural parallels between early internet technology and ancient '
+        + 'magical traditions: HTML as spellcasting syntax, hyperlinks as ritual '
+        + "pathways, connectivity as remote viewing. The early web's visual vernacular "
+        + 'becomes the aesthetic language for the argument. This was the starting point; '
+        + 'the method every project since has extended.',
+    media: [
+      { type: 'image', src: 'index_media/asb-01.jpg' },
+      { type: 'image', src: 'index_media/asb-02.jpg' },
+      { type: 'image', src: 'index_media/asb-03.jpg' },
+    ],
+  },
+
+};
+
+/* ✏️  Text shown in the top-right of the index masthead. */
+const INDEX_RANGE = '2023 — 2026';
 
 
 /* =====================================================
@@ -965,17 +2255,63 @@ const REPULSE_R = 200
    =====================================================
    Places nodes in a circle on startup. Physics takes over immediately.
 */
-function initPositions() {
+/* ── THE SAFE AREA (DON'T EDIT) ──
+   The rectangle the graph is allowed to live in. Everything fixed on top of
+   the canvas is measured, not guessed, so the bounds follow the header as it
+   grows — which matters now that the bio sits under your name and makes the
+   header three times taller than it used to be.
+
+   Measured rather than hard-coded because the header's height depends on the
+   bio, which depends on the viewport. A stale number here is exactly how a
+   node ends up sitting behind your name. */
+let closedTopH = 0;   // last measured height of the top bar with the menu shut
+
+function netBounds() {
   const W = window.innerWidth, H = window.innerHeight;
-  const cx = W / 2, cy = H / 2;
-  const spread = Math.min(W * 0.88, H * 0.88) * 0.50;
+  const pad = W < 768 ? 34 : 60;   // clearance from the screen edges
+
+  const tb = document.getElementById('topbar').getBoundingClientRect();
+  // An OPEN mobile menu triples the top bar's height. Measuring that would
+  // squash the graph every time the panel opens and shuffle it again on close,
+  // so the bounds always use the closed height.
+  if (!document.body.classList.contains('menu-open')) closedTopH = tb.height;
+  const b = {
+    left:   pad,
+    right:  W - pad,
+    top:    (closedTopH || tb.height || 96) + 26,  // below the name / bio / links
+    bottom: H - 70,                  // above #meta / #hint in the bottom corners
+    panel:  null
+  };
+
+  /* The "about this network" panel. On desktop it is a narrow box on the left,
+     so nodes get pushed to the right of it; on mobile it becomes a full-width
+     block at the bottom, so it lowers the floor instead. */
+  const ex = document.getElementById('net-explainer');
+  const r  = ex ? ex.getBoundingClientRect() : null;
+  if (r && r.width) {
+    if (r.width > W * 0.6) b.bottom = Math.min(b.bottom, r.top - 24);
+    else b.panel = { right: r.right + 30, top: r.top - 20, bottom: r.bottom + 20 };
+  }
+
+  // On a short window the header can eat the whole screen. Never invert.
+  if (b.bottom - b.top   < 200) b.top  = Math.max(8, b.bottom - 200);
+  if (b.right  - b.left  < 200) b.left = Math.max(8, b.right  - 200);
+  return b;
+}
+
+function initPositions() {
+  const b = netBounds();
+  const cx = (b.left + b.right) / 2, cy = (b.top + b.bottom) / 2;
+  // Lay the ring out inside the safe area, not the raw viewport — otherwise
+  // it starts half-behind the header and only crawls clear once physics runs.
+  const spread = Math.min(b.right - b.left, b.bottom - b.top) * 0.44;
   const outer = PROJECTS.filter(p => p.id !== 8); // All nodes except About
   pos = PROJECTS.map((p, i) => {
     if (p.id === 8) return { x: cx, y: cy, vx:0, vy:0 }; // About exactly at center
     const oi = outer.indexOf(p);
     const angle = (oi / outer.length) * Math.PI * 2 - Math.PI / 2;
     // Distribute outer nodes evenly around a perfect circle
-    return { x: cx + Math.cos(angle) * spread * 0.72, y: cy + Math.sin(angle) * spread * 0.72, vx:0, vy:0 };
+    return { x: cx + Math.cos(angle) * spread, y: cy + Math.sin(angle) * spread, vx:0, vy:0 };
   });
 }
 
@@ -987,9 +2323,10 @@ function initPositions() {
    Each frame applies 4 forces, then updates positions.
 */
 function simStep() {
-  const W = window.innerWidth, H = window.innerHeight;
-  const margin = 60; // Nodes stay at least 60px from screen edges
-  const REST_LEN = Math.min(W, H) * 0.40; // ✏️ Scale edge length to screen — change 0.40 to taste
+  const B = netBounds(); // the rectangle nodes are allowed to occupy
+  // Edge length scales to the SAFE AREA, not the window. Sizing it to the
+  // window makes the springs fight the bounds and pin every node to an edge.
+  const REST_LEN = Math.min(B.right - B.left, B.bottom - B.top) * 0.52;
 
   // FORCE 1: Drag force — move dragged node toward cursor
   if (dragIdx >= 0) {
@@ -1028,20 +2365,26 @@ function simStep() {
   }
 
   // FORCE 4: Weak centering pull (prevents graph drifting off screen)
-  const cx = W/2, cy = H/2;
+  // Pulls toward the centre of the SAFE AREA, so the graph settles clear of
+  // the header instead of centring on the window and creeping back under it.
+  const cx = (B.left + B.right)/2, cy = (B.top + B.bottom)/2;
   pos.forEach(p => {
     p.vx += (cx - p.x) * 0.0005; // Very weak pull toward horizontal center
     p.vy += (cy - p.y) * 0.0005; // Very weak pull toward vertical center
   });
 
-  // INTEGRATE: apply velocities, damp, clamp to screen bounds
-  const topMargin = W < 768 ? 190 : margin; // Extra clearance for stacked mobile header
+  // INTEGRATE: apply velocities, damp, clamp inside the safe area
   let anyMoving = false;
   pos.forEach(p => {
     p.vx *= DAMPING; // Reduce velocity by DAMPING each frame (friction)
     p.vy *= DAMPING;
-    p.x = Math.max(margin, Math.min(W - margin, p.x + p.vx)); // Move + clamp to bounds
-    p.y = Math.max(topMargin, Math.min(H - margin, p.y + p.vy));
+    p.x = Math.max(B.left, Math.min(B.right,  p.x + p.vx)); // Move + clamp to bounds
+    p.y = Math.max(B.top,  Math.min(B.bottom, p.y + p.vy));
+    // Push out of the explainer panel. It only ever sits on the left, so there
+    // is one way out and no risk of a node oscillating between two sides.
+    if (B.panel && p.x < B.panel.right && p.y > B.panel.top && p.y < B.panel.bottom) {
+      p.x = B.panel.right;
+    }
     if (Math.abs(p.vx) > 0.04 || Math.abs(p.vy) > 0.04) anyMoving = true;
     // If any node is moving faster than 0.04px/frame, keep the loop going
   });
@@ -1265,81 +2608,671 @@ canvas.addEventListener('touchend', () => {
 
 
 /* =====================================================
-   SECTION P7 — SCATTER INDEX LAYOUT
+   SECTION P7 — INDEX VIEW BUILDER
    =====================================================
-   ✏️  THESE TWO THINGS YOU CAN EDIT:
+   Builds the editorial index list ONCE, then never again.
 
-   GROUP_CENTERS — where each group cluster sits on screen.
-   bx = 0 (left edge) to 1 (right edge)
-   by = 0 (top) to 1 (bottom)
-   ✏️  Move a cluster by adjusting its bx / by.
+   WHY ONCE: this used to run on every window resize, and it starts with
+   el.innerHTML = '' — a full wipe. With a tall scrolling list that would
+   (a) throw away the scroll position, (b) leak every cross-fade timer,
+   (c) replay the entrance animation and (d) re-request every image. Mobile
+   browsers fire resize when the URL bar hides, so it would happen mid-scroll.
+   Nothing here is computed from window size — the responsive behaviour is
+   entirely CSS — so rebuilding is never needed.
 
-   SCATTER_META — per-project font size and offset.
-   fs = font size (e.g. '1.6rem' = big, '0.72rem' = small)
-   ox = horizontal nudge in pixels (+ = right, - = left)
-   oy = vertical nudge in pixels (+ = down, - = up)
-   ✏️  Rows match PROJECTS in order (row 0 = id:0, etc.)
+   ✏️  DON'T EDIT below this line. All content is in INDEX_CONTENT (Section N2).
 */
-const GROUP_CENTERS = {
-  print:   { bx:0.12, by:0.42 }, // ✏️  Left, vertical center. Login Magazine + Are You Coming.
-  design:  { bx:0.48, by:0.18 }, // ✏️  Center, upper. Graphic Work.
-  image:   { bx:0.76, by:0.32 }, // ✏️  Right, upper-middle. Photography + Video Installation.
-  sound:   { bx:0.72, by:0.65 }, // ✏️  Right, lower-middle. Music Production.
-  fashion: { bx:0.40, by:0.74 }, // ✏️  Center-left, lower. Styling.
-  theory:  { bx:0.18, by:0.74 }, // ✏️  Left, lower. Internet Culture.
-  collab:  { bx:0.52, by:0.50 }, // ✏️  Center of screen.
-  info:    { bx:0.82, by:0.76 }  // ✏️  Right, bottom. About.
-};
+const IDX_ASPECT_DEFAULT = '3 / 2';
+const IDX_HOVER_MS   = 1200;   // ✏️  hover flip-through speed (desktop), ms
+const IDX_AMBIENT_MS = 3000;   // ✏️  in-view auto-cycle speed (touch), ms
 
-const SCATTER_META = [
-  // Row 0 → Login Magazine  r:14
-  { fs:'1.60rem', ox: 0,   oy: 0   },
-  // Row 1 → Graphic Work    r:7
-  { fs:'0.83rem', ox: 55,  oy: 30  },
-  // Row 2 → ULTRANET  r:11
-  { fs:'1.27rem', ox: 35,  oy:-22  },
-  // Row 3 → Are You Coming to The Party?  r:10
-  { fs:'1.16rem', ox: 28,  oy:-28  },
-  // Row 4 → About           r:10
-  { fs:'1.16rem', ox: 0,   oy: 0   },
-  // Row 5 → As Above So Below  r:11
-  { fs:'1.27rem', ox:-40,  oy: 20  },
-  // { fs:'0.94rem', ox: 0,   oy: 0   },  // Music Production (commented out)
-  // { fs:'1.05rem', ox:-36,  oy: 18  },  // Internet Culture (commented out)
-];
+let scatterBuilt = false;
+let idxObserver  = null;
+let idxScroll    = 0;
+const idxTimers  = new Map();  // media cell -> interval id
 
-// Builds the chronological index list.
-// Called when switching to Index view and on window resize.
+// display:none discards a scroll container's scrollTop, so stash it first.
+// Without this, opening a project from row 05 and pressing back dumps you
+// at the top of the list.
+function idxSaveScroll() {
+  const sv = document.getElementById('scatter-view');
+  if (sv && sv.style.display !== 'none') idxScroll = sv.scrollTop;
+}
+
+function idxTeardown() {
+  idxTimers.forEach(id => clearInterval(id));
+  idxTimers.clear();
+  if (idxObserver) { idxObserver.disconnect(); idxObserver = null; }
+  if (heroApi) { heroApi.destroy(); heroApi = null; }   // SECTION P7b
+}
+
+// Media-query test that can never throw. matchMedia is supported everywhere,
+// but this list IS the homepage — if the check ever failed the page would
+// render blank, so degrade to "no hover / no reduced-motion" instead.
+function idxMQ(q) {
+  try { return !!(window.matchMedia && window.matchMedia(q).matches); }
+  catch (e) { return false; }
+}
+
+function idxEsc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function idxContent(p) {
+  const c = INDEX_CONTENT[p.id] || {};
+  return {
+    desc:   c.desc   || '',
+    aspect: c.aspect || IDX_ASPECT_DEFAULT,
+    media:  Array.isArray(c.media) ? c.media : []
+  };
+}
+
+function idxSortedProjects() {
+  // .sort() runs on the filtered COPY, so PROJECTS itself is never reordered.
+  // That matters: EDGES indexes PROJECTS by array POSITION, not by id.
+  // id 8 = About, id 1 = Graphic Work — both excluded from the Index list only.
+  // Graphic Work still appears as a node in the Network view: initPositions()
+  // (Section P2) filters only id 8, so that filter is untouched.
+  return PROJECTS.filter(p => p.id !== 8 && p.id !== 1).sort((a, b) => {
+    const av = a.year.includes('ongoing') ? '9999' : a.year;
+    const bv = b.year.includes('ongoing') ? '9999' : b.year;
+    return bv < av ? -1 : bv > av ? 1 : 0;
+  });
+}
+
+/* Builds one fixed-aspect media cell. Same pattern as the project pages:
+   an aspect-ratio wrapper with absolutely positioned cover media inside.
+   The #f0f0f0 background is BOTH the loading placeholder and the
+   missing-file placeholder — there is never a broken-image icon. */
+function idxMediaCell(p) {
+  const c = idxContent(p);
+  const media = c.media;
+  const cell = document.createElement('div');
+  cell.className = 'index-media';
+  cell.style.aspectRatio = c.aspect;
+  cell.setAttribute('data-label', p.label);
+  cell.setAttribute('data-empty', '');   // removed on first successful load
+
+  const player = media.find(m =>
+    m.type === 'video' || m.type === 'vimeo' || m.type === 'youtube');
+
+  if (player && player.type === 'video') {
+    cell.removeAttribute('data-empty');
+    cell.innerHTML =
+      '<video src="' + idxEsc(player.src) + '"' +
+      (player.poster ? ' poster="' + idxEsc(player.poster) + '"' : '') +
+      ' muted loop playsinline preload="metadata"' +
+      (player.controls ? ' controls' : '') +
+      ' onerror="this.closest(\'.index-media\')' +
+      '.setAttribute(\'data-empty\',\'\');this.remove();"></video>';
+    return { cell: cell, stills: [], player: true };
+  }
+  if (player) {
+    cell.removeAttribute('data-empty');
+    const src = player.type === 'vimeo'
+      ? 'https://player.vimeo.com/video/' + idxEsc(player.id) +
+        '?title=0&byline=0&portrait=0&color=0000ff'
+      : 'https://www.youtube.com/embed/' + idxEsc(player.id);
+    cell.innerHTML =
+      '<iframe src="' + src + '" loading="lazy" title="' + idxEsc(p.label) + '"' +
+      ' allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>';
+    return { cell: cell, stills: [], player: true };
+  }
+
+  // ── image cell: ALWAYS two <img> buffers so cross-fading is possible ──
+  const stills = media.filter(m => !m.type || m.type === 'image')
+                      .map(m => m.src).filter(Boolean);
+  for (let i = 0; i < 2; i++) {
+    const im = document.createElement('img');
+    im.alt = '';
+    // setAttribute, not the IDL property — and set BEFORE src below, or the
+    // browser starts the fetch eagerly and lazy-loading never applies.
+    im.setAttribute('loading', 'lazy');
+    im.setAttribute('decoding', 'async');
+    // Missing file -> no broken icon, no grey flash; the ghost plate stays.
+    im.setAttribute('onerror',
+      "this.classList.remove('is-on');this.removeAttribute('src');");
+    im.addEventListener('load', function () { cell.removeAttribute('data-empty'); });
+    cell.appendChild(im);
+  }
+  // No src at all = no network request, nothing painted, plate visible.
+  // This is the day-one state and it must look deliberate.
+  if (stills[0]) {
+    cell.children[0].src = stills[0];
+    cell.children[0].classList.add('is-on');
+  }
+
+  if (stills.length > 1) {
+    const counter = document.createElement('span');
+    counter.className = 'index-count';
+    counter.textContent = '01 / ' + String(stills.length).padStart(2, '0');
+    cell.appendChild(counter);
+  }
+  return { cell: cell, stills: stills, player: false };
+}
+
+/* A/B cross-fade. Deliberately simpler than the Meltdown slideshow: the
+   INCOMING image is raised above the outgoing one and faded in, and the
+   outgoing one is never faded out. Fading both at once leaves a moment where
+   the #f0f0f0 cell shows through — invisible on Meltdown's black page,
+   obvious here on white. */
+function idxWireCycle(row, cell, stills, ambient) {
+  let cur = cell.children[0];
+  let nxt = cell.children[1];
+  let si = 0, top = 2;
+  const counter = cell.querySelector('.index-count');
+
+  function step() {
+    si = (si + 1) % stills.length;
+    const t = nxt;
+    function show() {
+      t.style.zIndex = String(++top);
+      t.classList.add('is-on');
+      // Retire the outgoing frame. Without this it keeps .is-on and stays at
+      // full opacity underneath, and because these are object-fit:contain the
+      // new image does not necessarily cover it — so the old one stayed
+      // visible in the letterboxing around every subsequent frame.
+      cur.classList.remove('is-on');
+      cur.style.zIndex = '';
+      nxt = cur; cur = t;
+      if (counter) {
+        counter.textContent = String(si + 1).padStart(2, '0') + ' / ' +
+                              String(stills.length).padStart(2, '0');
+      }
+      t.onload = t.onerror = null;
+    }
+    t.onload  = show;
+    t.onerror = function () { t.onload = t.onerror = null; }; // skip missing file
+    if (t.getAttribute('src') === stills[si]) show();         // already decoded
+    else t.src = stills[si];
+  }
+
+  cell._idxStart = function () {
+    if (idxTimers.has(cell)) return;
+    idxTimers.set(cell, setInterval(step, ambient ? IDX_AMBIENT_MS : IDX_HOVER_MS));
+  };
+  cell._idxStop = function () {
+    const id = idxTimers.get(cell);
+    if (id) { clearInterval(id); idxTimers.delete(cell); }
+  };
+  // On desktop the cycle follows the pointer. On touch there is no hover, so
+  // the IntersectionObserver below drives it instead (see the wake() helper).
+  if (!ambient) {
+    row.addEventListener('mouseenter', function () { cell._idxStart(); });
+    row.addEventListener('mouseleave', function () { cell._idxStop(); });
+  }
+}
+
+/* =====================================================
+   SECTION P7b — THE OPENING PLATE (HERO SLIDESHOW)
+   =====================================================
+   The full-screen slideshow above the Index. Styles are in SECTION I-HERO.
+
+   WHERE THE PHOTOS COME FROM: nowhere new. It reads INDEX_CONTENT — the same
+   block that fills the list cells — so every photograph already on the site is
+   already in the roll, and adding one to a project adds it here too. Nothing
+   to keep in sync, and no second copy of any file.
+
+   THE ORDER is round-robin, not project-by-project: one photo from each
+   project, then everyone's second, then everyone's third. The plate reads as
+   a tour of the whole site rather than three shots of LOGIN followed by three
+   of ULTRANET.
+
+   ✏️  THE FOUR THINGS WORTH CHANGING ARE THE CONSTANTS DIRECTLY BELOW.
+*/
+
+const HERO_ON       = true;   // ✏️  false = no plate; the Index opens on the list
+const HERO_HOLD_MS  = 4600;   // ✏️  how long each photo holds, ms
+const HERO_FADE_MS  = 550;    // ⚠️  must match the heroIn animation in the CSS
+const HERO_MAX      = 24;     // ✏️  cap on total slides (0 = no cap)
+
+/* ✏️  EXTRA PHOTOS — anything you want in the plate that is NOT in the list.
+   Same shape as a slide: src is the only required field.
+       { src:'index_media/extra-01.jpg', label:'ULTRANET',
+         tag:'moving image · space', year:'2025', url:'ultranet.html' }
+   Leave the array empty to run on INDEX_CONTENT alone. */
+const HERO_EXTRA = [];
+
+let heroApi = null;
+
+/* Every image on the site, flattened and interleaved. Skips the same two
+   projects the list skips (idxSortedProjects): id 8 (About — the portrait
+   belongs on the About page, not in a work reel) and id 1 (Graphic Work).
+   ✏️  To put a project back in the plate, delete its id from the filter. */
+function heroSlides() {
+  const groups = PROJECTS
+    .filter(function (p) { return p.id !== 8 && p.id !== 1; })
+    .sort(function (a, b) {                     // newest first, as in the list
+      const av = a.year.includes('ongoing') ? '9999' : a.year;
+      const bv = b.year.includes('ongoing') ? '9999' : b.year;
+      return bv < av ? -1 : bv > av ? 1 : 0;
+    })
+    .map(function (p) {
+      const c = INDEX_CONTENT[p.id] || {};
+      const media = Array.isArray(c.media) ? c.media : [];
+      return media
+        .filter(function (m) { return (!m.type || m.type === 'image') && m.src; })
+        .map(function (m) {
+          return { src: m.src, label: p.label, tag: p.tag, year: p.year, url: p.url };
+        });
+    })
+    .filter(function (g) { return g.length; });
+
+  const out = [];
+  for (let depth = 0, more = true; more; depth++) {
+    more = false;
+    for (let i = 0; i < groups.length; i++) {
+      if (groups[i][depth]) { out.push(groups[i][depth]); more = true; }
+    }
+  }
+  HERO_EXTRA.forEach(function (s) { if (s && s.src) out.push(s); });
+
+  // Same file twice = a slide that looks like a stall. Drop the duplicate.
+  const seen = {};
+  const uniq = out.filter(function (s) {
+    if (seen[s.src]) return false;
+    seen[s.src] = 1;
+    return true;
+  });
+  return HERO_MAX > 0 ? uniq.slice(0, HERO_MAX) : uniq;
+}
+
+/* Returns { el, reveal, destroy } — or null when there is nothing to show, in
+   which case buildScatter() simply doesn't append it and the Index opens on
+   the list exactly as it did before. */
+function buildHero() {
+  if (!HERO_ON) return null;
+  const slides = heroSlides();
+  if (!slides.length) return null;
+
+  const n      = slides.length;
+  const reduce = idxMQ('(prefers-reduced-motion: reduce)');
+
+  const hero = document.createElement('section');
+  hero.className = 'index-hero';
+  hero.setAttribute('aria-label', 'Selected work');
+  hero.style.setProperty('--hero-hold', HERO_HOLD_MS + 'ms');
+  hero.innerHTML =
+    '<div class="hero-plate">' +
+      '<div class="hero-frame"><img alt=""></div>' +
+      '<div class="hero-frame"><img alt=""></div>' +
+    '</div>' +
+    '<div class="hero-foot">' +
+      '<div class="hero-bar"><span></span></div>' +
+      '<a class="hero-meta" href="#">' +
+        '<span class="hero-num"></span>' +
+        '<span class="hero-name"></span>' +
+        '<span class="hero-tag"></span>' +
+      '</a>' +
+      '<button class="hero-cue" type="button">Index <i aria-hidden="true">↓</i></button>' +
+      '<div class="hero-nav">' +
+        '<button class="hero-btn" type="button" aria-label="Previous image">←</button>' +
+        '<button class="hero-btn" type="button" aria-label="Next image">→</button>' +
+      '</div>' +
+    '</div>';
+
+  const frames = hero.querySelectorAll('.hero-frame');
+  const meta   = hero.querySelector('.hero-meta');
+  const numEl  = hero.querySelector('.hero-num');
+  const nameEl = hero.querySelector('.hero-name');
+  const tagEl  = hero.querySelector('.hero-tag');
+  const bar    = hero.querySelector('.hero-bar span');
+  const btns   = hero.querySelectorAll('.hero-btn');
+  const cue    = hero.querySelector('.hero-cue');
+
+  let front = frames[0], back = frames[1];
+  let cur = -1, revealed = false, paused = true, inView = true;
+  let busy = false, top = 1;   // busy = a fade is in flight; top = z-index ratchet
+  let timer = null, outTimer = null, startedAt = 0, remain = HERO_HOLD_MS;
+  let obs = null, onScroll = null, onVis = null;
+
+  // go() always loads into the BACK frame and swaps once it has decoded — so
+  // the back frame is where the very first photograph lands. It is the largest
+  // thing on the page and the only one anyone is waiting for, so it must not
+  // queue behind the lazy-loaded list images further down.
+  back.querySelector('img').setAttribute('fetchpriority', 'high');
+  frames[0].querySelector('img').setAttribute('decoding', 'async');
+  frames[1].querySelector('img').setAttribute('decoding', 'async');
+
+  function setMeta(i) {
+    const s = slides[i];
+    numEl.textContent  = String(i + 1).padStart(2, '0') + ' / ' +
+                         String(n).padStart(2, '0');
+    nameEl.innerHTML   = idxEsc(s.label) + '<i aria-hidden="true">↗</i>';
+    tagEl.textContent  = s.tag + (s.year && s.year !== '—' ? '  ·  ' + s.year : '');
+    meta.setAttribute('href', s.url || '#');
+    if (/^https?:/.test(s.url || '')) {
+      meta.setAttribute('target', '_blank');
+      meta.setAttribute('rel', 'noopener');
+    } else {
+      meta.removeAttribute('target');
+      meta.removeAttribute('rel');
+    }
+    if (!reduce) {                       // retrigger the caption's entrance
+      meta.classList.remove('is-swap');
+      void meta.offsetWidth;
+      meta.classList.add('is-swap');
+    }
+  }
+
+  function restartBar() {
+    if (reduce) return;
+    bar.classList.remove('run');
+    void bar.offsetWidth;
+    bar.classList.add('run');
+  }
+
+  function arm(ms) {
+    clearTimeout(timer);
+    startedAt = Date.now();
+    remain = ms;
+    timer = setTimeout(function () {
+      // A fade in flight owns both frames. Wait it out rather than skipping
+      // this beat — skipping would leave nothing armed and the roll would stop.
+      if (busy) { arm(300); return; }
+      go(cur + 1);
+    }, ms);
+  }
+
+  function pause() {
+    if (paused) return;
+    paused = true;
+    clearTimeout(timer); timer = null;
+    // Bank whatever is left so resuming does not restart the whole hold —
+    // the hairline is frozen mid-run and has to pick up where it stopped.
+    remain = Math.max(700, remain - (Date.now() - startedAt));
+    hero.classList.add('is-paused');
+  }
+
+  function resume() {
+    // inView is what stops a background tab coming back to focus and quietly
+    // restarting a plate the reader scrolled past ten rows ago.
+    if (!paused || !revealed || reduce || n < 2) return;
+    if (!inView || document.hidden) return;
+    paused = false;
+    hero.classList.remove('is-paused');
+    arm(remain);
+  }
+
+  /* Advance to slide i. The incoming photo is loaded into the BACK frame and
+     only revealed once it has actually decoded, so a slow file delays the cut
+     instead of flashing the grey plate. `manual` means a reader pressed an
+     arrow: a missing file then stops rather than skipping onward forever. */
+  function go(i, manual) {
+    i = ((i % n) + n) % n;
+    if (i === cur) return;
+    // Both frames are spoken for while a fade runs — the outgoing one is still
+    // on screen underneath. Loading the next photo into it now would repaint a
+    // picture the reader is still looking at.
+    if (busy) return;
+    const s   = slides[i];
+    const img = back.querySelector('img');
+    let done  = false;
+
+    function swap() {
+      if (done) return;
+      done = true;
+      img.onload = img.onerror = null;
+      busy = true;
+
+      // Raise the incoming photo and fade it IN. The outgoing one keeps its
+      // .is-on and stays at full opacity underneath — these are contain-fitted
+      // and do not cover each other, so fading it out here would show the grey
+      // mat through the gap between two differently-shaped pictures.
+      back.style.zIndex = String(++top);
+      back.classList.add('is-on');
+      const out = front;
+
+      const t = front; front = back; back = t;
+      cur = i;
+      setMeta(i);
+      restartBar();
+      remain = HERO_HOLD_MS;
+      if (!paused) arm(HERO_HOLD_MS);
+
+      clearTimeout(outTimer);
+      outTimer = setTimeout(function () {
+        // The fade has landed and the new photo is opaque: cut the old frame
+        // away (instantly — .hero-frame animates in, it never animates out)
+        // and only then reuse it for the next pre-decode.
+        out.classList.remove('is-on');
+        out.style.zIndex = '';
+        busy = false;
+        const nx  = slides[(i + 1) % n];
+        const bim = back.querySelector('img');
+        if (nx && bim.getAttribute('src') !== nx.src) bim.src = nx.src;
+      }, HERO_FADE_MS + 40);
+    }
+
+    if (img.getAttribute('src') === s.src && img.complete && img.naturalWidth) {
+      swap();                                   // already decoded — cut now
+      return;
+    }
+    img.onload  = swap;
+    img.onerror = function () {
+      img.onload = img.onerror = null;
+      img.removeAttribute('src');
+      if (!manual && n > 1) go(i + 1);          // missing file: keep rolling
+    };
+    img.src = s.src;
+  }
+
+  btns[0].addEventListener('click', function () { go(cur - 1, true); if (!paused) arm(HERO_HOLD_MS); });
+  btns[1].addEventListener('click', function () { go(cur + 1, true); if (!paused) arm(HERO_HOLD_MS); });
+
+  cue.addEventListener('click', function () {
+    const sv   = document.getElementById('scatter-view');
+    const list = sv && sv.querySelector('.index-list');
+    if (!sv || !list) return;
+    const pt = parseFloat(getComputedStyle(sv).paddingTop) || 0;
+    sv.scrollTo({
+      top: Math.max(0, list.offsetTop - pt),
+      behavior: reduce ? 'auto' : 'smooth'
+    });
+  });
+
+  // Caption first, photo second: on a slow connection the plate then reads as
+  // "ULTRANET, loading" rather than as an empty grey box.
+  setMeta(0);
+  go(0);
+
+  return {
+    el: hero,
+
+    /* Called once the blue landing plate is gone (or straight away on a
+       reload). Until then the hero is built but not shown and not running:
+       its opening fade would otherwise be spent behind the landing. */
+    reveal: function () {
+      if (revealed) return;
+      revealed = true;
+      void hero.offsetWidth;      // flush, or the opening fade never plays
+      hero.classList.add('is-in');
+      restartBar();
+      resume();
+
+      const sv = document.getElementById('scatter-view');
+      // Scrolled past it, in a background tab, or switched to the Network
+      // view: stop the clock. A plate nobody can see must not be burning
+      // through the roll — or decoding images — in the background.
+      if (sv && 'IntersectionObserver' in window) {
+        obs = new IntersectionObserver(function (es) {
+          es.forEach(function (e) {
+            inView = e.isIntersecting;
+            if (inView) resume(); else pause();
+          });
+        }, { root: sv, threshold: 0.2 });
+        obs.observe(hero);
+      }
+      if (sv) {
+        onScroll = function () {
+          hero.classList.toggle('is-scrolled', sv.scrollTop > 40);
+        };
+        sv.addEventListener('scroll', onScroll, { passive: true });
+      }
+      onVis = function () {
+        if (document.hidden) pause(); else resume();
+      };
+      document.addEventListener('visibilitychange', onVis);
+    },
+
+    destroy: function () {
+      clearTimeout(timer); clearTimeout(outTimer);
+      if (obs) { obs.disconnect(); obs = null; }
+      const sv = document.getElementById('scatter-view');
+      if (sv && onScroll) sv.removeEventListener('scroll', onScroll);
+      if (onVis) document.removeEventListener('visibilitychange', onVis);
+    }
+  };
+}
+
+function heroReveal() { if (heroApi) heroApi.reveal(); }
+
+
+/* ── ARRIVAL HOLD (see SECTION W) ──
+   idxHold parks row entrances instead of playing them. The landing turns it on
+   before it builds the view behind the blue plate, and calls idxRelease() once
+   the plate is gone, so the list deals itself in where it can actually be seen.
+   With no landing (a reload, a shared /#index link) hold is never set and rows
+   behave exactly as they always did. */
+let idxHold = false;
+let idxQueue = [];
+let idxWake  = null;                 // buildScatter() publishes its wake() here
+
+function idxSetHold(on) { idxHold = !!on; }
+
+function idxRelease(stagger) {
+  idxHold = false;
+  heroReveal();          // the plate first — it IS the first screen
+  const q = idxQueue.slice();
+  idxQueue.length = 0;
+  if (!idxWake) return;
+  // The observer reports in whatever order it likes; deal top-to-bottom.
+  q.sort(function (a, b) { return a.offsetTop - b.offsetTop; });
+  q.forEach(function (row, i) {
+    setTimeout(function () { idxWake(row); }, i * (stagger || 90));
+  });
+}
+
 function buildScatter() {
+  if (scatterBuilt) return;          // ← the build-once guard
   const el = document.getElementById('scatter-view');
+  idxTeardown();
   el.innerHTML = '';
+
+  const sorted  = idxSortedProjects();
+  const total   = String(sorted.length).padStart(2, '0');
+  const noHover = !idxMQ('(hover: hover)');
+  const reduce  = idxMQ('(prefers-reduced-motion: reduce)');
+
+  // The opening plate (SECTION P7b). A sibling of .index-list rather than a
+  // child of it, but capped to the same 1280px measure, so picture and list
+  // sit in one column. Returns null when it is off or has no photos to show.
+  heroApi = buildHero();
+  if (heroApi) el.appendChild(heroApi.el);
 
   const list = document.createElement('div');
   list.className = 'index-list';
 
-  // Header row
-  const header = document.createElement('div');
-  header.className = 'index-list-title';
-  header.innerHTML = '<span class="col-year">Year</span><span class="col-name">Project</span><span class="col-tag">Discipline</span>';
-  list.appendChild(header);
+  const head = document.createElement('div');
+  head.className = 'index-head';
+  head.innerHTML = '<span>Index — ' + total + ' projects</span>' +
+                   '<span class="ih-right">Selected work ' + idxEsc(INDEX_RANGE) + '</span>';
+  list.appendChild(head);
 
-  // Sort most recent first; "ongoing" entries float to top
-  const sorted = PROJECTS.filter(p => p.id !== 8)
-    .sort((a, b) => {
-      const av = a.year.includes('ongoing') ? '9999' : a.year;
-      const bv = b.year.includes('ongoing') ? '9999' : b.year;
-      return bv < av ? -1 : bv > av ? 1 : 0;
-    });
+  sorted.forEach(function (p, i) {
+    const num = String(i + 1).padStart(2, '0');
+    const desc = idxContent(p).desc;
+    const m = idxMediaCell(p);
+    const external = /^https?:/.test(p.url);
 
-  sorted.forEach(p => {
-    const a = document.createElement('a');
-    a.className = 'index-row';
-    a.href = p.url;
-    a.innerHTML = `<span class="index-year">${p.year}</span><span class="index-name">${p.label}</span><span class="index-tag">${p.tag}</span>`;
-    list.appendChild(a);
+    const row = document.createElement('div');
+    row.className = 'index-row' + (m.player ? ' index-row--player' : '');
+    if (reduce) row.classList.add('is-in');
+
+    const text = document.createElement('div');
+    text.className = 'index-text';
+    text.innerHTML =
+      '<div class="index-meta"><span class="index-num">' + num + ' / ' + total +
+        '</span><span class="index-yr">' + idxEsc(p.year) + '</span></div>' +
+      // The <a> wraps only the title — the whole row is made clickable by
+      // .index-open::after. Never wrap a <video>/<iframe> in an <a>.
+      '<h2 class="index-name"><a class="index-open" href="' + idxEsc(p.url) + '"' +
+        (external ? ' target="_blank" rel="noopener"' : '') +
+      '>' + idxEsc(p.label) + '</a></h2>' +
+      '<span class="index-tag">' + idxEsc(p.tag) + '</span>' +
+      (desc ? '<p class="index-desc">' + idxEsc(desc) + '</p>' : '') +
+      '<span class="index-cta">' + (external ? 'visit site' : 'view project') +
+        ' <i aria-hidden="true">↗</i></span>';
+
+    row.appendChild(text);    // DOM order text → media, so ≤860px stacks
+    row.appendChild(m.cell);  // text-above-media with no `order` tricks
+    list.appendChild(row);
+
+    if (m.stills.length > 1 && !reduce) idxWireCycle(row, m.cell, m.stills, noHover);
   });
 
+  // Contact lives here rather than in the fixed corners: #hint / #meta /
+  // #contact-footer are position:fixed and would sit on top of the artwork
+  // for the whole scroll. "about" is here too — it stays out of the project
+  // rows but must not become unreachable once that chrome is hidden.
+  const colo = document.createElement('div');
+  colo.className = 'index-colophon';
+  colo.innerHTML =
+    '<a href="#about">about</a>' +
+    '<a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=me@calder-anderson.com"' +
+      ' target="_blank" rel="noopener">me@calder-anderson.com</a>' +
+    '<a href="https://www.instagram.com/calder.a/" target="_blank" rel="noopener">instagram</a>' +
+    '<a href="https://www.linkedin.com/in/calder-anderson-28631626a"' +
+      ' target="_blank" rel="noopener">linkedin</a>' +
+    '<span class="ic-push"></span><span>calder anderson, 2026</span>';
+  list.appendChild(colo);
+
   el.appendChild(list);
+  scatterBuilt = true;
+
+  // Same reasoning as the rows below: if the blue landing plate is still up,
+  // the hero's opening fade would play behind it and be over before anyone
+  // saw it. idxRelease() reveals it instead, a beat before the rows deal in.
+  if (!idxHold) heroReveal();
+
+  // ── scroll-triggered entrance (+ in-view cycling / video playback) ──
+  const rows = list.querySelectorAll('.index-row');
+  function wake(row) {
+    // While the landing plate is up the list is being built behind it. Waking
+    // rows now means their entrance plays against a blue screen and is over
+    // before anyone sees it. Park them; idxRelease() deals them in afterwards.
+    if (idxHold) {
+      if (idxQueue.indexOf(row) < 0) idxQueue.push(row);
+      return;
+    }
+    row.classList.add('is-in');
+    const cell = row.querySelector('.index-media');
+    if (!cell) return;
+    if (noHover && cell._idxStart) cell._idxStart();
+    const v = cell.querySelector('video:not([controls])');
+    if (v) { const pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); }
+  }
+  // opacity:0 elements are still clickable — never leave rows invisible-but-live.
+  if (reduce || !('IntersectionObserver' in window)) {
+    rows.forEach(wake);
+    return;
+  }
+  // root is #scatter-view — the actual scroll container, not the window.
+  // setView sets display BEFORE calling this, so the container has a layout box.
+  idxWake = wake;   // idxRelease() needs it from outside this function
+  idxObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      const cell = en.target.querySelector('.index-media');
+      if (en.isIntersecting) { wake(en.target); return; }
+      if (cell && noHover && cell._idxStop) cell._idxStop();
+      const v = cell && cell.querySelector('video:not([controls])');
+      if (v) v.pause();
+    });
+    // .is-in is only ever added, so rows don't re-animate on scroll-back.
+  }, { root: el, rootMargin: '0px 0px -60px 0px', threshold: 0.01 });
+  rows.forEach(function (r) { idxObserver.observe(r); });
 }
 
 
@@ -1350,7 +3283,10 @@ function buildScatter() {
    Called by the HTML buttons: onclick="setView('network')"
    If using external buttons, call it the same way.
 */
-let currentView = 'network'; // Tracks active view. Starts on 'network'.
+let currentView = 'scatter';
+/* ✏️  WHICH VIEW LOADS FIRST. 'scatter' = the Index list (default).
+       Change to 'network' to land on the node graph instead — and if you do,
+       move class="active" back to the Network button in the HTML above. */
 
 function setView(v) {
   currentView = v;
@@ -1358,15 +3294,112 @@ function setView(v) {
   document.getElementById('btn-net').classList.toggle('active', v === 'network');
   document.getElementById('btn-scatter').classList.toggle('active', v === 'scatter');
   // Update hint text
-  document.getElementById('hint').textContent = v === 'network' ? 'drag · click to open' : 'click to open';
+  document.getElementById('hint').textContent = v === 'network' ? 'drag · click to open' : 'scroll · click to open';
+  // Drives the chrome rules in Section I: white topbar, hidden fixed footer.
+  document.body.classList.toggle('view-scatter', v === 'scatter');
   const sv = document.getElementById('scatter-view');
   const explainer = document.getElementById('net-explainer');
   if (v === 'network') {
+    idxSaveScroll();              // display:none discards scrollTop
     sv.style.display = 'none'; canvas.style.display = 'block'; tooltip.style.display = ''; explainer.style.display = ''; draw();
   } else {
-    canvas.style.display = 'none'; tooltip.style.display = 'none'; sv.style.display = 'flex'; explainer.style.display = 'none'; buildScatter();
+    canvas.style.display = 'none'; tooltip.style.display = 'none'; explainer.style.display = 'none';
+    // 'block', NOT 'flex' — an align-items:center scroll container makes the
+    // top of a long list impossible to reach. See the Section I note.
+    sv.style.display = 'block';
+    buildScatter();               // no-ops after the first call
+    sv.scrollTop = idxScroll;     // restore where the reader was
   }
 }
+
+
+/* =====================================================
+   SECTION P8b — MOBILE MENU
+   =====================================================
+   Everything visual is in SECTION V of the stylesheet; this only flips the
+   class and keeps the button's accessible state honest.
+*/
+const menuBtn = document.getElementById('menu-btn');
+
+function setMenu(open) {
+  document.body.classList.toggle('menu-open', open);
+  menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  // The top bar just changed height, so the graph's safe area did too.
+  if (currentView === 'network') draw();
+}
+
+menuBtn.addEventListener('click', () => {
+  setMenu(!document.body.classList.contains('menu-open'));
+});
+
+// Picking a view or a link is a completed action — the panel should not sit
+// open over the thing you just asked to see.
+document.getElementById('toggle').addEventListener('click', () => setMenu(false));
+document.addEventListener('click', e => {
+  if (e.target.closest && e.target.closest('#bio-links a')) setMenu(false);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.body.classList.contains('menu-open')) {
+    setMenu(false);
+    menuBtn.focus();
+  }
+});
+// Rotating to landscape can cross the breakpoint with the menu still open,
+// which would leave the desktop header stuck in its opened state.
+addEventListener('resize', () => {
+  if (window.innerWidth >= 768) setMenu(false);
+});
+
+
+/* =====================================================
+   SECTION P8c — THE NAME AS A HOME LINK
+   =====================================================
+   Clicking your name returns to the homepage in whichever view was chosen on
+   the landing screen — that choice is what "home" means for this visit, so it
+   is remembered for the session rather than following whatever view happens to
+   be open. With no stored choice (a reload straight onto /#network, say) it
+   falls back to the view currently showing.
+
+   It is a real <a href> so it behaves like a link — middle-click, open in a new
+   tab, and a visible target in the status bar all work. The handler only adds
+   what a bare hash cannot do: reset the list's scroll and shut the mobile menu.
+*/
+function homeView() {
+  let v = null;
+  try { v = sessionStorage.getItem('ca-home'); } catch (e) {}
+  if (v !== 'index' && v !== 'network') {
+    v = (typeof currentView !== 'undefined' && currentView === 'network') ? 'network' : 'index';
+  }
+  return v;
+}
+
+function syncHomeLink() {
+  const a = document.getElementById('home-link');
+  if (a) a.setAttribute('href', '#' + homeView());
+}
+
+function rememberHome(view) {
+  try { sessionStorage.setItem('ca-home', view === 'network' ? 'network' : 'index'); } catch (e) {}
+  syncHomeLink();
+}
+
+document.getElementById('home-link').addEventListener('click', function (e) {
+  e.preventDefault();
+  const v = homeView() === 'network' ? 'network' : 'scatter';
+  setMenu(false);
+  idxScroll = 0;                 // set BEFORE setView — setView restores from it
+  if (window.location.hash.replace('#', '').trim()) {
+    navigateTo('#' + homeView());  // leaving a project page
+  } else {
+    setView(v);
+  }
+  const sv = document.getElementById('scatter-view');
+  if (sv) sv.scrollTop = 0;
+  window.scrollTo(0, 0);
+});
+
+syncHomeLink();
 
 
 /* =====================================================
@@ -1384,7 +3417,8 @@ window.addEventListener('resize', () => {
   // Re-initialise on window resize
   resizeCanvas(); initPositions();
   if (currentView === 'network') draw();
-  else buildScatter();
+  // The index view is pure CSS — do NOT call buildScatter() here.
+  // See the comment above buildScatter in Section P7 for why.
 });
 
 init(); // Run now!
@@ -1415,8 +3449,8 @@ init(); // Run now!
   <div style="position:fixed; top:26px; left:34px; z-index:600;">
     <button onclick="navigateTo('#')" style="
       background:none; border:none; cursor:pointer; padding:0;
-      font-family:'Geist Mono',monospace; font-size:0.6rem;
-      letter-spacing:0.12em; text-transform:uppercase; color:#999;
+      font-family:var(--label); font-size:0.72rem;
+      letter-spacing:0.12em; text-transform:uppercase; color:#6b6b6b;
       display:flex; align-items:center; gap:8px;
     ">← back</button>
     <!-- ✏️  "← back" = the button label. Change if you want. -->
@@ -1433,7 +3467,7 @@ init(); // Run now!
     <div id="proj-header" style="margin-bottom:64px;">
 
       <p id="proj-tag" style="
-        font-family:'Geist Mono',monospace; font-size:0.62rem;
+        font-family:var(--label); font-size:0.75rem;
         letter-spacing:0.16em; text-transform:uppercase;
         color:#0000FF;      /* ✏️  Discipline tag colour above the title */
         margin-bottom:6px;
@@ -1466,13 +3500,13 @@ init(); // Run now!
     ">
       <!-- LEFT COLUMN: Year and Discipline -->
       <div>
-        <p id="proj-year-label" style="font-family:'Geist Mono',monospace; font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; color:#999; margin-bottom:12px;">Year</p>
-        <p id="proj-year" style="font-family:'Geist Mono',monospace; font-size:0.72rem; color:#0000ff; margin-bottom:32px;"></p>
+        <p id="proj-year-label" style="font-family:var(--label); font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:#6b6b6b; margin-bottom:12px;">Year</p>
+        <p id="proj-year" style="font-family:var(--label); font-size:0.72rem; color:#0000ff; margin-bottom:32px;"></p>
         <!-- JavaScript fills this with the year range -->
-        <p id="proj-role-label" style="display:none; font-family:'Geist Mono',monospace; font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; color:#999; margin-bottom:12px;">Practice</p>
-        <p id="proj-role" style="display:none; font-family:'Geist Mono',monospace; font-size:0.72rem; color:#000; margin-bottom:32px;"></p>
-        <p id="proj-discipline-label" style="font-family:'Geist Mono',monospace; font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; color:#999; margin-bottom:12px;">Discipline</p>
-        <p id="proj-tag2" style="font-family:'Geist Mono',monospace; font-size:0.72rem; color:#0000ff; line-height:1.8;"></p>
+        <p id="proj-role-label" style="display:none; font-family:var(--label); font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:#6b6b6b; margin-bottom:12px;">Practice</p>
+        <p id="proj-role" style="display:none; font-family:var(--label); font-size:0.72rem; color:#000; margin-bottom:32px;"></p>
+        <p id="proj-discipline-label" style="font-family:var(--label); font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:#6b6b6b; margin-bottom:12px;">Discipline</p>
+        <p id="proj-tag2" style="font-family:var(--label); font-size:0.72rem; color:#0000ff; line-height:1.8;"></p>
         <!-- JavaScript fills this with the discipline tag or email link -->
       </div>
       <!-- RIGHT COLUMN: Description text + optional side image -->
@@ -1547,6 +3581,127 @@ init(); // Run now!
    → Get this from your Bandcamp page → Share/Embed → "Embed this album" → copy the src URL.
    ─────────────────────────────────
 */
+/* =====================================================
+   ✏️  ABOUT PAGE COPY
+   =====================================================
+   Everything on the About page lives here.
+
+   lede   — the opening statement. Set larger, and its words resolve out of a
+            blur one after another, the way the landing letters resolve out of
+            a scatter. Related gesture, different mechanism.
+   body   — normal paragraphs. Add or remove entries freely.
+   cta    — the closing "get in touch" block.
+
+   Nothing here is HTML; it is all plain text. buildAbout() below wraps every
+   word in its own span so it can be revealed individually — which is why you
+   must not paste tags in here. */
+const ABOUT_COPY = {
+
+  lede: "I'm a multidisciplinary artist and designer working across print, web, code, and installation. Based in Brooklyn.",
+
+  body: [
+    "Growing up, I always lived between 2 specific disciplines: my father works as a technology consultant, and my mother is a graphic designer and artist. Over the years, my work began to take shape as a combination of the two, treating design, code, and theory as one continuous system rather than separate disciplines. I see design decisions and technical decisions not as sequential steps but simultaneous ways of asking the same question.",
+
+    "My interests sit at the intersection of internet culture, technology, print media, media theory, and fashion. Growing up online, I absorbed all of my interests like a sponge, and I enjoy finding the patterns and connections through all of my interests.",
+
+    "I am also the founder, editor, and art director of Login Magazine, an independent print publication documenting digital art and internet culture.",
+
+    "Outside of my design work, I love to make music, DJ, rock climb, and toss around a frisbee."
+  ],
+
+  cta: {
+    head:  'Get in Touch',
+    lines: [
+      'Need a designer for a freelance project? Want to talk about tech, art, or AI slop over coffee?',
+      'Hit me up!'
+    ],
+    email: 'me@calder-anderson.com',
+    href:  'https://mail.google.com/mail/?view=cm&fs=1&to=me@calder-anderson.com'
+  }
+};
+
+// Flat version for PAGE_DATA.desc — the fallback for anything that reads the
+// page without running buildAbout(). Derived, so it can never drift.
+const ABOUT_COPY_PLAIN =
+  [ABOUT_COPY.lede].concat(ABOUT_COPY.body).join('\n\n');
+
+
+/* =====================================================
+   THE ASCII PORTRAIT
+   =====================================================
+   about/CALDER-PORTRAIT-POLOROID.jpg, cropped to head and shoulders and
+   sampled onto a 54-column character grid.
+
+   ⚠️  DO NOT EDIT THIS MAP BY HAND. It is generated:
+       python about/make_ascii_portrait.py --crop 0.15,0.02,0.85,0.76 \
+           --tone 1.0 --mid 0.6 --fine 3.0 --cap 0.74 --tgamma 1.1 --clean 0
+   The script writes preview PNGs beside itself so the result can be judged
+   before it is pasted in here. Its header explains every weight; the short
+   version is that a straight brightness sample does not work on this
+   photograph, because the wall (0.666) and the forehead (0.640) are the same
+   tone. Sample it directly and you draw the wall; invert it and the black
+   t-shirt clips to one solid slab while the face stays a hole. Both were
+   tried — the previous map was the second. The face has to be built from
+   local detail, which is what the generator does.
+
+   One hex digit per cell, row-major:
+     '0'      — empty, no character here
+     '1'-'f'  — a character at this cell, at that opacity (1 faint, f solid)
+
+   Exactly 875 cells are lit, which is exactly the number of non-space
+   characters in ABOUT_COPY's lede + body. Every letter of the description has
+   one cell and every lit cell has one letter — that is what lets the paragraphs
+   be literally made of the portrait.
+
+   ⚠️  EDITING ABOUT_COPY CHANGES THE CHARACTER COUNT. Any surplus letters
+   simply fade in where they sit and any surplus cells stay dark, so nothing
+   breaks — but to re-fit the portrait exactly, regenerate this map. */
+/* Width of a grid cell as a fraction of its height — the aspect the map was
+   sampled at. Change the sampling and this has to change with it. */
+const CELL_ASPECT = 0.6;
+
+const ABOUT_ASCII = {
+  cols: 54,
+  rows: 30,
+  /* Empty rows above the head are trimmed by the generator. They are invisible
+     either way, but they were part of the box being centred on screen, which
+     pushed the face itself low — most obviously on a phone, where the box is
+     nearly the width of the display. */
+  map:
+    '000000000000000000000000046acba73000000000000000000000' +
+    '000000000000000000000169cdddaabddb63000000000000000000' +
+    '00000000000000000003adeecbba98888abcb50000000000000000' +
+    '0000000000000000000adccba9a986778889bc7000023000000000' +
+    '0000000000001000002dd99a963221122358bbcb40000000000000' +
+    '0000000000000000005cbb953222211222347abcc4000000000000' +
+    '0000000000000000007cc65454320000023567abca400000000000' +
+    '0000000000000000009e965445652000377657abbdd40000100000' +
+    '000000000000000003ed7546774564257456558bcde61000000000' +
+    '00000000000020001afb5457563465268356777bdc510000000000' +
+    '00000000000020018ef95433222344268533445adc940000000000' +
+    '00000000000010027aea53211101530373223359cdd60000000000' +
+    '00000000000000026459632000014435610223599dd50000000000' +
+    '00000000000000014537842210249999842233597eea2000000000' +
+    '0000000000020000263474323997655577863468aa373000000000' +
+    '000000000001000002bdb533322444446434458bea000000000000' +
+    '0000000000000000003bf74443212342223456ced7000000000000' +
+    '00000000000000000003e9655432200123456aed40000000000000' +
+    '0000000000000000003bfa58974320023479abea00000000000000' +
+    '00000000000000000005a9448ba887789bc859f800000000000000' +
+    '00000000000000000000783236655566776447e800000000000000' +
+    '000000000000000000026732247432335843358775200000000000' +
+    '000000000000000369ced63212653443662224638edc9753000000' +
+    '0000000000379bddcbbbc73201452323631223438baaabccca7400' +
+    '00000147acdcbaa99889ab522023322441012347a98888999aa862' +
+    '0004addcba99888888889aa564222222212457aa98877777787640' +
+    '027bba9888777777777788998bba9899aabb799887777777776530' +
+    '058888777777777777777788879a9a99aa87887777667666676430' +
+    '034555555555554555555555554566666535555555544455444320' +
+    '000011111111100011111111122012221022211111100111110000' +
+    ''
+};
+
+
 const PAGE_DATA = {
 
   'login-magazine': {
@@ -1641,8 +3796,10 @@ const PAGE_DATA = {
     title: 'About',
     tag: 'context · contact',
     year: '',  // ✏️  Empty = no year shown on About page
-    desc: 'Calder Anderson is a multidisciplinary designer and creative director based in New York City. His work sits at the intersection of graphic design, editorial, and digital culture — built from concept through final output with equal attention to ideas and execution. He builds cohesive visual systems across brand identity, editorial design, and experiential media, grounded in a genuine understanding of how design functions inside the media environments people actually live in. Open to junior creative, art direction, and design roles where strategy and visual storytelling intersect.',
-    // ✏️  Change this to your bio. \n\n = paragraph break.
+    // ✏️  EDIT YOUR ABOUT COPY IN "ABOUT_COPY" — search for it further down.
+    //     This `desc` is only the plain-text fallback used by search engines
+    //     and by anything that reads the page without running the renderer.
+    desc: ABOUT_COPY_PLAIN,
     sideImage: 'about/CALDER-PORTRAIT-POLOROID.jpg',
     media: []
   }
@@ -1714,6 +3871,408 @@ function renderMedia(mediaArr) {
 
 
 /* =====================================================
+   SECTION S2 — ABOUT PAGE RENDERER
+   =====================================================
+   Builds the About copy and its reveal.
+
+   THE IDEA
+   The page opens as a portrait of you built out of the description itself —
+   every non-space letter of the lede and body occupies one cell of the ASCII
+   grid. Scrolling pulls each paragraph's letters out of the portrait and into
+   their sentence. The portrait erodes as the text assembles, and when the last
+   paragraph lands the photograph fades up in the space the portrait vacated.
+
+   HOW IT DIFFERS FROM THE LANDING
+   Same mechanic — letters fly from somewhere else into their real position —
+   but the landing scatters to RANDOM points and you scrub the whole paragraph
+   with the wheel. Here the origin is a picture, and each paragraph assembles
+   on its own as it reaches the middle of the screen.
+
+   THE COORDINATE TRICK
+   Letters keep their real layout slots the whole time and only ever move by
+   transform, so the finished paragraph is guaranteed correct. To know where a
+   letter must fly FROM, we need the grid cell and the letter's home in the same
+   space. Both are measured once relative to their own container, and the two
+   containers' live rects are read once per frame — two reads, not 875 — so this
+   keeps working while the portrait is stuck to the top of the screen and the
+   text scrolls past it.
+*/
+let aboutRAF      = null;
+let aboutState    = null;   // everything the scroll handler needs; null when off
+let aboutPhotoObs = null;   // watches the sign-off, to reveal the photograph
+let aboutSizeObs  = null;   // re-measures when the column's layout changes
+let pendingAbout  = null;   // column awaiting build once the page is visible
+
+function aboutChars(host, text, bucket) {
+  const words = text.split(' ');
+  words.forEach(function (word, wi) {
+    const w = document.createElement('span');
+    w.className = 'w';           // words never break across a line
+    for (const ch of word) {
+      const s = document.createElement('span');
+      s.className = 'ac';
+      s.textContent = ch;
+      w.appendChild(s);
+      bucket.push(s);            // reading order — the order cells are handed out
+    }
+    host.appendChild(w);
+    if (wi < words.length - 1) host.appendChild(document.createTextNode(' '));
+  });
+}
+
+function aboutPara(parent, cls, text, chars) {
+  const el = document.createElement('p');
+  el.className = 'about-block ' + cls;
+  const own = [];
+  aboutChars(el, text, own);
+  parent.appendChild(el);
+  chars.push.apply(chars, own);
+  return { el: el, chars: own, p: -1 };
+}
+
+function buildAbout(col) {
+  // Full teardown first — rebuilding without it left the previous scroll
+  // listener attached to a set of elements that no longer exist.
+  teardownAbout();
+  col.textContent = '';
+
+  const scroller = document.getElementById('project-page');
+  const reduce   = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ── the face ──
+  // Fixed and centred in the viewport: it is the subject of the page, not an
+  // illustration beside it. It draws nothing itself — it only supplies the
+  // grid geometry the letters park on.
+  const ascii = document.createElement('div');
+  ascii.className = 'about-ascii';
+  ascii.setAttribute('aria-hidden', 'true');   // it is a picture, not prose
+
+  // ── the copy ──
+  const textWrap = document.createElement('div');
+  textWrap.className = 'about-text';
+
+  const allChars = [];
+  const paras = [];
+  paras.push(aboutPara(textWrap, 'about-lede', ABOUT_COPY.lede, allChars));
+
+  const rule = document.createElement('div');
+  rule.className = 'about-rule';
+  textWrap.appendChild(rule);
+
+  ABOUT_COPY.body.forEach(function (t) {
+    paras.push(aboutPara(textWrap, 'about-p', t, allChars));
+  });
+
+  // ── get in touch — plain text, no assembly; it is the exit, not the story ──
+  const cta = document.createElement('div');
+  cta.className = 'about-cta';
+  const head = document.createElement('h3');
+  head.className = 'about-cta-head';
+  head.textContent = ABOUT_COPY.cta.head;
+  cta.appendChild(head);
+  ABOUT_COPY.cta.lines.forEach(function (line, i) {
+    const p = document.createElement('p');
+    p.className = 'about-cta-line' + (i === ABOUT_COPY.cta.lines.length - 1 ? ' about-cta-last' : '');
+    p.textContent = line;
+    cta.appendChild(p);
+  });
+  // The sign-off: email, and the source photograph beside it. The photograph
+  // is the payoff for having read to the end — it is the only place on the
+  // page it appears, and it stays hidden until you get here.
+  const signoff = document.createElement('div');
+  signoff.className = 'about-signoff';
+  const a = document.createElement('a');
+  a.className = 'about-email';
+  a.href = ABOUT_COPY.cta.href;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.textContent = ABOUT_COPY.cta.email;
+  signoff.appendChild(a);
+  const photo = document.createElement('img');
+  photo.className = 'about-photo';
+  photo.src = PAGE_DATA.about.sideImage;
+  photo.alt = 'Portrait of Calder Anderson';
+  signoff.appendChild(photo);
+  cta.appendChild(signoff);
+
+  // Contact links — on mobile the page's meta sidebar is gone, so this is the
+  // only place they live.
+  const links = document.createElement('nav');
+  links.className = 'about-links';
+  [['instagram', 'https://www.instagram.com/calder.a/'],
+   ['linkedin',  'https://www.linkedin.com/in/calder-anderson-28631626a']
+  ].forEach(function (pair) {
+    const l = document.createElement('a');
+    l.href = pair[1]; l.target = '_blank'; l.rel = 'noopener';
+    l.textContent = pair[0];
+    links.appendChild(l);
+  });
+  cta.appendChild(links);
+
+  textWrap.appendChild(cta);
+  col.appendChild(ascii);
+  col.appendChild(textWrap);
+
+  // You arrive on a face and nothing else. Without a prompt there is no way to
+  // know the page continues, let alone that scrolling is what takes it apart.
+  const cue = document.createElement('div');
+  cue.className = 'about-cue';
+  cue.textContent = 'scroll';
+  col.appendChild(cue);
+
+  // Reveal the photograph once the sign-off is actually on screen — "scrolled
+  // to the bottom", rather than "the last paragraph happens to be assembled".
+  if ('IntersectionObserver' in window) {
+    aboutPhotoObs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        signoff.classList.add('is-photo');
+        aboutPhotoObs.unobserve(en.target);
+      });
+    }, { root: scroller, rootMargin: '0px 0px -8% 0px', threshold: 0.2 });
+    aboutPhotoObs.observe(signoff);
+  } else {
+    signoff.classList.add('is-photo');
+  }
+
+  // A letter with nowhere to fly from is just a letter. Bail to plain text.
+  if (reduce) {
+    col.classList.add('about-static');
+    signoff.classList.add('is-photo');
+    return;
+  }
+
+  // ── hand out cells ──
+  // Row-major, so the portrait empties from the top down as you read down.
+  const cells = [];
+  for (let i = 0; i < ABOUT_ASCII.map.length; i++) {
+    const v = parseInt(ABOUT_ASCII.map.charAt(i), 16);
+    if (v > 0) cells.push({ c: i % ABOUT_ASCII.cols, r: (i / ABOUT_ASCII.cols) | 0, v: v });
+  }
+
+  allChars.forEach(function (el, i) {
+    const cell = cells[i];
+    if (!cell) return;                 // more letters than cells: it fades in place
+    el.__cell = cell;
+    /* The portrait's tone. Curved rather than linear: on a straight ramp the
+       lightest cells still landed at 0.18 opacity, which is a clearly visible
+       mark, so the whole head came out as one even field of letters and the
+       features had only a narrow band of grey to be told apart in. The
+       exponent pushes the low end far down — the cheeks and forehead nearly
+       drop out — and that is what leaves the eyes, brows, moustache and jaw
+       standing out as the darkest things on the face. */
+    el.__dim  = 0.12 + 0.88 * Math.pow(cell.v / 15, 1.3);
+  });
+
+  aboutState = { scroller: scroller, col: col, ascii: ascii, cue: cue,
+                 paras: paras, cueGone: false, atTop: false };
+  measureAbout();
+  aboutTick();
+  scroller.addEventListener('scroll', aboutSchedule, { passive: true });
+  addEventListener('resize', aboutRemeasure);
+
+  /* ── RE-MEASURE WHEN THE LAYOUT SETTLES ──
+     Every home position is a getBoundingClientRect() taken once. Anything that
+     reflows the column afterwards invalidates all 875 of them, and the face
+     silently lands in the wrong places. Two things reliably do that:
+
+       1. The webfont. Geist arrives over the network; until it does the text is
+          laid out in the fallback, with different metrics. On a first visit
+          that is almost always AFTER this point — which is exactly why it
+          looked broken until a reload, when the font came from cache.
+       2. Anything else that changes the column's box (a scrollbar appearing,
+          late CSS, a zoom change).
+
+     fonts.ready covers the first; the observer covers everything, including
+     the first, so this is belt and braces on purpose. */
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { if (aboutState) aboutRemeasure(); });
+  }
+  if ('ResizeObserver' in window) {
+    let first = true;
+    aboutSizeObs = new ResizeObserver(function () {
+      if (first) { first = false; return; }   // the initial callback is the size we just measured
+      if (aboutState) aboutRemeasure();
+    });
+    aboutSizeObs.observe(col);
+  }
+}
+
+/* Size and centre the face.
+   Done here in pixels rather than in CSS with vh/vw on purpose. On a phone
+   `50vh` is half of the LARGE viewport — the one that includes the strip behind
+   the collapsing address bar — so a fixed element at top:50% sits noticeably
+   below the middle of what you can actually see. #project-page is fixed to the
+   visible box, so its clientHeight is the honest number. */
+/* ✏️  HOW BIG THE FACE IS, AND WHERE IT SITS.
+   FACE_H is its height as a fraction of the visible page; FACE_Y is where its
+   CENTRE sits, also as a fraction. 0.5 is dead centre.
+
+   FACE_Y is below centre on purpose. The page title sits at the top of a
+   viewport-height composition, and at dead centre the top of the head arrived
+   straight underneath it with no air in between — the two read as one stacked
+   object rather than as a heading above a picture. Nudging the centre down and
+   the height in buys that gap without pushing the shoulders off the bottom. */
+const FACE_H = 0.68;
+const FACE_Y = 0.545;
+
+function sizeFace() {
+  const s = aboutState;
+  if (!s) return;
+  const vw = s.scroller.clientWidth;
+  const vh = s.scroller.clientHeight;
+  const byH = (vh * FACE_H) / ABOUT_ASCII.rows;               // fit the rows
+  const byW = (vw * 0.92) / (ABOUT_ASCII.cols * CELL_ASPECT); // fit the columns
+  const cell = Math.max(3, Math.min(byH, byW));
+  s.ascii.style.width  = (ABOUT_ASCII.cols * cell * CELL_ASPECT) + 'px';
+  s.ascii.style.height = (ABOUT_ASCII.rows * cell) + 'px';
+  s.ascii.style.left   = (vw / 2) + 'px';
+  s.ascii.style.top    = (vh * FACE_Y) + 'px';
+}
+
+/* Where every letter sits, and how big a grid cell is. Measured once here and
+   again on resize — never per frame. */
+function measureAbout() {
+  const s = aboutState;
+  if (!s) return;
+  /* A page with no layout box has no geometry: every rect comes back zero, and
+     caching 875 zeroes means the face never appears and never recovers. Rather
+     than trust the caller, refuse to measure and try again next frame. */
+  if (!s.scroller.clientHeight || !s.col.getBoundingClientRect().width) {
+    if (s.retries === undefined) s.retries = 0;
+    if (s.retries++ < 60) requestAnimationFrame(measureAbout);
+    return;
+  }
+  s.retries = 0;
+  sizeFace();
+  const colRect = s.col.getBoundingClientRect();
+
+  // Cell size comes from the rendered grid, so it tracks the CSS font-size
+  // rather than being guessed here and drifting the moment the CSS changes.
+  const aRect = s.ascii.getBoundingClientRect();
+  s.cw = aRect.width  / ABOUT_ASCII.cols;
+  s.ch = aRect.height / ABOUT_ASCII.rows;
+
+  s.paras.forEach(function (para) {
+    // Reading-size letters dropped into 5px cells would be an illegible smear,
+    // so a letter also shrinks to roughly cell size on its way into the
+    // portrait. Derived per paragraph because the lede is much larger.
+    const fs = parseFloat(getComputedStyle(para.el).fontSize) || 16;
+    // 0.8 of cell height, not the full cell: the letters are proportional, not
+    // monospace, so filling the cell makes neighbours touch and the dense areas
+    // congeal into unreadable text instead of reading as tone.
+    para.s = Math.max(0.14, Math.min(1, (s.ch / fs) * 0.8));
+
+    para.chars.forEach(function (el) {
+      if (!el.__cell) return;
+      // Clear the transform first or we would measure the displaced position.
+      el.style.transform = '';
+      const r = el.getBoundingClientRect();
+      el.__hx = r.left - colRect.left;
+      el.__hy = r.top  - colRect.top;
+    });
+    para.p = -1;              // force a repaint at the current scroll position
+  });
+}
+
+function aboutRemeasure() {
+  if (!aboutState) return;
+  measureAbout();
+  aboutTick();
+}
+
+function aboutSchedule() {
+  if (aboutRAF === null) aboutRAF = requestAnimationFrame(aboutTick);
+}
+
+function aboutTick() {
+  aboutRAF = null;
+  const s = aboutState;
+  if (!s) return;
+
+  const colRect = s.col.getBoundingClientRect();
+  const aRect   = s.ascii.getBoundingClientRect();
+  const originX = aRect.left - colRect.left;   // grid origin, in column space
+  const originY = aRect.top  - colRect.top;
+
+  // The prompt has done its job the moment you scroll. It comes back if you
+  // return to the top, since at that point the page looks unstarted again.
+  const cueGone = s.scroller.scrollTop > 60;
+  if (cueGone !== s.cueGone) {
+    s.cueGone = cueGone;
+    s.cue.classList.toggle('is-gone', cueGone);
+  }
+
+  // Back at the top, the face must be whole — no exceptions. Paragraphs are
+  // normally skipped when their progress has not changed, which is what keeps
+  // this cheap, but it also means one missed frame can leave a paragraph out
+  // of the picture until the page is reloaded. Arriving at the top clears
+  // every cached value and forces a full repaint, so the starting state is
+  // reachable by scrolling rather than only by reloading.
+  const atTop = s.scroller.scrollTop <= 1;
+  if (atTop && !s.atTop) s.paras.forEach(function (para) { para.p = -1; });
+  s.atTop = atTop;
+
+  const vh = s.scroller.clientHeight;
+  const START = vh * 0.90;   // paragraph top here → still fully in the face
+  const END   = vh * 0.40;   // paragraph top here → fully assembled
+
+  const scrollerTop = s.scroller.getBoundingClientRect().top;   // hoisted: was
+                                                                // re-read per paragraph
+  s.paras.forEach(function (para) {
+    const top = para.el.getBoundingClientRect().top - scrollerTop;
+    let p = (START - top) / (START - END);
+    p = p < 0 ? 0 : p > 1 ? 1 : p;
+    if (p === para.p) return;          // nothing moved; touch nothing
+    para.p = p;
+
+    // Past halfway the paragraph is readable, so give it the blue halo that
+    // separates it from the face letters still parked behind it.
+    para.el.classList.toggle('is-read', p > 0.55);
+
+    const n = para.chars.length;
+    para.chars.forEach(function (el, i) {
+      if (!el.__cell) {                // no cell: plain fade
+        el.style.opacity = p ? '' : '0';
+        return;
+      }
+      // Letters resolve left-to-right across the paragraph rather than all at
+      // once, so a sentence reads as being written rather than switched on.
+      const d  = (i / n) * 0.55;
+      let lp = (p - d) / 0.45;
+      lp = lp < 0 ? 0 : lp > 1 ? 1 : lp;
+      const k = Math.pow(1 - lp, 3);   // 1 = in the portrait, 0 = home
+
+      if (k < 0.0006) {
+        el.style.transform = '';
+        el.style.opacity   = '';
+      } else {
+        const cx = originX + el.__cell.c * s.cw;
+        const cy = originY + el.__cell.r * s.ch;
+        // transform-origin is 0 0 (see .ac), so translate positions the
+        // letter's top-left on the cell and scale shrinks it into that cell.
+        el.style.transform = 'translate(' + ((cx - el.__hx) * k) + 'px,' +
+                                            ((cy - el.__hy) * k) + 'px) scale(' +
+                                            (1 - (1 - para.s) * k) + ')';
+        el.style.opacity = (1 - (1 - el.__dim) * k).toFixed(3);
+      }
+    });
+  });
+
+}
+
+function teardownAbout() {
+  if (aboutPhotoObs) { aboutPhotoObs.disconnect(); aboutPhotoObs = null; }
+  if (aboutSizeObs)  { aboutSizeObs.disconnect();  aboutSizeObs  = null; }
+  if (!aboutState) return;
+  aboutState.scroller.removeEventListener('scroll', aboutSchedule);
+  removeEventListener('resize', aboutRemeasure);
+  if (aboutRAF) { cancelAnimationFrame(aboutRAF); aboutRAF = null; }
+  aboutState = null;
+}
+
+
+/* =====================================================
    SECTION T — HASH ROUTER (DON'T EDIT)
    =====================================================
    Handles navigation between network and project pages.
@@ -1766,10 +4325,12 @@ function handleRoute() {
       roleEl.style.display    = 'block';
       roleEl.textContent      = 'artist, designer, publisher';
       labelEl.textContent     = 'Contact';
+      // class, not an inline colour: the About page is blue now, and #0000ff
+      // links on a #0000ff field are invisible. See #project-page.is-about.
       tag2El.innerHTML =
-        '<a href="https://mail.google.com/mail/?view=cm&fs=1&to=me@calder-anderson.com" target="_blank" rel="noopener" style="color:#0000ff;text-decoration:none;">me@calder-anderson.com</a><br>' +
-        '<a href="https://www.instagram.com/calder.a/" target="_blank" rel="noopener" style="color:#0000ff;text-decoration:none;">instagram</a><br>' +
-        '<a href="https://www.linkedin.com/in/calder-anderson-28631626a" target="_blank" rel="noopener" style="color:#0000ff;text-decoration:none;">linkedin</a>';
+        '<a class="about-side-link" href="https://mail.google.com/mail/?view=cm&fs=1&to=me@calder-anderson.com" target="_blank" rel="noopener">me@calder-anderson.com</a><br>' +
+        '<a class="about-side-link" href="https://www.instagram.com/calder.a/" target="_blank" rel="noopener">instagram</a><br>' +
+        '<a class="about-side-link" href="https://www.linkedin.com/in/calder-anderson-28631626a" target="_blank" rel="noopener">linkedin</a>';
     } else {
       yearLabel.style.display = '';
       yearEl.style.display    = '';
@@ -1793,28 +4354,22 @@ function handleRoute() {
       const portraitSlot = document.getElementById('proj-portrait-slot');
       portraitSlot.innerHTML = '';
 
-      const textCol = document.createElement('p');
+      // buildAbout() owns the whole layout now, portrait included: the ASCII
+      // grid and the photograph are the same slot, so they cannot be separate
+      // elements placed by two different bits of code.
+      page.classList.add('is-about');
+      const textCol = document.createElement('div');
       textCol.className = 'about-col';
-      textCol.style.cssText = 'font-size:1.05rem;line-height:1.8;color:#000;font-weight:300;margin:0;flex:1;min-width:0;';
-      textCol.textContent = d.desc.split('\n\n').join('\n\n');
-
-      // Desktop portrait: sits to the right of the text column
-      const portraitDesktop = document.createElement('img');
-      portraitDesktop.src = d.sideImage;
-      portraitDesktop.className = 'about-portrait about-portrait-desktop';
-      portraitDesktop.style.cssText = 'width:220px;flex-shrink:0;height:auto;object-fit:contain;';
-
-      // Mobile portrait: injected above the line in #proj-portrait-slot
-      const portraitMobile = document.createElement('img');
-      portraitMobile.src = d.sideImage;
-      portraitMobile.className = 'about-portrait about-portrait-mobile';
-      portraitMobile.alt = '';
-      portraitSlot.appendChild(portraitMobile);
-
       descCol.appendChild(textCol);
-      descCol.appendChild(portraitDesktop);
+      // NOT built here. buildAbout() measures every letter's live position, and
+      // #project-page is still display:none at this point in the function —
+      // every rect would come back zero and the face would never appear. It is
+      // built below, once the page has been shown.
+      pendingAbout = textCol;
 
     } else {
+      page.classList.remove('is-about');
+      teardownAbout();
       // ── All other pages: standard layout ──
       descEl.textContent    = d.desc;
       descEl.style.display  = '';
@@ -1826,13 +4381,28 @@ function handleRoute() {
     }
     renderMedia(d.media); // Render the media blocks
     page.style.display = 'block';
+    idxSaveScroll(); // Remember where the index was before it gets display:none'd
     netView.style.display = scatterView.style.display = toggle.style.display = hint.style.display = meta.style.display = header.style.display = contact.style.display = explainer.style.display = 'none';
     // Hide all homepage elements
-    window.scrollTo(0, 0); // Scroll to top of project page
+    // #project-page is the scroll container, not the window — scrollTo(0,0)
+    // alone was a no-op, so opening a page kept the previous page's scroll
+    // position. Harmless before; on About it would drop you halfway through
+    // the portrait with the copy already assembled.
+    page.scrollTop = 0;
+    window.scrollTo(0, 0);
+
+    // Now the page has a layout box, so letters can be measured for real.
+    if (pendingAbout) { const c = pendingAbout; pendingAbout = null; buildAbout(c); }
   } else {
-    // No valid hash → show the network homepage
+    // No valid hash → show the homepage in whichever view is active
     page.style.display = 'none'; // Hide project page
+    page.classList.remove('is-about');
+    teardownAbout();             // stop the scroll handler for a hidden page
     toggle.style.display = hint.style.display = meta.style.display = header.style.display = contact.style.display = ''; // Show homepage elements
+    // Shareable view links: /#index and /#network. Neither string is a
+    // PAGE_DATA key, so they fall through to here rather than opening a page.
+    if (hash === 'network') currentView = 'network';
+    else if (hash === 'index') currentView = 'scatter';
     explainer.style.display = currentView === 'network' ? '' : 'none'; // Only restore if network view is active
     if (typeof currentView !== 'undefined') setView(currentView); // Restore last view
     else netView.style.display = ''; // Fallback
@@ -1843,6 +4413,421 @@ window.addEventListener('hashchange', handleRoute); // Browser back/forward butt
 window.addEventListener('DOMContentLoaded', handleRoute); // Page load
 handleRoute(); // Run immediately
 
+</script>
+
+
+<!-- =====================================================
+     SECTION U — LANDING SCREEN ENGINE
+     =====================================================
+     Runs last, so setView() and handleRoute() already exist.
+
+     THE THREE STATES
+       1. SCATTERED  every letter parked at a random point on the blue plate
+       2. ASSEMBLED  scrolling drags them home; at 100% the toggle fades in
+       3. SETTLED    you pick a view, the paragraph shrinks up under your name
+
+     HOW THE SHRINK STAYS SMOOTH
+     The landing paragraph's width and font-size are derived FROM the final
+     size, so the two are the same shape at different scales. That means a
+     single CSS transform can carry one into the other without the lines
+     re-wrapping halfway. A copy is placed under the header first; the blue
+     plate then fades off it, so the white version and the black version
+     cross-dissolve in place instead of one popping out and the other in.
+     Below 768px there is no room to shrink into, so it just fades.
+-->
+<script>
+(function () {
+
+/* ✏️  ============ THE TEXT ============
+   These feed the landing AND the bio under your name — edit here, both update.
+   Each array entry is its own block, with a blank line between them. Add a
+   third string and you get a third block, no other changes needed. */
+const BIO = [
+  "Calder Anderson is a designer, art director, and publisher based in New York who explores the human relationship to technology through multidisciplinary design projects.",
+  "Currently working at Fugazi, freelancing, and developing Issue 02 of Login Magazine."
+];
+
+/* ✏️  ============ THE LINKS UNDER THE HEADER ============
+   About leads — it is the one that opens a page rather than leaving the site.
+   "#about" goes through the site's hash router, the same route the About node
+   uses. The rest open in a new tab. */
+const BIO_LINKS = [
+  ['about',     '#about'],
+  ['email',     'https://mail.google.com/mail/?view=cm&fs=1&to=me@calder-anderson.com'],
+  ['instagram', 'https://www.instagram.com/calder.a/'],
+  ['linkedin',  'https://www.linkedin.com/in/calder-anderson-28631626a']
+];
+
+/* ✏️  ============ TUNING ============ */
+const SCROLL_DISTANCE = 1.5;   // screen-heights of scrolling to fully assemble
+const STAGGER         = 0.42;  // 0 = every letter arrives together, .42 = loose
+const FLY_MS          = 900;   // shrink-into-the-header duration (match the CSS)
+const BIO_SIZE        = 14.5;  // ✏️  settled bio font-size in px (desktop)
+const BIO_SIZE_SMALL  = 12.5;  // ✏️  …and on phones
+const BIO_MAX_WIDTH   = 520;   // ✏️  settled bio column width cap, px
+
+const landing = document.getElementById('landing');
+const lbText  = document.getElementById('lb-text');
+const cue     = document.getElementById('lb-cue');
+const headerEl = document.getElementById('header');
+const h1       = headerEl.querySelector('h1');
+
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isNarrow = () => innerWidth < 768;
+
+
+/* -----------------------------------------------------
+   BUILDING THE TEXT
+   One <span class="ch"> per letter, grouped into <span class="w"> per word.
+   Words are inline-block/nowrap so a word never breaks across two lines —
+   without that, scattering would shred the paragraph's line breaks.
+   Real spaces stay as text nodes between words, so wrapping still works.
+----------------------------------------------------- */
+function buildChars(host, paras) {
+  host.textContent = '';
+  paras.forEach(text => {
+    // .p is a block, so each entry in BIO starts on its own line.
+    const p = document.createElement('span');
+    p.className = 'p';
+    const words = text.split(' ');
+    words.forEach((word, i) => {
+      const w = document.createElement('span');
+      w.className = 'w';
+      for (const c of word) {
+        const s = document.createElement('span');
+        s.className = 'ch';
+        s.textContent = c;
+        w.appendChild(s);
+      }
+      p.appendChild(w);
+      if (i < words.length - 1) p.appendChild(document.createTextNode(' '));
+    });
+    host.appendChild(p);
+  });
+  // Screen readers get the sentences, not 250 separate letters.
+  host.setAttribute('aria-label', paras.join(' '));
+}
+
+
+/* -----------------------------------------------------
+   THE SETTLED BIO (under your name)
+   Also called on its own when the landing is skipped, so the bio is always
+   there — on a reload, on a shared /#index link, on back from a project.
+----------------------------------------------------- */
+function finalMetrics() {
+  const left  = h1.getBoundingClientRect().left;      // 34px desktop, 20px phone
+  const avail = innerWidth - left - (isNarrow() ? 20 : 34);
+  return {
+    ff: isNarrow() ? BIO_SIZE_SMALL : BIO_SIZE,
+    fw: Math.min(BIO_MAX_WIDTH, avail)
+  };
+}
+
+/* Returns #bio-copy — the paragraph block. That, not the wrapper, is what the
+   landing text flies to: the links sit below it and must not drag the target
+   rectangle down. */
+function placeHeaderBio(m) {
+  let bio = document.getElementById('header-bio');
+  if (!bio) {
+    bio = document.createElement('div');
+    bio.id = 'header-bio';
+
+    const copy = document.createElement('div');
+    copy.id = 'bio-copy';
+    buildChars(copy, BIO);
+    bio.appendChild(copy);
+
+    const nav = document.createElement('nav');
+    nav.id = 'bio-links';
+    nav.setAttribute('aria-label', 'Contact and about');
+    BIO_LINKS.forEach(([label, href]) => {
+      const a = document.createElement('a');
+      a.textContent = label;
+      a.href = href;
+      if (href.charAt(0) !== '#') { a.target = '_blank'; a.rel = 'noopener'; }
+      nav.appendChild(a);
+    });
+    bio.appendChild(nav);
+
+    headerEl.appendChild(bio);
+  }
+  const copy = bio.querySelector('#bio-copy');
+  copy.style.width    = m.fw + 'px';
+  copy.style.fontSize = m.ff + 'px';
+  // Desktop shows only the links, so they tuck up close under the name. Mobile
+  // still carries the description in the menu and needs a full line of air.
+  const tight = getComputedStyle(copy).display === 'none';
+  bio.style.marginTop = (tight ? 10 : Math.round(m.ff * 1.5)) + 'px';
+  document.body.classList.add('has-bio');
+  refreshBioHeight();
+  // The header just changed height, so the graph's safe area did too. Without
+  // this the ring keeps the layout it was given at parse time, when the header
+  // was one line tall, and the top node starts out behind the bio.
+  if (typeof initPositions === 'function') {
+    initPositions();
+    if (typeof draw === 'function') draw();
+  }
+  return copy;
+}
+
+/* Tells the index list how much room to leave. Zero while the header is
+   hidden (project pages), so this is re-run whenever the route changes. */
+function refreshBioHeight() {
+  const bio = document.getElementById('header-bio');
+  if (!bio) return;
+  const h = bio.offsetHeight;
+  if (!h) return;   // header is display:none right now — keep the last good value
+  document.documentElement.style.setProperty(
+    '--bio-h', (h + parseFloat(bio.style.marginTop || 0)) + 'px');
+}
+
+addEventListener('hashchange', () => requestAnimationFrame(refreshBioHeight));
+
+
+/* =====================================================
+   If the landing was skipped, that is the whole job.
+   ===================================================== */
+if (window.__landingSkip) {
+  placeHeaderBio(finalMetrics());
+  addEventListener('resize', () => placeHeaderBio(finalMetrics()));
+  return;
+}
+
+
+/* -----------------------------------------------------
+   SIZING THE LANDING PARAGRAPH
+   Worked backwards from the settled size. `ratio` is the paragraph's shape —
+   width divided by font-size — and holding it constant is what guarantees the
+   landing text and the settled text break their lines in the same places.
+   On phones the settled bio is nearly full-width already, so there is no room
+   to shrink into: we let the landing text size itself freely and swap the
+   flying shrink for a plain fade.
+----------------------------------------------------- */
+let F = 0, W = 0, exactFlight = false;
+
+function sizeLanding() {
+  const vw = innerWidth, vh = innerHeight;
+  const m  = finalMetrics();
+
+  if (isNarrow()) {
+    exactFlight = false;
+    F = 17;
+    W = Math.min(940, vw * 0.86);
+  } else {
+    exactFlight = true;
+    const ratio = m.fw / m.ff;
+    F = Math.max(19, Math.min(32, vw * 0.024));
+    F = Math.min(F, (vw * 0.86) / ratio);   // never wider than 86% of the screen
+    W = F * ratio;
+  }
+
+  lbText.style.width    = W + 'px';
+  lbText.style.fontSize = F + 'px';
+
+  // Short window? Shrink the whole block, shape intact, so the toggle still fits.
+  const tall = lbText.offsetHeight;
+  if (tall > vh * 0.5) {
+    const k = (vh * 0.5) / tall;
+    F *= k; W *= k;
+    lbText.style.width    = W + 'px';
+    lbText.style.fontSize = F + 'px';
+  }
+}
+
+
+/* -----------------------------------------------------
+   SCATTERING
+   Each letter gets a random landing spot ON SCREEN (so nothing is lost off the
+   edge), stored as an offset from where it actually belongs. Progress 0 puts
+   it at the offset, progress 1 puts it home. Only transforms move — the
+   letters keep their real layout slots the whole time, which is why the
+   paragraph is guaranteed to be correct at the end.
+----------------------------------------------------- */
+buildChars(lbText, BIO);
+const chars = Array.from(lbText.querySelectorAll('.ch')).map(el => ({ el }));
+
+function scatter() {
+  const vw = innerWidth, vh = innerHeight, pad = 24;
+  for (const c of chars) c.el.style.transform = 'none';   // measure true positions
+  for (const c of chars) {
+    const r = c.el.getBoundingClientRect();
+    c.dx  = (pad + Math.random() * (vw - pad * 2 - r.width))  - r.left;
+    c.dy  = (pad + Math.random() * (vh - pad * 2 - r.height)) - r.top;
+    c.d   = Math.random() * STAGGER;   // this letter's head start
+  }
+}
+
+function apply(p) {
+  for (const c of chars) {
+    // Each letter runs its own 0→1 over a delayed slice, but every slice ends
+    // at p = 1, so hitting 100% always means fully assembled.
+    let lp = (p - c.d) / (1 - STAGGER);
+    lp = lp < 0 ? 0 : lp > 1 ? 1 : lp;
+    const k = Math.pow(1 - lp, 3);     // ease-out: fast away from home, gentle into it
+    if (k < 0.0006) {
+      c.el.style.transform = '';
+      c.el.style.opacity   = '';
+    } else {
+      // Position only — no rotation. Letters stay upright while scrambled,
+      // so the field reads as a dispersed alphabet rather than as debris.
+      c.el.style.transform =
+        'translate(' + (c.dx * k) + 'px,' + (c.dy * k) + 'px) scale(' + (1 - 0.18 * k) + ')';
+      c.el.style.opacity = (1 - 0.5 * k).toFixed(3);
+    }
+  }
+}
+
+
+/* -----------------------------------------------------
+   THE SCROLL → PROGRESS LOOP
+   `target` is where the reader has scrolled to, `cur` chases it. The chase is
+   what makes it feel like weight rather than a slider. The loop parks itself
+   when the two meet, so an idle landing costs nothing.
+----------------------------------------------------- */
+let target = 0, cur = 0, raf = null, ready = false, active = true;
+let LERP = 0.14;
+
+function pump() { if (raf === null) raf = requestAnimationFrame(tick); }
+
+function tick() {
+  raf = null;
+  cur += (target - cur) * LERP;
+  if (Math.abs(target - cur) < 0.0006) cur = target;
+  apply(cur);
+  const r = cur > 0.985;
+  if (r !== ready) { ready = r; landing.classList.toggle('ready', r); }
+  if (cur !== target) pump();
+}
+
+function bump(v) {
+  target = Math.min(1, Math.max(0, target + v));
+  pump();
+}
+
+landing.addEventListener('wheel', e => {
+  e.preventDefault();                 // the page behind must not scroll
+  bump(e.deltaY / (innerHeight * SCROLL_DISTANCE));
+}, { passive: false });
+
+let touchY = 0;
+landing.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
+landing.addEventListener('touchmove', e => {
+  const y = e.touches[0].clientY;
+  bump((touchY - y) / (innerHeight * (SCROLL_DISTANCE * 0.6)));
+  touchY = y;
+  e.preventDefault();
+}, { passive: false });
+
+// Keyboard, for anyone not using a wheel. Escape jumps straight to readable.
+addEventListener('keydown', e => {
+  if (!active) return;
+  if (e.key === 'Escape') { target = 1; pump(); }
+  else if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); bump(0.12); }
+  else if (e.key === 'ArrowUp'   || e.key === 'PageUp')                    { e.preventDefault(); bump(-0.12); }
+});
+
+addEventListener('resize', () => {
+  if (active) { sizeLanding(); scatter(); apply(cur); }
+  else placeHeaderBio(finalMetrics());
+});
+
+
+/* -----------------------------------------------------
+   CHOOSING A VIEW — the shrink into the header
+----------------------------------------------------- */
+window.enterSite = function (view) {
+  if (!active) return;
+  active = false;
+  landing.classList.add('leaving');
+  try { sessionStorage.setItem('ca-landing', 'seen'); } catch (e) {}
+  // This choice is what "home" means for the rest of the visit.
+  if (typeof rememberHome === 'function') rememberHome(view);
+
+  apply(1);                              // guarantee a clean, assembled state
+  const A = lbText.getBoundingClientRect();
+
+  // Put the settled copy in place first. It is behind the blue plate, so it is
+  // invisible until the plate fades — which is what makes the swap seamless.
+  const copy = placeHeaderBio(finalMetrics());
+
+  // Park the index rows BEFORE the view is built, or the observer wakes them
+  // against the blue plate and the entrance is spent before it is visible.
+  if (view === 'scatter' && !reduceMotion && typeof idxSetHold === 'function') idxSetHold(true);
+  setView(view);                         // build the chosen view behind the plate
+  const B = copy.getBoundingClientRect();
+
+  // B.width is 0 when the settled copy is display:none — which is now the case
+  // on desktop, where the description does not survive the landing. Nothing to
+  // fly to, so the paragraph settles in place and the hairline takes over.
+  if (exactFlight && !reduceMotion && B.width > 0) {
+    lbText.classList.add('flying');
+    requestAnimationFrame(() => {
+      lbText.style.transform =
+        'translate(' + (B.left - A.left) + 'px,' + (B.top - A.top) + 'px) scale(' +
+        (B.width / A.width) + ')';
+    });
+    setTimeout(() => landing.classList.add('fading'), FLY_MS - 140);
+    setTimeout(() => finish(view), FLY_MS + 280);
+  } else {
+    if (!reduceMotion) lbText.classList.add('settling');
+    landing.classList.add('fading');
+    setTimeout(() => finish(view), reduceMotion ? 0 : 460);
+  }
+};
+
+/* Called the moment the blue is gone — this is where the site actually opens.
+   Index: the parked rows are dealt in top-to-bottom.
+   Network: nothing to deal, so the canvas fades up as a whole instead. */
+function openView(view) {
+  // Draw the hairline in and surface the links. Only ever runs on arrival from
+  // the landing, which is the one moment the header has something to reveal.
+  const bio = document.getElementById('header-bio');
+  if (bio && !reduceMotion) bio.classList.add('bio-enter');
+
+  if (view === 'scatter') {
+    if (typeof idxRelease === 'function') idxRelease(90);
+  } else if (!reduceMotion) {
+    ['net-canvas', 'net-explainer'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove('net-enter');
+      void el.offsetWidth;              // restart the animation if it already ran
+      el.classList.add('net-enter');
+    });
+  }
+}
+
+function finish(view) {
+  landing.remove();
+  refreshBioHeight();
+  openView(view);
+}
+
+
+/* -----------------------------------------------------
+   START
+----------------------------------------------------- */
+sizeLanding();
+scatter();
+
+if (reduceMotion) {
+  cur = target = 1;
+  apply(1);
+  ready = true;
+  landing.classList.add('ready');
+} else if (isNarrow()) {
+  // No wheel on a phone, and a swipe-to-read gate is a bad first impression.
+  // It assembles itself, slowly enough to read as an animation rather than a
+  // load. A swipe still works and still gets there first.
+  LERP = 0.035;
+  apply(0);
+  setTimeout(() => { target = 1; pump(); }, 450);
+} else {
+  cue.textContent = 'scroll to read';
+  apply(0);
+}
+
+})();
 </script>
 
 </body>
