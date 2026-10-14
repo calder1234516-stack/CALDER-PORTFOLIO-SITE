@@ -122,6 +122,13 @@
   /* ✏️  Very light grey. BORDERS AND RULES ONLY — never text.
          It is 1.4:1 against white, which is invisible to a lot of people. */
 
+  --gutter: 34px;
+  /* ✏️  THE PAGE GUTTER — the distance from the screen edge to everything on
+         it. #topbar reads it for the name and the Index/Network toggle, and
+         #scatter-view reads it for the Index list and hero. One value so the
+         list can never drift out of line with the header above it; change it
+         here and both move together. Narrows to 20px on phones, below. */
+
   --font: 'Geist','Helvetica Neue',Arial,sans-serif;
   /* ✏️  The main typeface. If you changed the font in Section A,
          update 'Geist' here to match the new font name.
@@ -199,7 +206,7 @@ html, body {
   display: flex;
   align-items: center;        /* Vertically centers header and toggle on the same axis */
   justify-content: space-between; /* Header left, toggle right */
-  padding: 16px 34px;
+  padding: 16px var(--gutter);
   z-index: 200;
   pointer-events: none;
 }
@@ -493,7 +500,9 @@ html, body {
      ✏️  Every breakpoint below now re-declares these THREE values and nothing
          else — the `padding` line here is the only one in the file. */
   --sv-pt: 150px;               /* top — clears #topbar */
-  --sv-px: 120px;               /* left + right gutter */
+  --sv-px: var(--gutter);       /* left + right — the SAME gutter as #topbar,
+                                   so rows start under the name and end under
+                                   the toggle. Don't hard-code it back. */
   --sv-pb: 120px;               /* bottom */
   position: fixed;
   inset: 0;
@@ -507,8 +516,13 @@ html, body {
   padding: var(--sv-pt) var(--sv-px) var(--sv-pb);
 }
 
-/* ── LIST WRAPPER ── */
-.index-list { width: 100%; max-width: 1280px; margin: 0 auto; }
+/* ── LIST WRAPPER ──
+   Full width and flush left, NOT a centred 1280px column: the list is meant to
+   line up with the masthead, and #scatter-view's gutter is already doing the
+   insetting. A max-width here would re-centre the list inside that gutter and
+   pull it back off the header's axis on any screen wider than the cap.
+   The reading measure is protected further down instead, on .index-desc. */
+.index-list { width: 100%; margin: 0; }
 
 /* ── MASTHEAD ── */
 .index-head {
@@ -680,6 +694,12 @@ html, body {
    Scoped to body.view-scatter deliberately: an opaque #topbar globally would
    hide network nodes drifting into the top 100px. */
 body.view-scatter #topbar { background: #fff; }
+
+/* Only in the Index view, and only where scrollbars take up space: shift the
+   toggle in by the scrollbar's width so it sits directly above the right edge
+   of the rows. --sbw is measured in idxSyncScrollbar(); the 0px fallback means
+   this is a no-op everywhere else, including the Network view. */
+body.view-scatter #topbar { padding-right: calc(var(--gutter) + var(--sbw, 0px)); }
 body.view-scatter #hint,
 body.view-scatter #meta,
 body.view-scatter #contact-footer { display: none !important; }
@@ -703,7 +723,10 @@ body.view-scatter #contact-footer { display: none !important; }
    block BEFORE the 767px block, so 767 won at ≤600 and the 600px padding was
    dead code. All #scatter-view padding is declared here and nowhere else. */
 @media (max-width: 1100px) {
-  #scatter-view { --sv-pt: 140px; --sv-px: 60px; --sv-pb: 100px; }
+  /* --sv-px is deliberately absent here and below: the side gutter comes from
+     --gutter now, so it tracks #topbar at every width. Only the top and bottom
+     still change per breakpoint. */
+  #scatter-view { --sv-pt: 140px; --sv-pb: 100px; }
   .index-row { gap: 40px; padding: 52px 0; }
 }
 @media (max-width: 860px) {
@@ -713,7 +736,7 @@ body.view-scatter #contact-footer { display: none !important; }
   .index-row--player .index-open::after { right: 0; bottom: 55%; }
 }
 @media (max-width: 600px) {
-  #scatter-view { --sv-pt: 128px; --sv-px: 20px; --sv-pb: 80px; }
+  #scatter-view { --sv-pt: 128px; --sv-pb: 80px; }
   .index-head { font-size: 0.68rem; letter-spacing: 0.07em; }
   .index-head .ih-right { display: none; }
   .index-name { font-size: 1.4rem; }
@@ -733,8 +756,8 @@ body.view-scatter #contact-footer { display: none !important; }
    GEOMETRY:
    the hero is a child of #scatter-view, which is the scroll container and
    already carries the page gutter as padding — so the picture is held off the
-   screen edges by the same measure as every row below it, and capped at the
-   same 1280px as .index-list so the two are in the same column on any screen.
+   screen edges by the same measure as every row below it, and runs flush left
+   like .index-list, so the two are in the same column on any screen.
    Its height is whatever is left under the fixed top bar (100svh − --sv-pt),
    which is what makes it fill the screen without sliding under the masthead.
 
@@ -761,8 +784,10 @@ body.view-scatter #contact-footer { display: none !important; }
   display: flex;
   flex-direction: column;                  /* picture on top, caption bar under */
   width: 100%;
-  max-width: 1280px;                       /* same measure as .index-list */
-  margin: 0 auto 72px;                     /* ✏️  gap between here and the list */
+  margin: 0 0 72px;                        /* ✏️  gap between here and the list.
+                                              Flush left, like .index-list —
+                                              no max-width, or the picture
+                                              re-centres away from the rows. */
   height: calc(100vh - var(--sv-pt) - var(--hero-lift));   /* no-svh fallback */
   height: calc(100svh - var(--sv-pt) - var(--hero-lift));  /* ignores the URL bar */
   min-height: 380px;
@@ -802,6 +827,12 @@ body.view-scatter #contact-footer { display: none !important; }
 .hero-frame img {
   width: 100%; height: 100%;
   object-fit: contain;   /* ⚠️  never `cover` — see the note at the top */
+  object-position: left center;
+  /* ✏️  Contain leaves slack on one axis, and by default the photograph sits
+         in the middle of it. Anchoring it left puts its edge on the same line
+         as the caption under it, the rows below it and the name above it —
+         the slack all collects on the right instead of being split in two.
+         `center center` restores the floating-in-the-middle composition. */
   display: block;
 }
 /* No Ken Burns drift here. Any scale above 1 pushes the photograph past its
@@ -943,10 +974,13 @@ body.view-scatter #contact-footer { display: none !important; }
    SECTION I-MOBILE — MOBILE HEADER
 */
 @media (max-width: 767px) {
+  /* The phone gutter, set once. #topbar and #scatter-view both read it, so the
+     list stays on the masthead's axis here exactly as it does on desktop. */
+  :root { --gutter: 20px; }
   #topbar {
     flex-direction: column;
     align-items: flex-start;
-    padding: 16px 20px 12px;
+    padding: 16px var(--gutter) 12px;
     gap: 8px;
   }
   #header h1 {
@@ -959,10 +993,11 @@ body.view-scatter #contact-footer { display: none !important; }
   #toggle {
     align-self: flex-start;
   }
-  /* NOTE: #scatter-view padding and .index-list margin used to be set here.
-     They now live in Section I so all breakpoints are declared in one place,
-     ordered widest → narrowest. Do not re-add them here — this block comes
-     after the 600px block, so it would override it at phone widths. */
+  /* NOTE: #scatter-view's top/bottom padding lives in Section I so all
+     breakpoints are declared in one place, ordered widest → narrowest. Do not
+     re-add those here — this block comes after the 600px block, so it would
+     override it at phone widths. The SIDE gutter is the exception: it is
+     --gutter above, deliberately shared with #topbar. */
 }
 
 
@@ -1974,6 +2009,10 @@ const PROJECTS = [
   { id:8, label:'About',                           tag:'context · contact',    url:'#about',                                                     r:10, group:'info',   year:'—'    },
   { id:9, label:'As Above So Below',               tag:'zine · video',         url:'as%20above%20so%20below/as-above-so-below.html',             r:11, group:'image',  year:'2023' },
   { id:10, label:'Meltdown',                       tag:'installation · AI',    url:'meltdown/meltdown.html',                                     r:12, group:'image',  year:'2026' },
+  // `sort` overrides `year` for ordering only — it puts this ahead of Meltdown,
+  // which is also 2026 but has no month. See idxSortKey().
+  { id:11, label:'Baby 3 — OVER',                  tag:'music video · direction', url:'baby3-over.html',                                         r:11, group:'image',  year:'August 2026', sort:'2026-08' },
+  { id:12, label:'Wromeo — NO REST',               tag:'music video · direction', url:'wromeo-no-rest.html',                                     r:11, group:'image',  year:'October 2026', sort:'2026-10' },
 ];
 
 
@@ -1986,6 +2025,8 @@ const PROJECTS = [
        0  = Login Magazine          6  = Are You Coming to The Party?
        1  = Graphic Work            9  = As Above So Below
        3  = ULTRANET               10  = Meltdown
+                                   11  = Baby 3 — OVER
+                                   12  = Wromeo — NO REST
        (id 8 = About, id 1 = Graphic Work — both deliberately excluded from
         the index list below. Graphic Work still shows as a Network node;
         its content here is left in place, unused, so it's a one-line
@@ -2021,6 +2062,29 @@ const PROJECTS = [
    plate with the project title ghosted in — the page still looks finished.
    ────────────────────────────────────────────────────── */
 const INDEX_CONTENT = {
+
+  /* ── 12 · WROMEO — NO REST ── same treatment as Baby 3 below: no stills,
+     the work IS the video, so it gets a youtube block too. 16:9 native. */
+  12: {
+    aspect: '16 / 9',
+    desc: "A music video for Wromeo's NO REST — shot, edited and directed "
+        + 'end to end. Released October 2026.',
+    media: [
+      { type: 'youtube', id: 'HNuRBpaSH9k' },
+    ],
+  },
+
+  /* ── 11 · BABY 3 — OVER ── a youtube block, like NO REST above. There are no
+     stills for this project, and the work IS the video, so the embed earns
+     its ~1MB here where a grey plate would say nothing. 16:9 native. */
+  11: {
+    aspect: '16 / 9',
+    desc: "A music video for Baby 3's OVER — directed, edited and art directed "
+        + 'end to end. Shot in August 2026, with Ravi Vietro assisting on camera.',
+    media: [
+      { type: 'youtube', id: 'pR6RH91DYl8' },
+    ],
+  },
 
   /* ── 10 · MELTDOWN ── square, not wide: 2 of its 3 photos are square
      (meltdown-02/03), so 16:9 was letterboxing them down to ~56% of the box.
@@ -2147,7 +2211,9 @@ const INDEX_RANGE = '2023 — 2026';
    ✏️  Every node should have at least one edge or it will float away!
 */
 const EDGES = [
-  // Login Magazine (0) connects to: Graphic(1), ULTRANET(2), AYCTTP(3), About(4), AASB(5)
+  // Login Magazine (0) connects to: Graphic(1), ULTRANET(2), AYCTTP(3),
+  // About(4), AASB(5) — plus Meltdown(6) and Baby 3(7), declared in their own
+  // blocks further down so each new project's connections stay in one place.
   [0,1], [0,2], [0,3], [0,4], [0,5],
 
   // Graphic Work (1) connects to: ULTRANET(2), AYCTTP(3), About(4), AASB(5)
@@ -2164,6 +2230,18 @@ const EDGES = [
 
   // Meltdown (6) connects to: Login(0), ULTRANET(2), AASB(5)
   [0,6], [2,6], [5,6],
+
+  // Baby 3 — OVER (7) connects to: Login(0), ULTRANET(2), About(4), AASB(5),
+  // Meltdown(6) — the moving-image cluster, plus Login. The Login edge is there
+  // to balance the ring: without it Login sat at 6 lines and Baby 3 at 4, and
+  // the springs pulled the newest node visibly off the circle.
+  [0,7], [2,7], [4,7], [5,7], [6,7],
+
+  // Wromeo — NO REST (8) connects to: Login(0), Graphic(1), AYCTTP(3),
+  // About(4), Meltdown(6), Baby 3(7) — the other music video, plus Login and
+  // the nodes that had the fewest lines, so the ring stays balanced (see the
+  // Baby 3 note above).
+  [0,8], [1,8], [3,8], [4,8], [6,8], [7,8],
 
   // Music Production — commented out
   // [was 3,5], [was 3,6],
@@ -2669,6 +2747,18 @@ function idxContent(p) {
   };
 }
 
+/* The value a project is ORDERED by, which is not always the value it DISPLAYS.
+   Plain '2025' sorts fine on its own, but two projects from the same year tie
+   and fall back to however they happen to sit in PROJECTS. A project that wants
+   to break that tie — or that shows a human date like 'August 2026' — carries an
+   optional `sort` field holding a lexically sortable string ('2026-08'), and
+   that is what both orderings below read. Everything without one keeps using
+   `year`, so nothing else on the page had to change. */
+function idxSortKey(p) {
+  const v = p.sort || p.year;
+  return v.includes('ongoing') ? '9999' : v;
+}
+
 function idxSortedProjects() {
   // .sort() runs on the filtered COPY, so PROJECTS itself is never reordered.
   // That matters: EDGES indexes PROJECTS by array POSITION, not by id.
@@ -2676,8 +2766,7 @@ function idxSortedProjects() {
   // Graphic Work still appears as a node in the Network view: initPositions()
   // (Section P2) filters only id 8, so that filter is untouched.
   return PROJECTS.filter(p => p.id !== 8 && p.id !== 1).sort((a, b) => {
-    const av = a.year.includes('ongoing') ? '9999' : a.year;
-    const bv = b.year.includes('ongoing') ? '9999' : b.year;
+    const av = idxSortKey(a), bv = idxSortKey(b);
     return bv < av ? -1 : bv > av ? 1 : 0;
   });
 }
@@ -2845,8 +2934,7 @@ function heroSlides() {
   const groups = PROJECTS
     .filter(function (p) { return p.id !== 8 && p.id !== 1; })
     .sort(function (a, b) {                     // newest first, as in the list
-      const av = a.year.includes('ongoing') ? '9999' : a.year;
-      const bv = b.year.includes('ongoing') ? '9999' : b.year;
+      const av = idxSortKey(a), bv = idxSortKey(b);
       return bv < av ? -1 : bv > av ? 1 : 0;
     })
     .map(function (p) {
@@ -3167,7 +3255,7 @@ function buildScatter() {
   const reduce  = idxMQ('(prefers-reduced-motion: reduce)');
 
   // The opening plate (SECTION P7b). A sibling of .index-list rather than a
-  // child of it, but capped to the same 1280px measure, so picture and list
+  // child of it, but flush left on the same page gutter, so picture and list
   // sit in one column. Returns null when it is off or has no photos to show.
   heroApi = buildHero();
   if (heroApi) el.appendChild(heroApi.el);
@@ -3309,8 +3397,24 @@ function setView(v) {
     sv.style.display = 'block';
     buildScatter();               // no-ops after the first call
     sv.scrollTop = idxScroll;     // restore where the reader was
+    idxSyncScrollbar();           // right edge of the list ↔ right edge of the nav
   }
 }
+
+/* #topbar is fixed to the window; the Index list lives inside #scatter-view,
+   which scrolls and therefore loses a scrollbar's width off its right edge.
+   Left alone, that puts the list ~15px short of the Index/Network toggle on
+   Windows, where scrollbars take up space — the one edge the shared --gutter
+   can't reconcile on its own. Measuring the difference and padding #topbar by
+   it puts both right edges back on the same line. On macOS and phones, where
+   scrollbars overlay the content, the measurement is 0 and nothing moves. */
+function idxSyncScrollbar() {
+  const sv = document.getElementById('scatter-view');
+  if (!sv || !sv.offsetWidth) return;   // hidden in Network view — measures 0
+  const w = Math.max(0, sv.offsetWidth - sv.clientWidth);
+  document.documentElement.style.setProperty('--sbw', w + 'px');
+}
+addEventListener('resize', idxSyncScrollbar);
 
 
 /* =====================================================

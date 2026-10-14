@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wromeo — NO REST</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+
+:root {
+  --bg: #000;
+  --fg: #fff;
+  --accent: #0000ff;
+  --body: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Small uppercase labels — same accessibility pass as ULTRANET:
+   weight 500 (grey text at 400 disappears), tabular digits for the year. */
+#sound-btn, #scroll-cue, .back-link, .title-block .meta,
+.credits h2, .stream-btn {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+::selection { background: #0000ff; color: #fff; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: #fff;
+  color: var(--fg);
+  font-family: var(--body);
+  overflow-x: hidden;
+}
+
+/* =====================================================
+   HERO — the video, whole, on a full-viewport black stage
+   =====================================================
+   #player-wrap holds a locked 16:9 box scaled to the LARGEST size that still
+   fits the window on both axes: min() takes the viewport width, unless the
+   height is the tighter constraint, in which case it takes the width that a
+   full-height 16:9 frame implies (100vh × 16/9 = 177.78vh). aspect-ratio
+   derives the height from whichever won, so the frame is always complete —
+   never cropped, never stretched, and never overflowing the fold.
+   The leftover margin is #hero's black, which is also the video's own
+   letterbox colour, so the seam is invisible.
+   The svh line repeats the vh one for iOS, where the URL bar makes the real
+   viewport shorter than 100vh; browsers without svh keep the vh value. */
+#hero {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100svh;          /* closes the iOS URL-bar gap; ignored elsewhere */
+  overflow: hidden;
+  background: #000;
+}
+
+#player-wrap {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  aspect-ratio: 16 / 9;
+  width: min(100vw, 177.78vh);
+  width: min(100vw, 177.78svh);
+  height: auto;
+  pointer-events: none;    /* the hero is one click target until unmuted */
+}
+
+#player-wrap iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* Black cover that lifts once the player reports playback — stops the
+   YouTube spinner and branding flashing on first paint. */
+#hero-veil {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  z-index: 5;
+  opacity: 1;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+}
+#hero.playing #hero-veil { opacity: 0; }
+
+/* SOUND — browsers only allow autoplay while muted, so the video starts
+   silent and this is the one click that turns audio on. It removes itself
+   after use; a click anywhere on the hero does the same thing. */
+#sound-btn {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  z-index: 20;
+  background: #fff;
+  border: none;
+  color: #000;
+  font-family: var(--body);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, opacity 0.35s;
+}
+#sound-btn:hover { background: var(--accent); color: #fff; }
+#sound-btn.dismissed { opacity: 0; pointer-events: none; }
+
+/* Invisible click-catcher over the video: the first click unmutes, then it
+   gets out of the way so YouTube's own controls become reachable. */
+#sound-catch {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  cursor: pointer;
+  background: transparent;
+}
+#sound-catch.gone { display: none; }
+
+#scroll-cue {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  animation: pulse 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 0.9;  }
+}
+
+/* ── CONTENT BELOW ── */
+#fade-strip {
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(to bottom, #000 0%, #fff 100%);
+  display: block;
+}
+
+#content {
+  background: #fff;
+  padding: 60px 60px 140px;
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.title-block h1 {
+  font-size: clamp(2.4rem, 7vw, 4.6rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: #000;
+  margin-bottom: 18px;
+}
+
+.title-block .meta {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.45);
+  line-height: 2;
+}
+
+.title-block .meta span { color: var(--accent); }
+
+/* Standfirst under the title. Weight 300 and the ~62ch measure match the
+   body copy on the other project pages — long enough to read as prose,
+   short enough that the eye finds the next line without hunting. */
+.lede {
+  margin-top: 36px;
+  max-width: 62ch;
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.85;
+  color: #000;
+}
+
+/* ── CREDITS ── */
+.credits {
+  margin-top: 56px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 48px;
+}
+
+.credits h2 {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 20px;
+}
+
+.credits dt {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.45);
+  margin-bottom: 4px;
+}
+
+.credits dd {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #000;
+  margin-bottom: 18px;
+}
+
+.credits dd:last-child { margin-bottom: 0; }
+
+.stream-btn {
+  display: inline-block;
+  margin-top: 56px;
+  margin-right: 12px;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  background: #000;
+  padding: 10px 18px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.stream-btn:hover { background: var(--accent); }
+
+.back-link {
+  display: block;
+  margin-top: 80px;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.35);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.back-link:hover { color: #000; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 767px) {
+  #fade-strip { height: 80px; }
+  #content    { padding: 40px 20px 80px; }
+  .credits    { grid-template-columns: 1fr; gap: 28px; }
+  #sound-btn  { padding: 10px 20px; }
+  .stream-btn { display: block; margin-right: 0; margin-bottom: 10px; text-align: center; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- =====================================================
+     HERO — full-viewport autoplaying video
+     ===================================================== -->
+<div id="hero">
+  <div id="player-wrap"><div id="player"></div></div>
+  <div id="hero-veil"></div>
+  <div id="sound-catch" title="Click for sound"></div>
+  <button id="sound-btn" type="button">&#9834; sound on</button>
+  <div id="scroll-cue">scroll</div>
+</div>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+/* The IFrame API (rather than a plain <iframe src>) buys two things:
+   1. setPlaybackQuality('hd1080') — a request, not a guarantee. YouTube's
+      adaptive ladder has the final say, but a full-viewport player is large
+      enough that 1080 is what it settles on once bandwidth allows.
+   2. onStateChange, so the black veil lifts exactly when playback starts.
+   Autoplay only survives if the player starts MUTED — every current desktop
+   and mobile browser blocks audible autoplay. Hence the sound button. */
+var VIDEO_ID = 'HNuRBpaSH9k';
+var player, unmuted = false, reasked = false;
+
+function reveal() {
+  document.getElementById('hero').classList.add('playing');
+}
+
+/* Safety net: the veil normally lifts on the PLAYING event, but a slow first
+   buffer would otherwise leave a visitor staring at a black screen with no
+   sign anything is happening. After 3s, show the player whatever its state —
+   YouTube's own spinner is better than nothing. */
+setTimeout(reveal, 3000);
+
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('player', {
+    videoId: VIDEO_ID,
+    playerVars: {
+      autoplay: 1,
+      mute: 1,
+      controls: 1,
+      rel: 0,
+      modestbranding: 1,
+      playsinline: 1,
+      vq: 'hd1080'
+    },
+    events: {
+      onReady: function (e) {
+        e.target.setPlaybackQuality('hd1080');
+        e.target.playVideo();
+      },
+      onPlaybackQualityChange: function (e) {
+        // YouTube downshifts on its own while buffering. Ask once more, but
+        // only once — re-forcing on every change fights the adaptive ladder
+        // and can stall playback outright.
+        if (!reasked && e.data !== 'hd1080' && e.data !== 'highres') {
+          reasked = true;
+          e.target.setPlaybackQuality('hd1080');
+        }
+      },
+      onStateChange: function (e) {
+        if (e.data === YT.PlayerState.PLAYING) reveal();
+      }
+    }
+  });
+}
+
+function soundOn() {
+  if (unmuted || !player || !player.unMute) return;
+  unmuted = true;
+  player.unMute();
+  player.setVolume(100);
+  document.getElementById('sound-btn').classList.add('dismissed');
+  // Hand the pointer back to YouTube's own controls.
+  document.getElementById('sound-catch').classList.add('gone');
+  document.getElementById('player-wrap').style.pointerEvents = 'auto';
+}
+
+document.getElementById('sound-btn').addEventListener('click', soundOn);
+document.getElementById('sound-catch').addEventListener('click', soundOn);
+document.addEventListener('keydown', function (e) {
+  if (e.key === ' ' || e.key === 'Enter') soundOn();
+});
+</script>
+
+<div id="fade-strip"></div>
+
+<!-- =====================================================
+     CONTENT — below the fold
+     ===================================================== -->
+<div id="content">
+
+  <div class="title-block">
+    <h1>Wromeo — NO REST</h1>
+    <div class="meta">
+      <span>music video · direction</span><br>
+      October 2026
+    </div>
+  </div>
+
+  <div class="credits">
+
+    <div>
+      <h2>Credits</h2>
+      <dl>
+        <dt>Directed by</dt>
+        <dd>Calder Anderson</dd>
+        <dt>Shot by</dt>
+        <dd>Calder Anderson</dd>
+        <dt>Edited by</dt>
+        <dd>Calder Anderson</dd>
+      </dl>
+    </div>
+
+    <div>
+      <h2>Music</h2>
+      <dl>
+        <dt>Song by</dt>
+        <dd>Wromeo</dd>
+      </dl>
+    </div>
+
+  </div>
+
+  <a href="https://youtu.be/HNuRBpaSH9k" target="_blank" rel="noopener" class="stream-btn">Watch on YouTube</a>
+
+  <a href="index.html" class="back-link">← back</a>
+
+</div><!-- #content -->
+
+</body>
+</html>
